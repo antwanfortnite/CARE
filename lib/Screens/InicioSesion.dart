@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'ScreenAdministrador.dart';
 
 class InicioSesion extends StatefulWidget {
   const InicioSesion({super.key});
@@ -43,7 +44,7 @@ class _InicioSesionState extends State<InicioSesion>
     return SingleChildScrollView(
       child: Column(
         children: [
-          // 🔹 HEADER VERDE (FULL WIDTH)
+          // 🔹 HEADER VERDE
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 40),
@@ -80,13 +81,10 @@ class _InicioSesionState extends State<InicioSesion>
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                const SizedBox(height: 10),
-
                 const Text(
                   "Inicio de sesión",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-
                 const SizedBox(height: 20),
 
                 // 🔸 Tabs
@@ -158,19 +156,37 @@ class _InicioSesionState extends State<InicioSesion>
 
                 const SizedBox(height: 20),
 
-                // 🔸 Botón
+                // 🔸 Botón LOGIN
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
-                      foregroundColor: Colors.white, // 🔥 FIX TEXTO
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      if (_tabController.index == 2) {
+                        // 🔥 ADMIN → navegar
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ScreenAdministrador(),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "Solo el administrador está habilitado por ahora",
+                            ),
+                          ),
+                        );
+                      }
+                    },
                     child: const Text("Iniciar sesión"),
                   ),
                 ),
@@ -318,23 +334,36 @@ class _InicioSesionState extends State<InicioSesion>
 
         const SizedBox(height: 20),
 
+        // 🔸 Botón LOGIN DESKTOP
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
-              foregroundColor: const Color.fromARGB(
-                255,
-                255,
-                255,
-                255,
-              ), // 🔥 FIX
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 15),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: () {},
+            onPressed: () {
+              if (_tabController.index == 2) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ScreenAdministrador(),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "Solo el administrador está habilitado por ahora",
+                    ),
+                  ),
+                );
+              }
+            },
             child: const Text("Iniciar sesión"),
           ),
         ),
