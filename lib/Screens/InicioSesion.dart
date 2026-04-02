@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'ScreenAdministrador.dart';
+import 'Administrador/DashboardAdmin.dart';
 
 class InicioSesion extends StatefulWidget {
   const InicioSesion({super.key});
@@ -8,366 +8,280 @@ class InicioSesion extends StatefulWidget {
   State<InicioSesion> createState() => _InicioSesionState();
 }
 
-class _InicioSesionState extends State<InicioSesion>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _InicioSesionState extends State<InicioSesion> {
+  int _selectedRole = 0;
+  final TextEditingController _curpController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-  final TextEditingController _userController = TextEditingController();
-  final TextEditingController _passController = TextEditingController();
+  final List<String> _roles = ['Alumno', 'Profesor', 'Administrativo'];
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-  }
+  String get _userFieldLabel => _selectedRole == 0 ? 'CURP' : 'Usuario';
 
   @override
   void dispose() {
-    _tabController.dispose();
-    _userController.dispose();
-    _passController.dispose();
+    _curpController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 700;
-
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 194, 194, 194),
-      body: SafeArea(child: isMobile ? _buildMobile() : _buildDesktop()),
-    );
-  }
+      backgroundColor: const Color(0xFFBDBDBD),
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 750),
+            child: Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  bool isMobile = constraints.maxWidth < 600;
 
-  // ================= MOBILE =================
-  Widget _buildMobile() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          // 🔹 HEADER VERDE
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 40),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(colors: [Colors.green, Colors.teal]),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(25),
-                bottomRight: Radius.circular(25),
+                  return isMobile
+                      ? Column(
+                          children: [
+                            _buildLeftPanel(isMobile),
+                            _buildRightPanel(isMobile),
+                          ],
+                        )
+                      : IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _buildLeftPanel(isMobile),
+                              _buildRightPanel(isMobile),
+                            ],
+                          ),
+                        );
+                },
               ),
             ),
-            child: const Column(
-              children: [
-                Icon(Icons.school, color: Colors.white, size: 60),
-                SizedBox(height: 10),
-                Text(
-                  "CARE",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  "Bienvenido al sistema académico",
-                  style: TextStyle(color: Colors.white70),
-                ),
-              ],
-            ),
           ),
-
-          // 🔹 FORMULARIO
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                const Text(
-                  "Inicio de sesión",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
-
-                // 🔸 Tabs
-                Container(
-                  height: 45,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: TabBar(
-                    controller: _tabController,
-                    indicator: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.black,
-                    dividerColor: Colors.transparent,
-                    tabs: const [
-                      Tab(text: "Alumno"),
-                      Tab(text: "Profesor"),
-                      Tab(text: "Administrativo"),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // 🔸 Campo dinámico
-                AnimatedBuilder(
-                  animation: _tabController,
-                  builder: (context, _) {
-                    String label = _tabController.index == 0
-                        ? "CURP"
-                        : "Usuario";
-
-                    return TextField(
-                      controller: _userController,
-                      decoration: InputDecoration(
-                        labelText: label,
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 15),
-
-                // 🔸 Contraseña
-                TextField(
-                  controller: _passController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: "Contraseña",
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // 🔸 Botón LOGIN
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () {
-                      if (_tabController.index == 2) {
-                        // 🔥 ADMIN → navegar
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ScreenAdministrador(),
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Solo el administrador está habilitado por ahora",
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    child: const Text("Iniciar sesión"),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  // ================= DESKTOP =================
-  Widget _buildDesktop() {
-    return Center(
+  // ──────── PANEL IZQUIERDO ────────
+  Widget _buildLeftPanel(bool isMobile) {
+    return Expanded(
+      flex: isMobile ? 0 : 5,
       child: Container(
-        width: 900,
-        height: 500,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
+        width: double.infinity,
+        height: isMobile ? 160 : null,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF4CAF50), Color(0xFF26A69A)],
+          ),
         ),
-        child: Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 🔹 IZQUIERDA
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(colors: [Colors.green, Colors.teal]),
-                  borderRadius: BorderRadius.horizontal(
-                    left: Radius.circular(15),
-                  ),
-                ),
-                child: const Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.school, color: Colors.white, size: 60),
-                      SizedBox(height: 10),
-                      Text(
-                        "CARE",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        "Bienvenido al sistema académico",
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                ),
+            Icon(
+              Icons.school_outlined,
+              size: isMobile ? 48 : 64,
+              color: Colors.white,
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'CARE',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
               ),
             ),
-
-            // 🔹 DERECHA
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(30),
-                child: _buildForm(),
+            if (!isMobile) ...[
+              const SizedBox(height: 8),
+              const Text(
+                'Bienvenido al sistema digital académico',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white70, fontSize: 13),
               ),
-            ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  // 🔹 FORM REUTILIZABLE
-  Widget _buildForm() {
+  // ──────── PANEL DERECHO ────────
+  Widget _buildRightPanel(bool isMobile) {
+    return Expanded(
+      flex: 6,
+      child: Container(
+        color: Colors.white,
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 20 : 36,
+          vertical: isMobile ? 20 : 30,
+        ),
+        child: isMobile
+            ? SingleChildScrollView(child: _buildFormContent())
+            : _buildFormContent(),
+      ),
+    );
+  }
+
+  // ──────── CONTENIDO DEL FORMULARIO ────────
+  Widget _buildFormContent() {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const Text(
-          "Inicio de sesión",
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          'Inicio de sesión',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF333333),
+          ),
         ),
         const SizedBox(height: 20),
 
-        // Tabs
-        Container(
-          height: 45,
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(25),
-          ),
-          child: TabBar(
-            controller: _tabController,
-            indicator: BoxDecoration(
-              color: Colors.green,
-              borderRadius: BorderRadius.circular(25),
-            ),
-            indicatorSize: TabBarIndicatorSize.tab,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.black,
-            dividerColor: Colors.transparent,
-            tabs: const [
-              Tab(text: "Alumno"),
-              Tab(text: "Profesor"),
-              Tab(text: "Administrativo"),
-            ],
-          ),
-        ),
-
+        _buildRoleSelector(),
         const SizedBox(height: 20),
 
-        // Campo dinámico
-        AnimatedBuilder(
-          animation: _tabController,
-          builder: (context, _) {
-            String label = _tabController.index == 0 ? "CURP" : "Usuario";
+        _buildTextField(controller: _curpController, label: _userFieldLabel),
+        const SizedBox(height: 12),
 
-            return TextField(
-              controller: _userController,
-              decoration: InputDecoration(
-                labelText: label,
-                filled: true,
-                fillColor: Colors.grey[100],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            );
-          },
+        _buildTextField(
+          controller: _passwordController,
+          label: 'Contraseña',
+          obscure: true,
         ),
-
-        const SizedBox(height: 15),
-
-        TextField(
-          controller: _passController,
-          obscureText: true,
-          decoration: InputDecoration(
-            labelText: "Contraseña",
-            filled: true,
-            fillColor: Colors.grey[100],
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-
         const SizedBox(height: 20),
 
-        // 🔸 Botón LOGIN DESKTOP
         SizedBox(
-          width: double.infinity,
+          height: 44,
           child: ElevatedButton(
+            onPressed: _onLogin,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
+              backgroundColor: const Color(0xFF4CAF50),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 15),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(24),
               ),
             ),
-            onPressed: () {
-              if (_tabController.index == 2) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ScreenAdministrador(),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      "Solo el administrador está habilitado por ahora",
-                    ),
-                  ),
-                );
-              }
-            },
-            child: const Text("Iniciar sesión"),
+            child: const Text('Iniciar sesión'),
           ),
         ),
       ],
+    );
+  }
+
+  // ──────── Selector de Rol ────────
+  Widget _buildRoleSelector() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.all(3),
+      child: Row(
+        children: List.generate(_roles.length, (index) {
+          final bool isSelected = _selectedRole == index;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedRole = index;
+                  _curpController.clear();
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFF4CAF50)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  _roles[index],
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFF666666),
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  // ──────── Campo de texto ────────
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    bool obscure = false,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      style: const TextStyle(fontSize: 14),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Color(0xFF999999), fontSize: 14),
+        filled: true,
+        fillColor: const Color(0xFFF9F9F9),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  // ──────── Login ────────
+  void _onLogin() {
+    // Administrativo -> navegar directamente al Dashboard
+    if (_selectedRole == 2) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const DashboardAdmin()),
+      );
+      return;
+    }
+
+    final String identifier = _curpController.text.trim();
+    final String password = _passwordController.text.trim();
+
+    if (identifier.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor completa todos los campos')),
+      );
+      return;
+    }
+
+    debugPrint(
+      'Rol: ${_roles[_selectedRole]}, ${_userFieldLabel}: $identifier, Contraseña: $password',
     );
   }
 }
