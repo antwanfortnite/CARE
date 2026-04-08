@@ -84,19 +84,26 @@ class _InicioSesionState extends State<InicioSesion> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.school_outlined,
-              size: isMobile ? 48 : 64,
-              color: Colors.white,
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'CARE',
-              style: TextStyle(
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
                 color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 12,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              padding: EdgeInsets.all(isMobile ? 10 : 14),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/images/logoCARE.png',
+                  width: isMobile ? 80 : 110,
+                  height: isMobile ? 80 : 110,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             if (!isMobile) ...[

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../InicioSesion.dart';
+import 'MaestrosAdmin.dart';
 
 class DashboardAdmin extends StatefulWidget {
   const DashboardAdmin({super.key});
@@ -72,17 +73,11 @@ class _DashboardAdminState extends State<DashboardAdmin> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4CAF50).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.school,
-                    color: Color(0xFF4CAF50),
-                    size: 22,
-                  ),
+                Image.asset(
+                  'assets/images/logoCARE.png',
+                  width: 38,
+                  height: 38,
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(width: 10),
                 const Column(
@@ -111,10 +106,26 @@ class _DashboardAdminState extends State<DashboardAdmin> {
             final item = _navItems[i];
             final isSelected = _selectedNavIndex == i;
             return InkWell(
-              onTap: () => setState(() => _selectedNavIndex = i),
+              onTap: () {
+                if (i == 1) {
+                  Navigator.pushReplacement(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (_, __, ___) => const MaestrosAdmin(),
+                      transitionDuration: Duration.zero,
+                      reverseTransitionDuration: Duration.zero,
+                    ),
+                  );
+                } else {
+                  setState(() => _selectedNavIndex = i);
+                }
+              },
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? const Color(0xFF4CAF50).withOpacity(0.08)
@@ -135,8 +146,9 @@ class _DashboardAdminState extends State<DashboardAdmin> {
                       item.label,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                         color: isSelected
                             ? const Color(0xFF4CAF50)
                             : const Color(0xFF555555),
@@ -144,10 +156,13 @@ class _DashboardAdminState extends State<DashboardAdmin> {
                     ),
                     if (isSelected) ...[
                       const Spacer(),
-                      const Text(')',
-                          style: TextStyle(
-                              color: Color(0xFF4CAF50),
-                              fontWeight: FontWeight.bold)),
+                      const Text(
+                        ')',
+                        style: TextStyle(
+                          color: Color(0xFF4CAF50),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ],
                 ),
@@ -167,12 +182,16 @@ class _DashboardAdminState extends State<DashboardAdmin> {
                 padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 child: Row(
                   children: [
-                    Icon(Icons.settings_outlined,
-                        size: 20, color: Color(0xFF888888)),
+                    Icon(
+                      Icons.settings_outlined,
+                      size: 20,
+                      color: Color(0xFF888888),
+                    ),
                     SizedBox(width: 12),
-                    Text('Ajustes',
-                        style:
-                            TextStyle(fontSize: 13, color: Color(0xFF555555))),
+                    Text(
+                      'Ajustes',
+                      style: TextStyle(fontSize: 13, color: Color(0xFF555555)),
+                    ),
                   ],
                 ),
               ),
@@ -186,8 +205,7 @@ class _DashboardAdminState extends State<DashboardAdmin> {
               onTap: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => const InicioSesion()),
+                  MaterialPageRoute(builder: (context) => const InicioSesion()),
                 );
               },
               borderRadius: BorderRadius.circular(10),
@@ -197,9 +215,10 @@ class _DashboardAdminState extends State<DashboardAdmin> {
                   children: [
                     Icon(Icons.logout, size: 20, color: Color(0xFFE53935)),
                     SizedBox(width: 12),
-                    Text('Cerrar Sesión',
-                        style:
-                            TextStyle(fontSize: 13, color: Color(0xFFE53935))),
+                    Text(
+                      'Cerrar Sesión',
+                      style: TextStyle(fontSize: 13, color: Color(0xFFE53935)),
+                    ),
                   ],
                 ),
               ),
@@ -238,8 +257,10 @@ class _DashboardAdminState extends State<DashboardAdmin> {
                     child: TextField(
                       decoration: InputDecoration(
                         hintText: 'Buscar alumnos, maestros o reportes...',
-                        hintStyle:
-                            TextStyle(fontSize: 13, color: Color(0xFF999999)),
+                        hintStyle: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF999999),
+                        ),
                         border: InputBorder.none,
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(vertical: 10),
@@ -270,8 +291,10 @@ class _DashboardAdminState extends State<DashboardAdmin> {
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 ),
                 SizedBox(width: 4),
-                Text('SUPERUSUARIO',
-                    style: TextStyle(fontSize: 9, color: Color(0xFF999999))),
+                Text(
+                  'SUPERUSUARIO',
+                  style: TextStyle(fontSize: 9, color: Color(0xFF999999)),
+                ),
                 SizedBox(width: 8),
                 CircleAvatar(
                   radius: 16,
@@ -332,14 +355,34 @@ class _DashboardAdminState extends State<DashboardAdmin> {
   // ──────── TARJETAS DE ESTADÍSTICAS ────────
   Widget _buildStatCards() {
     final stats = [
-      _StatData(Icons.people_outline, 'Total Alumnos', '1,284',
-          '+12%', const Color(0xFF4CAF50)),
-      _StatData(Icons.person_outline, 'Total Maestros', '86',
-          'Estable', const Color(0xFF26A69A)),
-      _StatData(Icons.grid_view, 'Grupos Activos', '42',
-          'Activos', const Color(0xFF4CAF50)),
-      _StatData(Icons.calendar_today_outlined, 'Próximas Clases', '12',
-          'Próximas', const Color(0xFF66BB6A)),
+      _StatData(
+        Icons.people_outline,
+        'Total Alumnos',
+        '1,284',
+        '+12%',
+        const Color(0xFF4CAF50),
+      ),
+      _StatData(
+        Icons.person_outline,
+        'Total Maestros',
+        '86',
+        'Estable',
+        const Color(0xFF26A69A),
+      ),
+      _StatData(
+        Icons.grid_view,
+        'Grupos Activos',
+        '42',
+        'Activos',
+        const Color(0xFF4CAF50),
+      ),
+      _StatData(
+        Icons.calendar_today_outlined,
+        'Próximas Clases',
+        '12',
+        'Próximas',
+        const Color(0xFF66BB6A),
+      ),
     ];
 
     return Row(
@@ -370,25 +413,29 @@ class _DashboardAdminState extends State<DashboardAdmin> {
                     Text(
                       s.badge,
                       style: TextStyle(
-                          fontSize: 11,
-                          color: s.color,
-                          fontWeight: FontWeight.w500),
+                        fontSize: 11,
+                        color: s.color,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 14),
                 Text(
                   s.label,
-                  style:
-                      const TextStyle(fontSize: 12, color: Color(0xFF888888)),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF888888),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   s.value,
                   style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF333333)),
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF333333),
+                  ),
                 ),
               ],
             ),
@@ -422,15 +469,20 @@ class _DashboardAdminState extends State<DashboardAdmin> {
                     const Text(
                       'Actividad Reciente',
                       style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF333333)),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF333333),
+                      ),
                     ),
                     TextButton(
                       onPressed: () {},
-                      child: const Text('Ver todo',
-                          style: TextStyle(
-                              color: Color(0xFF4CAF50), fontSize: 13)),
+                      child: const Text(
+                        'Ver todo',
+                        style: TextStyle(
+                          color: Color(0xFF4CAF50),
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -489,19 +541,32 @@ class _DashboardAdminState extends State<DashboardAdmin> {
                 const Text(
                   'Estado del Sistema',
                   style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF333333)),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF333333),
+                  ),
                 ),
                 const SizedBox(height: 20),
-                _systemBar('Capacidad Alumnos', 0.82, '82%',
-                    const Color(0xFF4CAF50)),
+                _systemBar(
+                  'Capacidad Alumnos',
+                  0.82,
+                  '82%',
+                  const Color(0xFF4CAF50),
+                ),
                 const SizedBox(height: 16),
-                _systemBar('Uso de Servidores', 0.45, '45%',
-                    const Color(0xFF4CAF50)),
+                _systemBar(
+                  'Uso de Servidores',
+                  0.45,
+                  '45%',
+                  const Color(0xFF4CAF50),
+                ),
                 const SizedBox(height: 16),
-                _systemBar('Documentación Digital', 0.96, '96%',
-                    const Color(0xFF4CAF50)),
+                _systemBar(
+                  'Documentación Digital',
+                  0.96,
+                  '96%',
+                  const Color(0xFF4CAF50),
+                ),
                 const SizedBox(height: 24),
                 // Imagen placeholder del servidor
                 ClipRRect(
@@ -516,18 +581,25 @@ class _DashboardAdminState extends State<DashboardAdmin> {
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.dns_outlined,
-                            size: 40, color: Color(0xFF4CAF50)),
+                        Icon(
+                          Icons.dns_outlined,
+                          size: 40,
+                          color: Color(0xFF4CAF50),
+                        ),
                         SizedBox(height: 8),
                         Text(
                           'Servidor Norte 4WS-2 (CDMX)',
-                          style:
-                              TextStyle(fontSize: 11, color: Color(0xFF666666)),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF666666),
+                          ),
                         ),
                         Text(
                           'Último respaldo 04:00 AM',
-                          style:
-                              TextStyle(fontSize: 10, color: Color(0xFF999999)),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF999999),
+                          ),
                         ),
                       ],
                     ),
@@ -541,8 +613,13 @@ class _DashboardAdminState extends State<DashboardAdmin> {
     );
   }
 
-  Widget _activityTile(IconData icon, Color color, String title,
-      String subtitle, String time) {
+  Widget _activityTile(
+    IconData icon,
+    Color color,
+    String title,
+    String subtitle,
+    String time,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -566,19 +643,28 @@ class _DashboardAdminState extends State<DashboardAdmin> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w600)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(subtitle,
-                    style: const TextStyle(
-                        fontSize: 11, color: Color(0xFF999999))),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF999999),
+                  ),
+                ),
               ],
             ),
           ),
-          Text(time,
-              style:
-                  const TextStyle(fontSize: 11, color: Color(0xFF999999))),
+          Text(
+            time,
+            style: const TextStyle(fontSize: 11, color: Color(0xFF999999)),
+          ),
         ],
       ),
     );
@@ -590,12 +676,18 @@ class _DashboardAdminState extends State<DashboardAdmin> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label,
-                style:
-                    const TextStyle(fontSize: 12, color: Color(0xFF666666))),
-            Text(percent,
-                style: TextStyle(
-                    fontSize: 12, color: color, fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 12, color: Color(0xFF666666)),
+            ),
+            Text(
+              percent,
+              style: TextStyle(
+                fontSize: 12,
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 6),
@@ -633,9 +725,10 @@ class _DashboardAdminState extends State<DashboardAdmin> {
                   Text(
                     'Calendario Institucional',
                     style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333)),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF333333),
+                    ),
                   ),
                   SizedBox(height: 4),
                   Text(
@@ -647,15 +740,20 @@ class _DashboardAdminState extends State<DashboardAdmin> {
               ElevatedButton.icon(
                 onPressed: () {},
                 icon: const Icon(Icons.add, size: 18),
-                label: const Text('Nuevo Evento',
-                    style: TextStyle(fontSize: 13)),
+                label: const Text(
+                  'Nuevo Evento',
+                  style: TextStyle(fontSize: 13),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4CAF50),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ],
@@ -693,8 +791,13 @@ class _DashboardAdminState extends State<DashboardAdmin> {
     );
   }
 
-  Widget _eventCard(String day, String month, String title, String desc,
-      Color accentColor) {
+  Widget _eventCard(
+    String day,
+    String month,
+    String title,
+    String desc,
+    Color accentColor,
+  ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -708,16 +811,22 @@ class _DashboardAdminState extends State<DashboardAdmin> {
           children: [
             Column(
               children: [
-                Text(day,
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: accentColor)),
-                Text(month,
-                    style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: accentColor)),
+                Text(
+                  day,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: accentColor,
+                  ),
+                ),
+                Text(
+                  month,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: accentColor,
+                  ),
+                ),
               ],
             ),
             const SizedBox(width: 14),
@@ -725,15 +834,22 @@ class _DashboardAdminState extends State<DashboardAdmin> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(desc,
-                      style: const TextStyle(
-                          fontSize: 11,
-                          color: Color(0xFF999999),
-                          height: 1.4)),
+                  Text(
+                    desc,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF999999),
+                      height: 1.4,
+                    ),
+                  ),
                 ],
               ),
             ),
