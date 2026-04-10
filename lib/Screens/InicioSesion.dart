@@ -288,7 +288,7 @@ class _InicioSesionState extends State<InicioSesion> {
     }
 
     debugPrint(
-      'Rol: ${_roles[_selectedRole]}, ${_userFieldLabel}: $identifier, Contraseña: $password',
+      'Rol: ${_roles[_selectedRole]}, $_userFieldLabel: $identifier, Contraseña: $password',
     );
   }
 }

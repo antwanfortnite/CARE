@@ -54,7 +54,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const DashboardAdmin(),
+          pageBuilder: (_, _, _) => const DashboardAdmin(),
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
         ),

@@ -35,7 +35,7 @@ class _DashboardAdminState extends State<DashboardAdmin> {
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const MaestrosAdmin(),
+          pageBuilder: (_, _, _) => const MaestrosAdmin(),
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
         ),
