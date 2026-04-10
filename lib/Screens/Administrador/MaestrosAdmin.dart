@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'AdminScaffold.dart';
 import 'DashboardAdmin.dart';
-import '../InicioSesion.dart';
 
 class MaestrosAdmin extends StatefulWidget {
   const MaestrosAdmin({super.key});
@@ -12,31 +12,44 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
   int _currentPage = 1;
   final int _totalPages = 3;
   final TextEditingController _searchController = TextEditingController();
-  int _selectedNavIndex = 1;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  final List<_NavItem> _navItems = [
-    _NavItem(Icons.dashboard_outlined, 'Dashboard'),
-    _NavItem(Icons.school_outlined, 'Maestros'),
-    _NavItem(Icons.person_outline, 'Alumnos'),
-    _NavItem(Icons.group_outlined, 'Groups'),
-    _NavItem(Icons.menu_book_outlined, 'Materias'),
-    _NavItem(Icons.admin_panel_settings_outlined, 'Administradores'),
-  ];
 
   final List<_TeacherData> _teachers = [
-    _TeacherData('Julián Sánchez', 'julian.sanchez@care.edu.mx', 'JS',
-        const Color(0xFF7E57C2), 'SACJ850101HDHNLR00', 3),
-    _TeacherData('Rosa María Moreno', 'rosa.moreno@care.edu.mx', 'RM',
-        const Color(0xFF4CAF50), 'MORR900215MDFRSN01', 5),
-    _TeacherData('Alberto González', 'alberto.gonz@care.edu.mx', 'AG',
-        const Color(0xFF26A69A), 'GOAA880520HDFLBL02', 2),
-    _TeacherData('Elena Ledesma', 'elena.l@care.edu.mx', 'EL',
-        const Color(0xFFE91E63), 'LEDE930312MDFLDN03', 4),
+    _TeacherData(
+      'Julián Sánchez',
+      'julian.sanchez@care.edu.mx',
+      'JS',
+      const Color(0xFF7E57C2),
+      'SACJ850101HDHNLR00',
+      3,
+    ),
+    _TeacherData(
+      'Rosa María Moreno',
+      'rosa.moreno@care.edu.mx',
+      'RM',
+      const Color(0xFF4CAF50),
+      'MORR900215MDFRSN01',
+      5,
+    ),
+    _TeacherData(
+      'Alberto González',
+      'alberto.gonz@care.edu.mx',
+      'AG',
+      const Color(0xFF26A69A),
+      'GOAA880520HDFLBL02',
+      2,
+    ),
+    _TeacherData(
+      'Elena Ledesma',
+      'elena.l@care.edu.mx',
+      'EL',
+      const Color(0xFFE91E63),
+      'LEDE930312MDFLDN03',
+      4,
+    ),
   ];
 
   bool _isMobile(BuildContext context) =>
-      MediaQuery.of(context).size.width < 700;
+      MediaQuery.of(context).size.width < 1050;
 
   @override
   void dispose() {
@@ -44,282 +57,15 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     super.dispose();
   }
 
-  void _onNavTap(int i) {
-    // Close drawer first if open
-    if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
-      _scaffoldKey.currentState?.closeDrawer();
-    }
-
-    if (i == 0) {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (_, _, _) => const DashboardAdmin(),
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: Duration.zero,
-        ),
-      );
-    } else {
-      setState(() => _selectedNavIndex = i);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final mobile = _isMobile(context);
 
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF4F6F3),
-      drawer: mobile
-          ? Drawer(
-              backgroundColor: const Color(0xFFF4F6F3),
-              child: SafeArea(child: _buildSidebarContent()),
-            )
-          : null,
-      body: SafeArea(
-        child: Row(
-          children: [
-            if (!mobile) _buildSidebar(),
-            Expanded(
-              child: Column(
-                children: [
-                  _buildTopBar(mobile),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.all(mobile ? 16 : 28),
-                      child: _buildContent(mobile),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ──────── SIDEBAR ────────
-  Widget _buildSidebar() {
-    return Container(
-      width: 220,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF4F6F3),
-        border:
-            Border(right: BorderSide(color: Color(0xFFE8E8E8), width: 0.5)),
-      ),
-      child: _buildSidebarContent(),
-    );
-  }
-
-  Widget _buildSidebarContent() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 28),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset('assets/images/logoCARE.png',
-                  width: 38, height: 38, fit: BoxFit.contain),
-              const SizedBox(width: 10),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('CARE',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Color(0xFF333333))),
-                  Text('Santuario Académico',
-                      style:
-                          TextStyle(fontSize: 10, color: Color(0xFF999999))),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        ...List.generate(_navItems.length, (i) {
-          final item = _navItems[i];
-          final isSelected = _selectedNavIndex == i;
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => _onNavTap(i),
-                borderRadius: BorderRadius.circular(28),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 18, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? const Color(0xFF4CAF50)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(item.icon,
-                          size: 20,
-                          color: isSelected
-                              ? Colors.white
-                              : const Color(0xFF555555)),
-                      const SizedBox(width: 12),
-                      Flexible(
-                        child: Text(item.label,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
-                              color: isSelected
-                                  ? Colors.white
-                                  : const Color(0xFF555555),
-                            )),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        }),
-        const Spacer(),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {},
-              borderRadius: BorderRadius.circular(28),
-              child: const Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                child: Row(children: [
-                  Icon(Icons.settings_outlined,
-                      size: 20, color: Color(0xFF555555)),
-                  SizedBox(width: 12),
-                  Text('Ajustes',
-                      style: TextStyle(
-                          fontSize: 14, color: Color(0xFF555555))),
-                ]),
-              ),
-            ),
-          ),
-        ),
-        Padding(
-          padding:
-              const EdgeInsets.only(left: 16, right: 16, bottom: 24),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => const InicioSesion())),
-              borderRadius: BorderRadius.circular(28),
-              child: const Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                child: Row(children: [
-                  Icon(Icons.logout,
-                      size: 20, color: Color(0xFFE53935)),
-                  SizedBox(width: 12),
-                  Text('Cerrar Sesión',
-                      style: TextStyle(
-                          fontSize: 14, color: Color(0xFFE53935))),
-                ]),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ──────── TOP BAR ────────
-  Widget _buildTopBar(bool isMobile) {
-    return Container(
-      height: 64,
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE8E8E8))),
-      ),
-      child: Row(
-        children: [
-          if (isMobile)
-            IconButton(
-              onPressed: () =>
-                  _scaffoldKey.currentState?.openDrawer(),
-              icon: const Icon(Icons.menu,
-                  size: 24, color: Color(0xFF555555)),
-            ),
-          Expanded(
-            child: Text(
-              _navItems[_selectedNavIndex].label,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF333333),
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          if (!isMobile) ...[
-            IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.chat_bubble_outline,
-                    size: 22, color: Color(0xFF555555))),
-            IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.notifications_outlined,
-                    size: 22, color: Color(0xFF555555))),
-            const SizedBox(width: 8),
-          ],
-          if (!isMobile)
-            Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
-                  borderRadius: BorderRadius.circular(20)),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Admin Principal',
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600)),
-                  SizedBox(width: 4),
-                  Text('SUPERUSUARIO',
-                      style: TextStyle(
-                          fontSize: 9, color: Color(0xFF999999))),
-                  SizedBox(width: 8),
-                  CircleAvatar(
-                      radius: 16,
-                      backgroundColor: Color(0xFF4CAF50),
-                      child: Icon(Icons.person,
-                          size: 18, color: Colors.white)),
-                ],
-              ),
-            ),
-          if (isMobile) ...[
-            IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.notifications_outlined,
-                    size: 22, color: Color(0xFF555555))),
-            const CircleAvatar(
-                radius: 16,
-                backgroundColor: Color(0xFF4CAF50),
-                child: Icon(Icons.person,
-                    size: 18, color: Colors.white)),
-          ],
-        ],
-      ),
+    return AdminScaffold(
+      selectedIndex: 1,
+      destinations: {0: (_) => const DashboardAdmin()},
+      bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
+      body: _buildContent(mobile),
     );
   }
 
@@ -342,16 +88,19 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Gestión de Maestros',
-              style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF333333))),
+          const Text(
+            'Gestión de Maestros',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF333333),
+            ),
+          ),
           const SizedBox(height: 4),
           const Text(
-              'Administración central de la facultad académica.',
-              style: TextStyle(
-                  fontSize: 14, color: Color(0xFF888888))),
+            'Administración central de la facultad académica.',
+            style: TextStyle(fontSize: 14, color: Color(0xFF888888)),
+          ),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
@@ -363,9 +112,12 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                 backgroundColor: const Color(0xFF4CAF50),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 14),
+                  horizontal: 20,
+                  vertical: 14,
+                ),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
           ),
@@ -381,16 +133,19 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Gestión de Maestros',
-                  style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF333333))),
+              Text(
+                'Gestión de Maestros',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF333333),
+                ),
+              ),
               SizedBox(height: 4),
               Text(
-                  'Administración central de la facultad académica.',
-                  style: TextStyle(
-                      fontSize: 14, color: Color(0xFF888888))),
+                'Administración central de la facultad académica.',
+                style: TextStyle(fontSize: 14, color: Color(0xFF888888)),
+              ),
             ],
           ),
         ),
@@ -402,10 +157,10 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF4CAF50),
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(
-                horizontal: 20, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         ),
       ],
@@ -426,38 +181,44 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.filter_list,
-                    color: Color(0xFF999999)),
+                prefixIcon: const Icon(
+                  Icons.filter_list,
+                  color: Color(0xFF999999),
+                ),
                 hintText: 'Filtrar por nombre o CURP...',
                 hintStyle: const TextStyle(
-                    fontSize: 13, color: Color(0xFF999999)),
+                  fontSize: 13,
+                  color: Color(0xFF999999),
+                ),
                 border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                        color: Color(0xFFE8E8E8))),
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
+                ),
                 enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                        color: Color(0xFFE8E8E8))),
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
+                ),
                 focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                        color: Color(0xFF4CAF50))),
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFF4CAF50)),
+                ),
                 contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12),
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
             ),
           ),
           const SizedBox(width: 12),
           Container(
             decoration: BoxDecoration(
-                border:
-                    Border.all(color: const Color(0xFFE8E8E8)),
-                borderRadius: BorderRadius.circular(10)),
+              border: Border.all(color: const Color(0xFFE8E8E8)),
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.refresh,
-                    color: Color(0xFF888888))),
+              onPressed: () {},
+              icon: const Icon(Icons.refresh, color: Color(0xFF888888)),
+            ),
           ),
         ],
       ),
@@ -499,31 +260,38 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
             children: [
               CircleAvatar(
                 radius: 22,
-                backgroundColor:
-                    t.avatarColor.withOpacity(0.15),
-                child: Text(t.initials,
-                    style: TextStyle(
-                        color: t.avatarColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14)),
+                backgroundColor: t.avatarColor.withOpacity(0.15),
+                child: Text(
+                  t.initials,
+                  style: TextStyle(
+                    color: t.avatarColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(t.name,
-                        style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF333333))),
+                    Text(
+                      t.name,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(t.email,
-                        style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF999999)),
-                        overflow: TextOverflow.ellipsis),
+                    Text(
+                      t.email,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF999999),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),
@@ -532,40 +300,56 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(Icons.badge_outlined,
-                  size: 14, color: Color(0xFF888888)),
+              const Icon(
+                Icons.badge_outlined,
+                size: 14,
+                color: Color(0xFF888888),
+              ),
               const SizedBox(width: 6),
               Expanded(
-                child: Text(t.curp,
-                    style: const TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF555555)),
-                    overflow: TextOverflow.ellipsis),
-              ),
-              Text('${t.groups} Grupos',
+                child: Text(
+                  t.curp,
                   style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF4CAF50),
-                      fontWeight: FontWeight.w500)),
+                    fontSize: 11,
+                    color: Color(0xFF555555),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Text(
+                '${t.groups} Grupos',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF4CAF50),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              _actionBtn(Icons.edit_outlined,
-                  const Color(0xFF42A5F5), 'Modificar',
-                  () => _showEditTeacherDialog(t)),
+              _actionBtn(
+                Icons.edit_outlined,
+                const Color(0xFF42A5F5),
+                'Modificar',
+                () => _showEditTeacherDialog(t),
+              ),
               const SizedBox(width: 8),
               _actionBtn(
-                  Icons.menu_book_outlined,
-                  const Color(0xFF4CAF50),
-                  'Asignar materias',
-                  () => _showAssignSubjectsDialog(t)),
+                Icons.menu_book_outlined,
+                const Color(0xFF4CAF50),
+                'Asignar materias',
+                () => _showAssignSubjectsDialog(t),
+              ),
               const SizedBox(width: 8),
-              _actionBtn(Icons.delete_outline,
-                  const Color(0xFFEF5350), 'Eliminar',
-                  () => _showDeleteDialog(t)),
+              _actionBtn(
+                Icons.delete_outline,
+                const Color(0xFFEF5350),
+                'Eliminar',
+                () => _showDeleteDialog(t),
+              ),
             ],
           ),
         ],
@@ -581,37 +365,70 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE8E8E8)),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 24, vertical: 16),
-            child: Row(children: [
-              Expanded(
-                  flex: 3,
-                  child: Text('NOMBRE DEL MAESTRO',
-                      style: _headerStyle)),
-              Expanded(
-                  flex: 2,
-                  child: Text('CURP', style: _headerStyle)),
-              Expanded(
-                  flex: 2,
-                  child: Text('GRUPOS ASIGNADOS',
-                      style: _headerStyle)),
-              Expanded(
-                  flex: 2,
-                  child: Text('ACCIONES',
-                      style: _headerStyle,
-                      textAlign: TextAlign.center)),
-            ]),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final tableWidth = constraints.maxWidth < 800
+                  ? 800.0
+                  : constraints.maxWidth;
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: tableWidth,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Text(
+                                'NOMBRE DEL MAESTRO',
+                                style: _headerStyle,
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text('CURP', style: _headerStyle),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                'GRUPOS ASIGNADOS',
+                                style: _headerStyle,
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                'ACCIONES',
+                                style: _headerStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Divider(height: 1, color: Color(0xFFF0F0F0)),
+                      ...List.generate(
+                        _teachers.length,
+                        (i) => _buildTeacherRow(_teachers[i]),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
           const Divider(height: 1, color: Color(0xFFF0F0F0)),
-          ...List.generate(_teachers.length,
-              (i) => _buildTeacherRow(_teachers[i])),
-          const Divider(height: 1, color: Color(0xFFF0F0F0)),
           Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 24, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: _buildPaginationContent(),
           ),
         ],
@@ -620,97 +437,119 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
   }
 
   TextStyle get _headerStyle => const TextStyle(
-      fontSize: 11,
-      fontWeight: FontWeight.w600,
-      color: Color(0xFF999999),
-      letterSpacing: 0.5);
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    color: Color(0xFF999999),
+    letterSpacing: 0.5,
+  );
 
   Widget _buildTeacherRow(_TeacherData t) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-          horizontal: 24, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       decoration: const BoxDecoration(
-          border: Border(
-              bottom: BorderSide(color: Color(0xFFF5F5F5)))),
-      child: Row(children: [
-        Expanded(
-          flex: 3,
-          child: Row(children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundColor:
-                  t.avatarColor.withOpacity(0.15),
-              child: Text(t.initials,
-                  style: TextStyle(
+        border: Border(bottom: BorderSide(color: Color(0xFFF5F5F5))),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: t.avatarColor.withOpacity(0.15),
+                  child: Text(
+                    t.initials,
+                    style: TextStyle(
                       color: t.avatarColor,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14)),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                  children: [
-                    Text(t.name,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        t.name,
                         style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF333333)),
-                        overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 2),
-                    Text(t.email,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF333333),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        t.email,
                         style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF999999)),
-                        overflow: TextOverflow.ellipsis),
-                  ]),
+                          fontSize: 12,
+                          color: Color(0xFF999999),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ]),
-        ),
-        Expanded(
-          flex: 2,
-          child: Text(t.curp,
-              style: const TextStyle(
-                  fontSize: 11, color: Color(0xFF555555)),
-              overflow: TextOverflow.ellipsis),
-        ),
-        Expanded(
-          flex: 2,
-          child: Text('${t.groups} Grupos',
-              style: const TextStyle(
-                  fontSize: 13, color: Color(0xFF555555))),
-        ),
-        Expanded(
-          flex: 2,
-          child: Row(
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              t.curp,
+              style: const TextStyle(fontSize: 11, color: Color(0xFF555555)),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              '${t.groups} Grupos',
+              style: const TextStyle(fontSize: 13, color: Color(0xFF555555)),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _actionBtn(
-                    Icons.edit_outlined,
-                    const Color(0xFF42A5F5),
-                    'Modificar',
-                    () => _showEditTeacherDialog(t)),
+                  Icons.edit_outlined,
+                  const Color(0xFF42A5F5),
+                  'Modificar',
+                  () => _showEditTeacherDialog(t),
+                ),
                 const SizedBox(width: 8),
                 _actionBtn(
-                    Icons.menu_book_outlined,
-                    const Color(0xFF4CAF50),
-                    'Asignar materias',
-                    () => _showAssignSubjectsDialog(t)),
+                  Icons.menu_book_outlined,
+                  const Color(0xFF4CAF50),
+                  'Asignar materias',
+                  () => _showAssignSubjectsDialog(t),
+                ),
                 const SizedBox(width: 8),
                 _actionBtn(
-                    Icons.delete_outline,
-                    const Color(0xFFEF5350),
-                    'Eliminar',
-                    () => _showDeleteDialog(t)),
-              ]),
-        ),
-      ]),
+                  Icons.delete_outline,
+                  const Color(0xFFEF5350),
+                  'Eliminar',
+                  () => _showDeleteDialog(t),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _actionBtn(IconData icon, Color color,
-      String tooltip, VoidCallback onTap) {
+  Widget _actionBtn(
+    IconData icon,
+    Color color,
+    String tooltip,
+    VoidCallback onTap,
+  ) {
     return Tooltip(
       message: tooltip,
       child: InkWell(
@@ -719,8 +558,9 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-              color: color.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(8)),
+            color: color.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: Icon(icon, size: 18, color: color),
         ),
       ),
@@ -733,35 +573,43 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
       children: [
         Flexible(
           child: Text(
-              'Mostrando ${_teachers.length} de 124 maestros',
-              style: const TextStyle(
-                  fontSize: 12, color: Color(0xFF999999)),
-              overflow: TextOverflow.ellipsis),
+            'Mostrando ${_teachers.length} de 124 maestros',
+            style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
-        Row(children: [
-          _pageBtn('‹',
+        Row(
+          children: [
+            _pageBtn(
+              '‹',
               enabled: _currentPage > 1,
-              onTap: () =>
-                  setState(() => _currentPage--)),
-          ...List.generate(
+              onTap: () => setState(() => _currentPage--),
+            ),
+            ...List.generate(
               _totalPages,
-              (i) => _pageBtn('${i + 1}',
-                  isSelected: i + 1 == _currentPage,
-                  onTap: () => setState(
-                      () => _currentPage = i + 1))),
-          _pageBtn('›',
+              (i) => _pageBtn(
+                '${i + 1}',
+                isSelected: i + 1 == _currentPage,
+                onTap: () => setState(() => _currentPage = i + 1),
+              ),
+            ),
+            _pageBtn(
+              '›',
               enabled: _currentPage < _totalPages,
-              onTap: () =>
-                  setState(() => _currentPage++)),
-        ]),
+              onTap: () => setState(() => _currentPage++),
+            ),
+          ],
+        ),
       ],
     );
   }
 
-  Widget _pageBtn(String label,
-      {bool isSelected = false,
-      bool enabled = true,
-      VoidCallback? onTap}) {
+  Widget _pageBtn(
+    String label, {
+    bool isSelected = false,
+    bool enabled = true,
+    VoidCallback? onTap,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2),
       child: InkWell(
@@ -772,27 +620,24 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
           height: 32,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFF4CAF50)
-                : Colors.transparent,
+            color: isSelected ? const Color(0xFF4CAF50) : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: isSelected
                 ? null
-                : Border.all(
-                    color: const Color(0xFFE8E8E8)),
+                : Border.all(color: const Color(0xFFE8E8E8)),
           ),
-          child: Text(label,
-              style: TextStyle(
-                fontSize: 13,
-                color: isSelected
-                    ? Colors.white
-                    : (enabled
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              color: isSelected
+                  ? Colors.white
+                  : (enabled
                         ? const Color(0xFF555555)
                         : const Color(0xFFCCCCCC)),
-                fontWeight: isSelected
-                    ? FontWeight.w600
-                    : FontWeight.normal,
-              )),
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
         ),
       ),
     );
@@ -800,98 +645,161 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
 
   // ──────── HELPER: dialog text field ────────
   Widget _dialogLabel(String text) {
-    return Text(text,
-        style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF555555),
-            letterSpacing: 0.5));
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF555555),
+        letterSpacing: 0.5,
+      ),
+    );
   }
 
-  Widget _dialogTextField(
-      {required TextEditingController controller,
-      required String hint,
-      required IconData icon}) {
+  Widget _dialogTextField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+  }) {
     return TextField(
       controller: controller,
       style: const TextStyle(fontSize: 13),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(
-            fontSize: 13, color: Color(0xFFBBBBBB)),
-        suffixIcon: Icon(icon,
-            size: 18, color: const Color(0xFF999999)),
+        hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
+        suffixIcon: Icon(icon, size: 18, color: const Color(0xFF999999)),
         filled: true,
         fillColor: const Color(0xFFF9F9F9),
         contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14, vertical: 14),
+          horizontal: 14,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide:
-                const BorderSide(color: Color(0xFFE0E0E0))),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+        ),
         enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide:
-                const BorderSide(color: Color(0xFFE0E0E0))),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+        ),
         focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide:
-                const BorderSide(color: Color(0xFF4CAF50))),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Color(0xFF4CAF50)),
+        ),
       ),
     );
   }
 
+  // ──────── HELPERS: fecha de nacimiento & edad ────────
+  int _calculateAge(DateTime birthDate) {
+    final now = DateTime.now();
+    int age = now.year - birthDate.year;
+    if (now.month < birthDate.month ||
+        (now.month == birthDate.month && now.day < birthDate.day)) {
+      age--;
+    }
+    return age;
+  }
+
+  Future<void> _pickBirthDate(
+    BuildContext ctx,
+    TextEditingController birthDateCtrl,
+    TextEditingController ageCtrl,
+    void Function(VoidCallback) setDlg,
+  ) async {
+    final picked = await showDatePicker(
+      context: ctx,
+      initialDate: DateTime(2000),
+      firstDate: DateTime(1940),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF4CAF50),
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Color(0xFF333333),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      final day = picked.day.toString().padLeft(2, '0');
+      final month = picked.month.toString().padLeft(2, '0');
+      setDlg(() {
+        birthDateCtrl.text = '$day/$month/${picked.year}';
+        ageCtrl.text = '${_calculateAge(picked)} años';
+      });
+    }
+  }
+
   // ──────── DIALOG: header reutilizable ────────
-  Widget _dialogHeader(
-      {required IconData icon,
-      required String subtitle,
-      required String title,
-      required BuildContext ctx}) {
+  Widget _dialogHeader({
+    required IconData icon,
+    required String subtitle,
+    required String title,
+    required BuildContext ctx,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: const BoxDecoration(
-          gradient: LinearGradient(
-              colors: [Color(0xFF2E7D32), Color(0xFF388E3C)])),
-      child: Row(children: [
-        Expanded(
-          child: Column(
+        gradient: LinearGradient(
+          colors: [Color(0xFF2E7D32), Color(0xFF388E3C)],
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: [
-                  Icon(icon, size: 16, color: Colors.white70),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(subtitle,
+                Row(
+                  children: [
+                    Icon(icon, size: 16, color: Colors.white70),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        subtitle,
                         style: TextStyle(
-                            fontSize: 11,
-                            color:
-                                Colors.white.withOpacity(0.8),
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1),
-                        overflow: TextOverflow.ellipsis),
-                  ),
-                ]),
+                          fontSize: 11,
+                          color: Colors.white.withOpacity(0.8),
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 8),
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white)),
-              ]),
-        ),
-        IconButton(
-          onPressed: () => Navigator.pop(ctx),
-          icon: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(6)),
-            child: const Icon(Icons.close,
-                color: Colors.white, size: 18),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ]),
+          IconButton(
+            onPressed: () => Navigator.pop(ctx),
+            icon: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(Icons.close, color: Colors.white, size: 18),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -902,106 +810,260 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     required TextEditingController phoneCtrl,
     required TextEditingController curpCtrl,
     required TextEditingController dateCtrl,
+    required TextEditingController birthDateCtrl,
+    required TextEditingController ageCtrl,
+    required VoidCallback onPickBirthDate,
     required bool isMobile,
   }) {
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _dialogLabel('NOMBRE COMPLETO'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _dialogLabel('NOMBRE COMPLETO'),
+          const SizedBox(height: 6),
+          _dialogTextField(
+            controller: nameCtrl,
+            hint: 'Ej. Dr. Armando Casas',
+            icon: Icons.person_outline,
+          ),
+          const SizedBox(height: 16),
+          if (isMobile) ...[
+            _dialogLabel('CORREO ELECTRÓNICO'),
             const SizedBox(height: 6),
             _dialogTextField(
-                controller: nameCtrl,
-                hint: 'Ej. Dr. Armando Casas',
-                icon: Icons.person_outline),
+              controller: emailCtrl,
+              hint: 'maestro@care.edu',
+              icon: Icons.alternate_email,
+            ),
             const SizedBox(height: 16),
-            if (isMobile) ...[
-              _dialogLabel('CORREO ELECTRÓNICO'),
-              const SizedBox(height: 6),
-              _dialogTextField(
-                  controller: emailCtrl,
-                  hint: 'maestro@care.edu',
-                  icon: Icons.alternate_email),
-              const SizedBox(height: 16),
-              _dialogLabel('TELÉFONO'),
-              const SizedBox(height: 6),
-              _dialogTextField(
-                  controller: phoneCtrl,
-                  hint: '+52 000 000 0000',
-                  icon: Icons.phone_outlined),
-              const SizedBox(height: 16),
-              _dialogLabel('CURP'),
-              const SizedBox(height: 6),
-              _dialogTextField(
-                  controller: curpCtrl,
-                  hint: 'XXXX000000XXXXXXXX',
-                  icon: Icons.badge_outlined),
-              const SizedBox(height: 16),
-              _dialogLabel('FECHA DE CONTRATACIÓN'),
-              const SizedBox(height: 6),
-              _dialogTextField(
-                  controller: dateCtrl,
-                  hint: 'mm/dd/yyyy',
-                  icon: Icons.calendar_today_outlined),
-            ] else ...[
-              Row(children: [
+            _dialogLabel('TELÉFONO'),
+            const SizedBox(height: 6),
+            _dialogTextField(
+              controller: phoneCtrl,
+              hint: '+52 000 000 0000',
+              icon: Icons.phone_outlined,
+            ),
+            const SizedBox(height: 16),
+            _dialogLabel('CURP'),
+            const SizedBox(height: 6),
+            _dialogTextField(
+              controller: curpCtrl,
+              hint: 'XXXX000000XXXXXXXX',
+              icon: Icons.badge_outlined,
+            ),
+            const SizedBox(height: 16),
+            _dialogLabel('FECHA DE CONTRATACIÓN'),
+            const SizedBox(height: 6),
+            _dialogTextField(
+              controller: dateCtrl,
+              hint: 'mm/dd/yyyy',
+              icon: Icons.calendar_today_outlined,
+            ),
+          ] else ...[
+            Row(
+              children: [
                 Expanded(
-                    child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        children: [
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       _dialogLabel('CORREO ELECTRÓNICO'),
                       const SizedBox(height: 6),
                       _dialogTextField(
-                          controller: emailCtrl,
-                          hint: 'maestro@care.edu',
-                          icon: Icons.alternate_email),
-                    ])),
+                        controller: emailCtrl,
+                        hint: 'maestro@care.edu',
+                        icon: Icons.alternate_email,
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
-                    child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        children: [
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       _dialogLabel('TELÉFONO'),
                       const SizedBox(height: 6),
                       _dialogTextField(
-                          controller: phoneCtrl,
-                          hint: '+52 000 000 0000',
-                          icon: Icons.phone_outlined),
-                    ])),
-              ]),
-              const SizedBox(height: 16),
-              Row(children: [
+                        controller: phoneCtrl,
+                        hint: '+52 000 000 0000',
+                        icon: Icons.phone_outlined,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
                 Expanded(
-                    child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        children: [
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       _dialogLabel('CURP'),
                       const SizedBox(height: 6),
                       _dialogTextField(
-                          controller: curpCtrl,
-                          hint: 'XXXX000000XXXXXXXX',
-                          icon: Icons.badge_outlined),
-                    ])),
+                        controller: curpCtrl,
+                        hint: 'XXXX000000XXXXXXXX',
+                        icon: Icons.badge_outlined,
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
-                    child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        children: [
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       _dialogLabel('FECHA DE CONTRATACIÓN'),
                       const SizedBox(height: 6),
                       _dialogTextField(
-                          controller: dateCtrl,
-                          hint: 'mm/dd/yyyy',
-                          icon: Icons.calendar_today_outlined),
-                    ])),
-              ]),
-            ],
-          ]),
+                        controller: dateCtrl,
+                        hint: 'mm/dd/yyyy',
+                        icon: Icons.calendar_today_outlined,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 16),
+          if (isMobile) ...[
+            _dialogLabel('FECHA DE NACIMIENTO'),
+            const SizedBox(height: 6),
+            GestureDetector(
+              onTap: onPickBirthDate,
+              child: AbsorbPointer(
+                child: _dialogTextField(
+                  controller: birthDateCtrl,
+                  hint: 'Seleccione una fecha',
+                  icon: Icons.cake_outlined,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            _dialogLabel('EDAD'),
+            const SizedBox(height: 6),
+            TextField(
+              controller: ageCtrl,
+              readOnly: true,
+              enabled: false,
+              style: const TextStyle(fontSize: 13, color: Color(0xFF555555)),
+              decoration: InputDecoration(
+                hintText: 'Se calcula automáticamente',
+                hintStyle: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFFBBBBBB),
+                ),
+                suffixIcon: const Icon(
+                  Icons.hourglass_bottom,
+                  size: 18,
+                  color: Color(0xFF999999),
+                ),
+                filled: true,
+                fillColor: const Color(0xFFEFEFEF),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                ),
+                disabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                ),
+              ),
+            ),
+          ] else ...[
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _dialogLabel('FECHA DE NACIMIENTO'),
+                      const SizedBox(height: 6),
+                      GestureDetector(
+                        onTap: onPickBirthDate,
+                        child: AbsorbPointer(
+                          child: _dialogTextField(
+                            controller: birthDateCtrl,
+                            hint: 'Seleccione una fecha',
+                            icon: Icons.cake_outlined,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _dialogLabel('EDAD'),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: ageCtrl,
+                        readOnly: true,
+                        enabled: false,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF555555),
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Se calcula automáticamente',
+                          hintStyle: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFFBBBBBB),
+                          ),
+                          suffixIcon: const Icon(
+                            Icons.hourglass_bottom,
+                            size: 18,
+                            color: Color(0xFF999999),
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFEFEFEF),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 14,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E0E0),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E0E0),
+                            ),
+                          ),
+                          disabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E0E0),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -1012,79 +1074,91 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
         e = TextEditingController(),
         p = TextEditingController(),
         c = TextEditingController(),
-        d = TextEditingController();
+        d = TextEditingController(),
+        bd = TextEditingController(),
+        age = TextEditingController();
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16)),
-        insetPadding: EdgeInsets.symmetric(
-            horizontal: mobile ? 16 : 40, vertical: 24),
-        child: Container(
-          width: mobile ? double.infinity : 500,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16)),
-          child: SingleChildScrollView(
-            child: Column(
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlg) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: mobile ? 16 : 40,
+            vertical: 24,
+          ),
+          child: Container(
+            width: mobile ? double.infinity : 500,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+            child: SingleChildScrollView(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _dialogHeader(
-                      icon: Icons.person_add,
-                      subtitle: 'PERSONAL DOCENTE',
-                      title: 'Agregar Nuevo Maestro',
-                      ctx: ctx),
+                    icon: Icons.person_add,
+                    subtitle: 'PERSONAL DOCENTE',
+                    title: 'Agregar Nuevo Maestro',
+                    ctx: ctx,
+                  ),
                   _teacherFormFields(
-                      nameCtrl: n,
-                      emailCtrl: e,
-                      phoneCtrl: p,
-                      curpCtrl: c,
-                      dateCtrl: d,
-                      isMobile: mobile),
+                    nameCtrl: n,
+                    emailCtrl: e,
+                    phoneCtrl: p,
+                    curpCtrl: c,
+                    dateCtrl: d,
+                    birthDateCtrl: bd,
+                    ageCtrl: age,
+                    onPickBirthDate: () => _pickBirthDate(ctx, bd, age, setDlg),
+                    isMobile: mobile,
+                  ),
                   Padding(
                     padding: const EdgeInsets.only(
-                        left: 24, right: 24, bottom: 24),
+                      left: 24,
+                      right: 24,
+                      bottom: 24,
+                    ),
                     child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(ctx),
-                              child: const Text('Cancelar',
-                                  style: TextStyle(
-                                      color:
-                                          Color(0xFF888888),
-                                      fontSize: 14))),
-                          const SizedBox(width: 12),
-                          ElevatedButton.icon(
-                            onPressed: () =>
-                                Navigator.pop(ctx),
-                            icon: const Icon(
-                                Icons.check_circle_outline,
-                                size: 18),
-                            label: const Text(
-                                'Guardar Maestro'),
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    const Color(0xFF4CAF50),
-                                foregroundColor:
-                                    Colors.white,
-                                padding: const EdgeInsets
-                                    .symmetric(
-                                    horizontal: 24,
-                                    vertical: 14),
-                                shape:
-                                    RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius
-                                                .circular(
-                                                    24))),
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text(
+                            'Cancelar',
+                            style: TextStyle(
+                              color: Color(0xFF888888),
+                              fontSize: 14,
+                            ),
                           ),
-                        ]),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(
+                            Icons.check_circle_outline,
+                            size: 18,
+                          ),
+                          label: const Text('Guardar Maestro'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4CAF50),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 14,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ]),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -1098,79 +1172,91 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
         e = TextEditingController(text: t.email),
         p = TextEditingController(),
         c = TextEditingController(text: t.curp),
-        d = TextEditingController();
+        d = TextEditingController(),
+        bd = TextEditingController(),
+        age = TextEditingController();
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16)),
-        insetPadding: EdgeInsets.symmetric(
-            horizontal: mobile ? 16 : 40, vertical: 24),
-        child: Container(
-          width: mobile ? double.infinity : 500,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16)),
-          child: SingleChildScrollView(
-            child: Column(
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlg) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: mobile ? 16 : 40,
+            vertical: 24,
+          ),
+          child: Container(
+            width: mobile ? double.infinity : 500,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+            child: SingleChildScrollView(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _dialogHeader(
-                      icon: Icons.edit,
-                      subtitle: 'PERSONAL DOCENTE',
-                      title: 'Modificar Información',
-                      ctx: ctx),
+                    icon: Icons.edit,
+                    subtitle: 'PERSONAL DOCENTE',
+                    title: 'Modificar Información',
+                    ctx: ctx,
+                  ),
                   _teacherFormFields(
-                      nameCtrl: n,
-                      emailCtrl: e,
-                      phoneCtrl: p,
-                      curpCtrl: c,
-                      dateCtrl: d,
-                      isMobile: mobile),
+                    nameCtrl: n,
+                    emailCtrl: e,
+                    phoneCtrl: p,
+                    curpCtrl: c,
+                    dateCtrl: d,
+                    birthDateCtrl: bd,
+                    ageCtrl: age,
+                    onPickBirthDate: () => _pickBirthDate(ctx, bd, age, setDlg),
+                    isMobile: mobile,
+                  ),
                   Padding(
                     padding: const EdgeInsets.only(
-                        left: 24, right: 24, bottom: 24),
+                      left: 24,
+                      right: 24,
+                      bottom: 24,
+                    ),
                     child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(ctx),
-                              child: const Text('Cancelar',
-                                  style: TextStyle(
-                                      color:
-                                          Color(0xFF888888),
-                                      fontSize: 14))),
-                          const SizedBox(width: 12),
-                          ElevatedButton.icon(
-                            onPressed: () =>
-                                Navigator.pop(ctx),
-                            icon: const Icon(
-                                Icons.check_circle_outline,
-                                size: 18),
-                            label: const Text(
-                                'Guardar Cambios'),
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    const Color(0xFF4CAF50),
-                                foregroundColor:
-                                    Colors.white,
-                                padding: const EdgeInsets
-                                    .symmetric(
-                                    horizontal: 24,
-                                    vertical: 14),
-                                shape:
-                                    RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius
-                                                .circular(
-                                                    24))),
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text(
+                            'Cancelar',
+                            style: TextStyle(
+                              color: Color(0xFF888888),
+                              fontSize: 14,
+                            ),
                           ),
-                        ]),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(
+                            Icons.check_circle_outline,
+                            size: 18,
+                          ),
+                          label: const Text('Guardar Cambios'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4CAF50),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 14,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ]),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -1181,330 +1267,294 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
   void _showAssignSubjectsDialog(_TeacherData t) {
     final mobile = _isMobile(context);
     final subjects = [
-      _SubjectData(
-          'Matemáticas I', 'Tronco Común', '5h/semana', true),
-      _SubjectData(
-          'Física II', 'Especialidad', '4h/semana', true),
-      _SubjectData('Comprensión Lectora', 'Humanidades',
-          '5h/semana', false),
-      _SubjectData(
-          'Inglés Básico', 'Lenguas', '6h/semana', false),
-      _SubjectData('Química Inorgánica', 'Laboratorio',
-          '5h/semana', false),
-      _SubjectData('Cálculo Diferencial', 'Avanzado',
-          '5h/semana', false),
+      _SubjectData('Matemáticas I', 'Tronco Común', '5h/semana', true),
+      _SubjectData('Física II', 'Especialidad', '4h/semana', true),
+      _SubjectData('Comprensión Lectora', 'Humanidades', '5h/semana', false),
+      _SubjectData('Inglés Básico', 'Lenguas', '6h/semana', false),
+      _SubjectData('Química Inorgánica', 'Laboratorio', '5h/semana', false),
+      _SubjectData('Cálculo Diferencial', 'Avanzado', '5h/semana', false),
     ];
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDlg) {
-          final count =
-              subjects.where((s) => s.selected).length;
+          final count = subjects.where((s) => s.selected).length;
           return Dialog(
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16)),
+              borderRadius: BorderRadius.circular(16),
+            ),
             insetPadding: EdgeInsets.symmetric(
-                horizontal: mobile ? 16 : 40,
-                vertical: 24),
+              horizontal: mobile ? 16 : 40,
+              vertical: 24,
+            ),
             child: Container(
               width: mobile ? double.infinity : 540,
               padding: const EdgeInsets.all(24),
               child: SingleChildScrollView(
                 child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    children: [
-                      Row(children: [
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
                         Expanded(
                           child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment
-                                      .start,
-                              children: [
-                                const Row(children: [
-                                  Icon(Icons.menu_book,
-                                      size: 16,
-                                      color: Color(
-                                          0xFF4CAF50)),
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.menu_book,
+                                    size: 16,
+                                    color: Color(0xFF4CAF50),
+                                  ),
                                   SizedBox(width: 6),
                                   Flexible(
                                     child: Text(
-                                        'GESTIÓN ACADÉMICA',
-                                        style: TextStyle(
-                                            fontSize: 11,
-                                            color: Color(
-                                                0xFF4CAF50),
-                                            fontWeight:
-                                                FontWeight
-                                                    .w600,
-                                            letterSpacing:
-                                                1),
-                                        overflow:
-                                            TextOverflow
-                                                .ellipsis),
-                                  ),
-                                ]),
-                                const SizedBox(height: 10),
-                                RichText(
-                                  text: TextSpan(
-                                      style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight:
-                                              FontWeight
-                                                  .bold,
-                                          color: Color(
-                                              0xFF333333)),
-                                      children: [
-                                        const TextSpan(
-                                            text:
-                                                'Asignar Materias a '),
-                                        TextSpan(
-                                            text: t.name,
-                                            style: const TextStyle(
-                                                color: Color(
-                                                    0xFF4CAF50))),
-                                      ]),
-                                ),
-                              ]),
-                        ),
-                        IconButton(
-                            onPressed: () =>
-                                Navigator.pop(ctx),
-                            icon: const Icon(Icons.close,
-                                color: Color(0xFF888888),
-                                size: 20)),
-                      ]),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Seleccione las materias que impartirá el docente durante el período escolar actual.',
-                        style: TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF888888),
-                            height: 1.5),
-                      ),
-                      const SizedBox(height: 20),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: subjects
-                            .map((s) => SizedBox(
-                                  width: mobile
-                                      ? double.infinity
-                                      : (540 - 48 - 12) /
-                                          2,
-                                  child: InkWell(
-                                    onTap: () => setDlg(
-                                        () => s.selected =
-                                            !s.selected),
-                                    borderRadius:
-                                        BorderRadius
-                                            .circular(12),
-                                    child: Container(
-                                      padding:
-                                          const EdgeInsets
-                                              .all(14),
-                                      decoration:
-                                          BoxDecoration(
-                                        color: s.selected
-                                            ? const Color(
-                                                0xFFE8F5E9)
-                                            : Colors
-                                                .white,
-                                        borderRadius:
-                                            BorderRadius
-                                                .circular(
-                                                    12),
-                                        border: Border.all(
-                                            color: s.selected
-                                                ? const Color(0xFF4CAF50)
-                                                    .withOpacity(0.3)
-                                                : const Color(0xFFE8E8E8)),
+                                      'GESTIÓN ACADÉMICA',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Color(0xFF4CAF50),
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 1,
                                       ),
-                                      child: Row(
-                                          children: [
-                                        Container(
-                                          width: 20,
-                                          height: 20,
-                                          decoration:
-                                              BoxDecoration(
-                                            shape: BoxShape
-                                                .circle,
-                                            color: s.selected
-                                                ? const Color(
-                                                    0xFF4CAF50)
-                                                : Colors
-                                                    .transparent,
-                                            border: Border.all(
-                                                color: s.selected
-                                                    ? const Color(0xFF4CAF50)
-                                                    : const Color(0xFFCCCCCC),
-                                                width: 2),
-                                          ),
-                                          child: s.selected
-                                              ? const Icon(
-                                                  Icons
-                                                      .check,
-                                                  size:
-                                                      14,
-                                                  color: Colors
-                                                      .white)
-                                              : null,
-                                        ),
-                                        const SizedBox(
-                                            width: 12),
-                                        Expanded(
-                                          child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment
-                                                      .start,
-                                              children: [
-                                                Text(
-                                                    s.name,
-                                                    style: const TextStyle(
-                                                        fontSize:
-                                                            13,
-                                                        fontWeight: FontWeight
-                                                            .w600,
-                                                        color:
-                                                            Color(0xFF333333))),
-                                                Text(
-                                                    '${s.category} • ${s.hours}',
-                                                    style: const TextStyle(
-                                                        fontSize:
-                                                            11,
-                                                        color:
-                                                            Color(0xFF999999))),
-                                              ]),
-                                        ),
-                                      ]),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                ))
-                            .toList(),
-                      ),
-                      const SizedBox(height: 24),
-                      mobile
-                          ? Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                              children: [
-                                Row(children: [
-                                  Text('$count',
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              RichText(
+                                text: TextSpan(
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF333333),
+                                  ),
+                                  children: [
+                                    const TextSpan(text: 'Asignar Materias a '),
+                                    TextSpan(
+                                      text: t.name,
                                       style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight:
-                                              FontWeight
-                                                  .bold,
-                                          color: Color(
-                                              0xFF4CAF50))),
+                                        color: Color(0xFF4CAF50),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(
+                            Icons.close,
+                            color: Color(0xFF888888),
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Seleccione las materias que impartirá el docente durante el período escolar actual.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF888888),
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: subjects
+                          .map(
+                            (s) => SizedBox(
+                              width: mobile
+                                  ? double.infinity
+                                  : (540 - 48 - 12) / 2,
+                              child: InkWell(
+                                onTap: () =>
+                                    setDlg(() => s.selected = !s.selected),
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: s.selected
+                                        ? const Color(0xFFE8F5E9)
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: s.selected
+                                          ? const Color(
+                                              0xFF4CAF50,
+                                            ).withOpacity(0.3)
+                                          : const Color(0xFFE8E8E8),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 20,
+                                        height: 20,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: s.selected
+                                              ? const Color(0xFF4CAF50)
+                                              : Colors.transparent,
+                                          border: Border.all(
+                                            color: s.selected
+                                                ? const Color(0xFF4CAF50)
+                                                : const Color(0xFFCCCCCC),
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: s.selected
+                                            ? const Icon(
+                                                Icons.check,
+                                                size: 14,
+                                                color: Colors.white,
+                                              )
+                                            : null,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              s.name,
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF333333),
+                                              ),
+                                            ),
+                                            Text(
+                                              '${s.category} • ${s.hours}',
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                color: Color(0xFF999999),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                    const SizedBox(height: 24),
+                    mobile
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    '$count',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF4CAF50),
+                                    ),
+                                  ),
                                   const SizedBox(width: 6),
                                   const Text(
-                                      'Materias seleccionadas',
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          color: Color(
-                                              0xFF888888))),
-                                ]),
-                                const SizedBox(height: 16),
-                                Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment
-                                            .end,
-                                    children: [
-                                      TextButton(
-                                          onPressed: () =>
-                                              Navigator
-                                                  .pop(
-                                                      ctx),
-                                          child: const Text(
-                                              'Cancelar',
-                                              style: TextStyle(
-                                                  color: Color(
-                                                      0xFF888888)))),
-                                      const SizedBox(
-                                          width: 8),
-                                      ElevatedButton(
-                                        onPressed: () =>
-                                            Navigator.pop(
-                                                ctx),
-                                        style: ElevatedButton
-                                            .styleFrom(
-                                                backgroundColor:
-                                                    const Color(
-                                                        0xFF4CAF50),
-                                                foregroundColor:
-                                                    Colors
-                                                        .white,
-                                                padding: const EdgeInsets
-                                                    .symmetric(
-                                                    horizontal:
-                                                        24,
-                                                    vertical:
-                                                        14),
-                                                shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            24))),
-                                        child: const Text(
-                                            'Actualizar'),
-                                      ),
-                                    ]),
-                              ],
-                            )
-                          : Row(children: [
-                              Text('$count',
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight:
-                                          FontWeight.bold,
-                                      color: Color(
-                                          0xFF4CAF50))),
-                              const SizedBox(width: 6),
-                              const Text(
-                                  'Materias seleccionadas',
-                                  style: TextStyle(
+                                    'Materias seleccionadas',
+                                    style: TextStyle(
                                       fontSize: 13,
-                                      color: Color(
-                                          0xFF888888))),
-                              const Spacer(),
-                              TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(ctx),
-                                  child: const Text(
+                                      color: Color(0xFF888888),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: const Text(
                                       'Cancelar',
                                       style: TextStyle(
-                                          color: Color(
-                                              0xFF888888)))),
+                                        color: Color(0xFF888888),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ElevatedButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF4CAF50),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 24,
+                                        vertical: 14,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(24),
+                                      ),
+                                    ),
+                                    child: const Text('Actualizar'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          )
+                        : Row(
+                            children: [
+                              Text(
+                                '$count',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF4CAF50),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Text(
+                                'Materias seleccionadas',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF888888),
+                                ),
+                              ),
+                              const Spacer(),
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text(
+                                  'Cancelar',
+                                  style: TextStyle(color: Color(0xFF888888)),
+                                ),
+                              ),
                               const SizedBox(width: 8),
                               ElevatedButton(
-                                onPressed: () =>
-                                    Navigator.pop(ctx),
-                                style: ElevatedButton
-                                    .styleFrom(
-                                        backgroundColor:
-                                            const Color(
-                                                0xFF4CAF50),
-                                        foregroundColor:
-                                            Colors.white,
-                                        padding:
-                                            const EdgeInsets
-                                                .symmetric(
-                                                horizontal:
-                                                    24,
-                                                vertical:
-                                                    14),
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius
-                                                    .circular(
-                                                        24))),
-                                child: const Text(
-                                    'Actualizar Asignaciones'),
+                                onPressed: () => Navigator.pop(ctx),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF4CAF50),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                ),
+                                child: const Text('Actualizar Asignaciones'),
                               ),
-                            ]),
-                    ]),
+                            ],
+                          ),
+                  ],
+                ),
               ),
             ),
           );
@@ -1518,60 +1568,67 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16)),
-        title: Row(children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-                color: const Color(0xFFEF5350)
-                    .withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10)),
-            child: const Icon(Icons.warning_amber_rounded,
-                color: Color(0xFFEF5350), size: 24),
-          ),
-          const SizedBox(width: 12),
-          const Flexible(
-            child: Text('Eliminar Maestro',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold)),
-          ),
-        ]),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF5350).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.warning_amber_rounded,
+                color: Color(0xFFEF5350),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Flexible(
+              child: Text(
+                'Eliminar Maestro',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
         content: RichText(
           text: TextSpan(
-              style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF555555),
-                  height: 1.5),
-              children: [
-                const TextSpan(
-                    text:
-                        '¿Está seguro de que desea eliminar a '),
-                TextSpan(
-                    text: t.name,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF333333))),
-                const TextSpan(
-                    text:
-                        '? Esta acción no se puede deshacer.'),
-              ]),
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF555555),
+              height: 1.5,
+            ),
+            children: [
+              const TextSpan(text: '¿Está seguro de que desea eliminar a '),
+              TextSpan(
+                text: t.name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF333333),
+                ),
+              ),
+              const TextSpan(text: '? Esta acción no se puede deshacer.'),
+            ],
+          ),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar',
-                  style: TextStyle(
-                      color: Color(0xFF888888)))),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: Color(0xFF888888)),
+            ),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx),
             style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF5350),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(10))),
+              backgroundColor: const Color(0xFFEF5350),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             child: const Text('Sí, eliminar'),
           ),
         ],
@@ -1581,23 +1638,22 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
 }
 
 // ──────── DATA MODELS ────────
-class _NavItem {
-  final IconData icon;
-  final String label;
-  const _NavItem(this.icon, this.label);
-}
-
 class _TeacherData {
   final String name, email, initials, curp;
   final Color avatarColor;
   final int groups;
-  const _TeacherData(this.name, this.email, this.initials,
-      this.avatarColor, this.curp, this.groups);
+  const _TeacherData(
+    this.name,
+    this.email,
+    this.initials,
+    this.avatarColor,
+    this.curp,
+    this.groups,
+  );
 }
 
 class _SubjectData {
   final String name, category, hours;
   bool selected;
-  _SubjectData(
-      this.name, this.category, this.hours, this.selected);
+  _SubjectData(this.name, this.category, this.hours, this.selected);
 }
