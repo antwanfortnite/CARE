@@ -14,9 +14,7 @@ class DashboardAdmin extends StatelessWidget {
 
     return AdminScaffold(
       selectedIndex: 0,
-      destinations: {
-        1: (_) => const MaestrosAdmin(),
-      },
+      destinations: {1: (_) => const MaestrosAdmin()},
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -60,7 +58,10 @@ class DashboardAdmin extends StatelessWidget {
                 ? 'Bienvenido al sistema CARE. Resumen de actividad escolar.'
                 : 'Bienvenido al sistema CARE. Aquí tienes un resumen de la actividad escolar y el\nrendimiento institucional de hoy.',
             style: const TextStyle(
-                color: Colors.white70, fontSize: 13, height: 1.5),
+              color: Colors.white70,
+              fontSize: 13,
+              height: 1.5,
+            ),
           ),
         ],
       ),
@@ -70,30 +71,54 @@ class DashboardAdmin extends StatelessWidget {
   // ──────── TARJETAS DE ESTADÍSTICAS ────────
   Widget _buildStatCards(bool isMobile) {
     final stats = [
-      _StatData(Icons.people_outline, 'Total Alumnos', '1,284', '+12%',
-          const Color(0xFF4CAF50)),
-      _StatData(Icons.person_outline, 'Total Maestros', '86', 'Estable',
-          const Color(0xFF26A69A)),
-      _StatData(Icons.grid_view, 'Grupos Activos', '42', 'Activos',
-          const Color(0xFF4CAF50)),
-      _StatData(Icons.calendar_today_outlined, 'Próximas Clases', '12',
-          'Próximas', const Color(0xFF66BB6A)),
+      _StatData(
+        Icons.people_outline,
+        'Total Alumnos',
+        '1,284',
+        '+12%',
+        const Color(0xFF4CAF50),
+      ),
+      _StatData(
+        Icons.person_outline,
+        'Total Maestros',
+        '86',
+        'Estable',
+        const Color(0xFF26A69A),
+      ),
+      _StatData(
+        Icons.grid_view,
+        'Grupos Activos',
+        '42',
+        'Activos',
+        const Color(0xFF4CAF50),
+      ),
+      _StatData(
+        Icons.calendar_today_outlined,
+        'Próximas Clases',
+        '12',
+        'Próximas',
+        const Color(0xFF66BB6A),
+      ),
     ];
 
     if (isMobile) {
       return Column(
         children: [
-          Row(children: [
-            Expanded(child: _buildStatCard(stats[0])),
-            const SizedBox(width: 12),
-            Expanded(child: _buildStatCard(stats[1])),
-          ]),
+          Row(
+            children: [
+              Expanded(child: _buildStatCard(stats[0])),
+              const SizedBox(width: 12),
+              Expanded(child: _buildStatCard(stats[1])),
+            ],
+          ),
           const SizedBox(height: 12),
-          Row(children: [
-            Expanded(child: _buildStatCard(stats[2])),
-            const SizedBox(width: 12),
-            Expanded(child: _buildStatCard(stats[3])),
-          ]),
+          Row(
+            children: [
+              Expanded(child: _buildStatCard(stats[2])),
+              const SizedBox(width: 12),
+              Expanded(child: _buildStatCard(stats[3])),
+            ],
+          ),
         ],
       );
     }
@@ -217,8 +242,10 @@ class DashboardAdmin extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {},
-                child: const Text('Ver todo',
-                    style: TextStyle(color: Color(0xFF4CAF50), fontSize: 13)),
+                child: const Text(
+                  'Ver todo',
+                  style: TextStyle(color: Color(0xFF4CAF50), fontSize: 13),
+                ),
               ),
             ],
           ),
@@ -227,21 +254,34 @@ class DashboardAdmin extends StatelessWidget {
             style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
           ),
           const SizedBox(height: 16),
-          _activityTile(Icons.person_add_outlined, const Color(0xFF7E57C2),
-              'Nuevo alumno inscrito',
-              'Carlos Méndez se unió al grupo 3A de Ciencias', 'Hace 15 min'),
-          _activityTile(Icons.description_outlined, const Color(0xFF42A5F5),
-              'Reporte de calificaciones',
-              'La Profesora Elena subió notas parciales - Matemáticas I',
-              'Hace 2 horas'),
-          _activityTile(Icons.swap_horiz, const Color(0xFFFFA726),
-              'Cambio de horario',
-              'Aula 402 reasignada para el taller de Arte Digital',
-              'Hace 5 horas'),
-          _activityTile(Icons.lock_outline, const Color(0xFFEF5350),
-              'Seguridad',
-              'Restablecimiento de contraseña solicitado por Admin #3',
-              'Ayer, 18:30'),
+          _activityTile(
+            Icons.person_add_outlined,
+            const Color(0xFF7E57C2),
+            'Nuevo alumno inscrito',
+            'Carlos Méndez se unió al grupo 3A de Ciencias',
+            'Hace 15 min',
+          ),
+          _activityTile(
+            Icons.description_outlined,
+            const Color(0xFF42A5F5),
+            'Reporte de calificaciones',
+            'La Profesora Elena subió notas parciales - Matemáticas I',
+            'Hace 2 horas',
+          ),
+          _activityTile(
+            Icons.swap_horiz,
+            const Color(0xFFFFA726),
+            'Cambio de horario',
+            'Aula 402 reasignada para el taller de Arte Digital',
+            'Hace 5 horas',
+          ),
+          _activityTile(
+            Icons.lock_outline,
+            const Color(0xFFEF5350),
+            'Seguridad',
+            'Restablecimiento de contraseña solicitado por Admin #3',
+            'Ayer, 18:30',
+          ),
         ],
       ),
     );
@@ -258,18 +298,25 @@ class DashboardAdmin extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Estado del Sistema',
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF333333))),
+          const Text(
+            'Estado del Sistema',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF333333),
+            ),
+          ),
           const SizedBox(height: 20),
           _systemBar('Capacidad Alumnos', 0.82, '82%', const Color(0xFF4CAF50)),
           const SizedBox(height: 16),
           _systemBar('Uso de Servidores', 0.45, '45%', const Color(0xFF4CAF50)),
           const SizedBox(height: 16),
           _systemBar(
-              'Documentación Digital', 0.96, '96%', const Color(0xFF4CAF50)),
+            'Documentación Digital',
+            0.96,
+            '96%',
+            const Color(0xFF4CAF50),
+          ),
           const SizedBox(height: 24),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
@@ -285,10 +332,14 @@ class DashboardAdmin extends StatelessWidget {
                 children: [
                   Icon(Icons.dns_outlined, size: 40, color: Color(0xFF4CAF50)),
                   SizedBox(height: 8),
-                  Text('Servidor Norte 4WS-2 (CDMX)',
-                      style: TextStyle(fontSize: 11, color: Color(0xFF666666))),
-                  Text('Último respaldo 04:00 AM',
-                      style: TextStyle(fontSize: 10, color: Color(0xFF999999))),
+                  Text(
+                    'Servidor Norte 4WS-2 (CDMX)',
+                    style: TextStyle(fontSize: 11, color: Color(0xFF666666)),
+                  ),
+                  Text(
+                    'Último respaldo 04:00 AM',
+                    style: TextStyle(fontSize: 10, color: Color(0xFF999999)),
+                  ),
                 ],
               ),
             ),
@@ -299,7 +350,12 @@ class DashboardAdmin extends StatelessWidget {
   }
 
   Widget _activityTile(
-      IconData icon, Color color, String title, String subtitle, String time) {
+    IconData icon,
+    Color color,
+    String title,
+    String subtitle,
+    String time,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -323,20 +379,29 @@ class DashboardAdmin extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w600)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(subtitle,
-                    style: const TextStyle(
-                        fontSize: 11, color: Color(0xFF999999))),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF999999),
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          Text(time,
-              style:
-                  const TextStyle(fontSize: 11, color: Color(0xFF999999))),
+          Text(
+            time,
+            style: const TextStyle(fontSize: 11, color: Color(0xFF999999)),
+          ),
         ],
       ),
     );
@@ -349,14 +414,20 @@ class DashboardAdmin extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Flexible(
-              child: Text(label,
-                  style:
-                      const TextStyle(fontSize: 12, color: Color(0xFF666666)),
-                  overflow: TextOverflow.ellipsis),
+              child: Text(
+                label,
+                style: const TextStyle(fontSize: 12, color: Color(0xFF666666)),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            Text(percent,
-                style: TextStyle(
-                    fontSize: 12, color: color, fontWeight: FontWeight.w600)),
+            Text(
+              percent,
+              style: TextStyle(
+                fontSize: 12,
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 6),
@@ -389,30 +460,39 @@ class DashboardAdmin extends StatelessWidget {
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Calendario Institucional',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF333333))),
+                    const Text(
+                      'Calendario Institucional',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    const Text('Eventos y fechas críticas próximas',
-                        style:
-                            TextStyle(fontSize: 12, color: Color(0xFF999999))),
+                    const Text(
+                      'Eventos y fechas críticas próximas',
+                      style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
+                    ),
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () {},
                         icon: const Icon(Icons.add, size: 18),
-                        label: const Text('Nuevo Evento',
-                            style: TextStyle(fontSize: 13)),
+                        label: const Text(
+                          'Nuevo Evento',
+                          style: TextStyle(fontSize: 13),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4CAF50),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20)),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 18, vertical: 12),
+                            horizontal: 18,
+                            vertical: 12,
+                          ),
                         ),
                       ),
                     ),
@@ -424,29 +504,41 @@ class DashboardAdmin extends StatelessWidget {
                     const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Calendario Institucional',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF333333))),
+                        Text(
+                          'Calendario Institucional',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF333333),
+                          ),
+                        ),
                         SizedBox(height: 4),
-                        Text('Eventos y fechas críticas próximas',
-                            style: TextStyle(
-                                fontSize: 12, color: Color(0xFF999999))),
+                        Text(
+                          'Eventos y fechas críticas próximas',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF999999),
+                          ),
+                        ),
                       ],
                     ),
                     ElevatedButton.icon(
                       onPressed: () {},
                       icon: const Icon(Icons.add, size: 18),
-                      label: const Text('Nuevo Evento',
-                          style: TextStyle(fontSize: 13)),
+                      label: const Text(
+                        'Nuevo Evento',
+                        style: TextStyle(fontSize: 13),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4CAF50),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 12),
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                   ],
@@ -455,32 +547,56 @@ class DashboardAdmin extends StatelessWidget {
           isMobile
               ? Column(
                   children: [
-                    _eventCardMobile('15', 'OCT', 'Cierre de Actas',
-                        'Límite para captura de calificaciones del primer parcial.',
-                        const Color(0xFF4CAF50)),
+                    _eventCardMobile(
+                      '15',
+                      'OCT',
+                      'Cierre de Actas',
+                      'Límite para captura de calificaciones del primer parcial.',
+                      const Color(0xFF4CAF50),
+                    ),
                     const SizedBox(height: 12),
-                    _eventCardMobile('22', 'OCT', 'Junta Académica',
-                        'Reunión general de directivos y coordinadores de área.',
-                        const Color(0xFFEF5350)),
+                    _eventCardMobile(
+                      '22',
+                      'OCT',
+                      'Junta Académica',
+                      'Reunión general de directivos y coordinadores de área.',
+                      const Color(0xFFEF5350),
+                    ),
                     const SizedBox(height: 12),
-                    _eventCardMobile('01', 'NOV', 'Feriado Nacional',
-                        'Suspensión de labores académicas y administrativas.',
-                        const Color(0xFF333333)),
+                    _eventCardMobile(
+                      '01',
+                      'NOV',
+                      'Feriado Nacional',
+                      'Suspensión de labores académicas y administrativas.',
+                      const Color(0xFF333333),
+                    ),
                   ],
                 )
               : Row(
                   children: [
-                    _eventCard('15', 'OCT', 'Cierre de Actas',
-                        'Límite para captura de calificaciones del primer parcial.',
-                        const Color(0xFF4CAF50)),
+                    _eventCard(
+                      '15',
+                      'OCT',
+                      'Cierre de Actas',
+                      'Límite para captura de calificaciones del primer parcial.',
+                      const Color(0xFF4CAF50),
+                    ),
                     const SizedBox(width: 16),
-                    _eventCard('22', 'OCT', 'Junta Académica',
-                        'Reunión general de directivos y coordinadores de área.',
-                        const Color(0xFFEF5350)),
+                    _eventCard(
+                      '22',
+                      'OCT',
+                      'Junta Académica',
+                      'Reunión general de directivos y coordinadores de área.',
+                      const Color(0xFFEF5350),
+                    ),
                     const SizedBox(width: 16),
-                    _eventCard('01', 'NOV', 'Feriado Nacional',
-                        'Suspensión de labores académicas y administrativas.',
-                        const Color(0xFF333333)),
+                    _eventCard(
+                      '01',
+                      'NOV',
+                      'Feriado Nacional',
+                      'Suspensión de labores académicas y administrativas.',
+                      const Color(0xFF333333),
+                    ),
                   ],
                 ),
         ],
@@ -488,15 +604,25 @@ class DashboardAdmin extends StatelessWidget {
     );
   }
 
-  Widget _eventCard(String day, String month, String title, String desc,
-      Color accentColor) {
+  Widget _eventCard(
+    String day,
+    String month,
+    String title,
+    String desc,
+    Color accentColor,
+  ) {
     return Expanded(
       child: _eventCardMobile(day, month, title, desc, accentColor),
     );
   }
 
-  Widget _eventCardMobile(String day, String month, String title, String desc,
-      Color accentColor) {
+  Widget _eventCardMobile(
+    String day,
+    String month,
+    String title,
+    String desc,
+    Color accentColor,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -510,16 +636,22 @@ class DashboardAdmin extends StatelessWidget {
         children: [
           Column(
             children: [
-              Text(day,
-                  style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: accentColor)),
-              Text(month,
-                  style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: accentColor)),
+              Text(
+                day,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: accentColor,
+                ),
+              ),
+              Text(
+                month,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: accentColor,
+                ),
+              ),
             ],
           ),
           const SizedBox(width: 14),
@@ -527,15 +659,22 @@ class DashboardAdmin extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w600)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(desc,
-                    style: const TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF999999),
-                        height: 1.4)),
+                Text(
+                  desc,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF999999),
+                    height: 1.4,
+                  ),
+                ),
               ],
             ),
           ),
