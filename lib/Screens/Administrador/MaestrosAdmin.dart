@@ -953,11 +953,21 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
               style: const TextStyle(fontSize: 13, color: Color(0xFF555555)),
               decoration: InputDecoration(
                 hintText: 'Se calcula automáticamente',
-                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
-                suffixIcon: const Icon(Icons.hourglass_bottom, size: 18, color: Color(0xFF999999)),
+                hintStyle: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFFBBBBBB),
+                ),
+                suffixIcon: const Icon(
+                  Icons.hourglass_bottom,
+                  size: 18,
+                  color: Color(0xFF999999),
+                ),
                 filled: true,
                 fillColor: const Color(0xFFEFEFEF),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
@@ -1005,25 +1015,44 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                         controller: ageCtrl,
                         readOnly: true,
                         enabled: false,
-                        style: const TextStyle(fontSize: 13, color: Color(0xFF555555)),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF555555),
+                        ),
                         decoration: InputDecoration(
                           hintText: 'Se calcula automáticamente',
-                          hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
-                          suffixIcon: const Icon(Icons.hourglass_bottom, size: 18, color: Color(0xFF999999)),
+                          hintStyle: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFFBBBBBB),
+                          ),
+                          suffixIcon: const Icon(
+                            Icons.hourglass_bottom,
+                            size: 18,
+                            color: Color(0xFF999999),
+                          ),
                           filled: true,
                           fillColor: const Color(0xFFEFEFEF),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E0E0),
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E0E0),
+                            ),
                           ),
                           disabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E0E0),
+                            ),
                           ),
                         ),
                       ),
@@ -1053,79 +1082,84 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDlg) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        insetPadding: EdgeInsets.symmetric(
-          horizontal: mobile ? 16 : 40,
-          vertical: 24,
-        ),
-        child: Container(
-          width: mobile ? double.infinity : 500,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _dialogHeader(
-                  icon: Icons.person_add,
-                  subtitle: 'PERSONAL DOCENTE',
-                  title: 'Agregar Nuevo Maestro',
-                  ctx: ctx,
-                ),
-                _teacherFormFields(
-                  nameCtrl: n,
-                  emailCtrl: e,
-                  phoneCtrl: p,
-                  curpCtrl: c,
-                  dateCtrl: d,
-                  birthDateCtrl: bd,
-                  ageCtrl: age,
-                  onPickBirthDate: () => _pickBirthDate(ctx, bd, age, setDlg),
-                  isMobile: mobile,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: 24,
-                    right: 24,
-                    bottom: 24,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: mobile ? 16 : 40,
+            vertical: 24,
+          ),
+          child: Container(
+            width: mobile ? double.infinity : 500,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _dialogHeader(
+                    icon: Icons.person_add,
+                    subtitle: 'PERSONAL DOCENTE',
+                    title: 'Agregar Nuevo Maestro',
+                    ctx: ctx,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: const Text(
-                          'Cancelar',
-                          style: TextStyle(
-                            color: Color(0xFF888888),
-                            fontSize: 14,
+                  _teacherFormFields(
+                    nameCtrl: n,
+                    emailCtrl: e,
+                    phoneCtrl: p,
+                    curpCtrl: c,
+                    dateCtrl: d,
+                    birthDateCtrl: bd,
+                    ageCtrl: age,
+                    onPickBirthDate: () => _pickBirthDate(ctx, bd, age, setDlg),
+                    isMobile: mobile,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 24,
+                      right: 24,
+                      bottom: 24,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text(
+                            'Cancelar',
+                            style: TextStyle(
+                              color: Color(0xFF888888),
+                              fontSize: 14,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      ElevatedButton.icon(
-                        onPressed: () => Navigator.pop(ctx),
-                        icon: const Icon(Icons.check_circle_outline, size: 18),
-                        label: const Text('Guardar Maestro'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4CAF50),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 14,
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(
+                            Icons.check_circle_outline,
+                            size: 18,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
+                          label: const Text('Guardar Maestro'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4CAF50),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 14,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
         ),
       ),
     );
@@ -1146,79 +1180,84 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDlg) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        insetPadding: EdgeInsets.symmetric(
-          horizontal: mobile ? 16 : 40,
-          vertical: 24,
-        ),
-        child: Container(
-          width: mobile ? double.infinity : 500,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _dialogHeader(
-                  icon: Icons.edit,
-                  subtitle: 'PERSONAL DOCENTE',
-                  title: 'Modificar Información',
-                  ctx: ctx,
-                ),
-                _teacherFormFields(
-                  nameCtrl: n,
-                  emailCtrl: e,
-                  phoneCtrl: p,
-                  curpCtrl: c,
-                  dateCtrl: d,
-                  birthDateCtrl: bd,
-                  ageCtrl: age,
-                  onPickBirthDate: () => _pickBirthDate(ctx, bd, age, setDlg),
-                  isMobile: mobile,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: 24,
-                    right: 24,
-                    bottom: 24,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: mobile ? 16 : 40,
+            vertical: 24,
+          ),
+          child: Container(
+            width: mobile ? double.infinity : 500,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _dialogHeader(
+                    icon: Icons.edit,
+                    subtitle: 'PERSONAL DOCENTE',
+                    title: 'Modificar Información',
+                    ctx: ctx,
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: const Text(
-                          'Cancelar',
-                          style: TextStyle(
-                            color: Color(0xFF888888),
-                            fontSize: 14,
+                  _teacherFormFields(
+                    nameCtrl: n,
+                    emailCtrl: e,
+                    phoneCtrl: p,
+                    curpCtrl: c,
+                    dateCtrl: d,
+                    birthDateCtrl: bd,
+                    ageCtrl: age,
+                    onPickBirthDate: () => _pickBirthDate(ctx, bd, age, setDlg),
+                    isMobile: mobile,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 24,
+                      right: 24,
+                      bottom: 24,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text(
+                            'Cancelar',
+                            style: TextStyle(
+                              color: Color(0xFF888888),
+                              fontSize: 14,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      ElevatedButton.icon(
-                        onPressed: () => Navigator.pop(ctx),
-                        icon: const Icon(Icons.check_circle_outline, size: 18),
-                        label: const Text('Guardar Cambios'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4CAF50),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 14,
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(
+                            Icons.check_circle_outline,
+                            size: 18,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
+                          label: const Text('Guardar Cambios'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4CAF50),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 14,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
         ),
       ),
     );
