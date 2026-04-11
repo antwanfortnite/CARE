@@ -1,51 +1,102 @@
 import 'package:flutter/material.dart';
 import 'AdminScaffold.dart';
 import 'DashboardAdmin.dart';
-import 'AlumnosAdmin.dart';
+import 'MaestrosAdmin.dart';
 
-class MaestrosAdmin extends StatefulWidget {
-  const MaestrosAdmin({super.key});
+class AlumnosAdmin extends StatefulWidget {
+  const AlumnosAdmin({super.key});
   @override
-  State<MaestrosAdmin> createState() => _MaestrosAdminState();
+  State<AlumnosAdmin> createState() => _AlumnosAdminState();
 }
 
-class _MaestrosAdminState extends State<MaestrosAdmin> {
-  int _currentPage = 1;
+class _AlumnosAdminState extends State<AlumnosAdmin>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  int _currentPageCursando = 1;
+  int _currentPageNoCursando = 1;
   final int _totalPages = 3;
   final TextEditingController _searchController = TextEditingController();
 
-  final List<_TeacherData> _teachers = [
-    _TeacherData(
-      'Julián Sánchez',
-      'julian.sanchez@care.edu.mx',
-      'JS',
+  final List<_StudentData> _studentsCursando = [
+    _StudentData(
+      'Carlos Méndez',
+      'carlos.mendez@correo.com',
+      'CM',
       const Color(0xFF7E57C2),
-      'SACJ850101HDHNLR00',
-      3,
+      'MECC080515HDHNRL01',
+      'María Luisa Méndez García',
+      'maria.mendez@correo.com',
+      '6441234567',
+      16,
     ),
-    _TeacherData(
-      'Rosa María Moreno',
-      'rosa.moreno@care.edu.mx',
-      'RM',
+    _StudentData(
+      'Ana Sofía Rivera',
+      'ana.rivera@correo.com',
+      'AR',
       const Color(0xFF4CAF50),
-      'MORR900215MDFRSN01',
-      5,
+      'RIAA090320MDFVNN02',
+      'Laura Patricia Rivera López',
+      'laura.rivera@correo.com',
+      '6449876543',
+      15,
     ),
-    _TeacherData(
-      'Alberto González',
-      'alberto.gonz@care.edu.mx',
-      'AG',
+    _StudentData(
+      'Diego Hernández',
+      'diego.hernan@correo.com',
+      'DH',
       const Color(0xFF26A69A),
-      'GOAA880520HDFLBL02',
-      2,
+      'HEAD071205HDFRGL03',
+      'Pedro Hernández Ruiz',
+      'pedro.hernandez@correo.com',
+      '6442345678',
+      17,
     ),
-    _TeacherData(
-      'Elena Ledesma',
-      'elena.l@care.edu.mx',
-      'EL',
+    _StudentData(
+      'Valentina Torres',
+      'val.torres@correo.com',
+      'VT',
       const Color(0xFFE91E63),
-      'LEDE930312MDFLDN03',
-      4,
+      'TORV100810MDFRLR04',
+      'Rosa María Torres Vega',
+      'rosa.torres@correo.com',
+      '6443456789',
+      14,
+    ),
+  ];
+
+  final List<_StudentData> _studentsNoCursando = [
+    _StudentData(
+      'Miguel Ángel Ruiz',
+      'miguel.ruiz@correo.com',
+      'MR',
+      const Color(0xFFFFA726),
+      'RUIM060714HDFRGL05',
+      'Elena Ruiz Sánchez',
+      'elena.ruiz@correo.com',
+      '6444567890',
+      18,
+    ),
+    _StudentData(
+      'Fernanda López',
+      'fer.lopez@correo.com',
+      'FL',
+      const Color(0xFF42A5F5),
+      'LOPF080922MDFPZR06',
+      'Carmen López Díaz',
+      'carmen.lopez@correo.com',
+      '6445678901',
+      16,
+    ),
+    _StudentData(
+      'Emilio Castro',
+      'emilio.c@correo.com',
+      'EC',
+      const Color(0xFF66BB6A),
+      'CASE091130HDFSML07',
+      'Jorge Castro Mendoza',
+      'jorge.castro@correo.com',
+      '6446789012',
+      15,
     ),
   ];
 
@@ -53,7 +104,14 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
       MediaQuery.of(context).size.width < 1050;
 
   @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
   void dispose() {
+    _tabController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -63,10 +121,10 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     final mobile = _isMobile(context);
 
     return AdminScaffold(
-      selectedIndex: 1,
+      selectedIndex: 2,
       destinations: {
         0: (_) => const DashboardAdmin(),
-        2: (_) => const AlumnosAdmin(),
+        1: (_) => const MaestrosAdmin(),
       },
       bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
       body: _buildContent(mobile),
@@ -82,7 +140,15 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
         const SizedBox(height: 24),
         _buildFilterBar(),
         const SizedBox(height: 24),
-        isMobile ? _buildTeacherCards() : _buildTeacherTable(),
+        _buildTabBar(),
+        const SizedBox(height: 20),
+        _tabController.index == 0
+            ? (isMobile
+                ? _buildStudentCards(_studentsCursando, true)
+                : _buildStudentTable(_studentsCursando, true))
+            : (isMobile
+                ? _buildStudentCards(_studentsNoCursando, false)
+                : _buildStudentTable(_studentsNoCursando, false)),
       ],
     );
   }
@@ -93,7 +159,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Gestión de Maestros',
+            'Gestión de Alumnos',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -102,16 +168,16 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
           ),
           const SizedBox(height: 4),
           const Text(
-            'Administración central de la facultad académica.',
+            'Administración del alumnado inscrito y no cursando.',
             style: TextStyle(fontSize: 14, color: Color(0xFF888888)),
           ),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () => _showAddTeacherDialog(),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Agregar Nuevo Maestro'),
+              onPressed: () => _showAddStudentDialog(),
+              icon: const Icon(Icons.person_add, size: 18),
+              label: const Text('Agregar Nuevo Alumno'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4CAF50),
                 foregroundColor: Colors.white,
@@ -138,7 +204,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Gestión de Maestros',
+                'Gestión de Alumnos',
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
@@ -147,7 +213,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
               ),
               SizedBox(height: 4),
               Text(
-                'Administración central de la facultad académica.',
+                'Administración del alumnado inscrito y no cursando.',
                 style: TextStyle(fontSize: 14, color: Color(0xFF888888)),
               ),
             ],
@@ -155,9 +221,9 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
         ),
         const SizedBox(width: 16),
         ElevatedButton.icon(
-          onPressed: () => _showAddTeacherDialog(),
-          icon: const Icon(Icons.add, size: 18),
-          label: const Text('Agregar Nuevo Maestro'),
+          onPressed: () => _showAddStudentDialog(),
+          icon: const Icon(Icons.person_add, size: 18),
+          label: const Text('Agregar Nuevo Alumno'),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF4CAF50),
             foregroundColor: Colors.white,
@@ -229,11 +295,133 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     );
   }
 
-  // ──────── MOBILE TEACHER CARDS ────────
-  Widget _buildTeacherCards() {
+  // ──────── TAB BAR ────────
+  Widget _buildTabBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
+      ),
+      child: TabBar(
+        controller: _tabController,
+        onTap: (_) => setState(() {}),
+        labelColor: Colors.white,
+        unselectedLabelColor: const Color(0xFF555555),
+        labelStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.normal,
+        ),
+        indicator: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: const Color(0xFF4CAF50),
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        dividerColor: Colors.transparent,
+        padding: const EdgeInsets.all(4),
+        tabs: [
+          Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.school,
+                  size: 18,
+                  color: _tabController.index == 0
+                      ? Colors.white
+                      : const Color(0xFF555555),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    'Alumnos Cursando',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _tabController.index == 0
+                        ? Colors.white.withOpacity(0.25)
+                        : const Color(0xFF4CAF50).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${_studentsCursando.length}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: _tabController.index == 0
+                          ? Colors.white
+                          : const Color(0xFF4CAF50),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.person_off,
+                  size: 18,
+                  color: _tabController.index == 1
+                      ? Colors.white
+                      : const Color(0xFF555555),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    'Alumnos No Cursando',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _tabController.index == 1
+                        ? Colors.white.withOpacity(0.25)
+                        : const Color(0xFFEF5350).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${_studentsNoCursando.length}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: _tabController.index == 1
+                          ? Colors.white
+                          : const Color(0xFFEF5350),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ──────── MOBILE STUDENT CARDS ────────
+  Widget _buildStudentCards(List<_StudentData> students, bool isCursando) {
     return Column(
       children: [
-        ..._teachers.map((t) => _buildTeacherCardMobile(t)),
+        ...students.map((s) => _buildStudentCardMobile(s, isCursando)),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
@@ -242,13 +430,13 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: const Color(0xFFE8E8E8)),
           ),
-          child: _buildPaginationContent(),
+          child: _buildPaginationContent(students, isCursando),
         ),
       ],
     );
   }
 
-  Widget _buildTeacherCardMobile(_TeacherData t) {
+  Widget _buildStudentCardMobile(_StudentData s, bool isCursando) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -264,11 +452,11 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
             children: [
               CircleAvatar(
                 radius: 22,
-                backgroundColor: t.avatarColor.withOpacity(0.15),
+                backgroundColor: s.avatarColor.withOpacity(0.15),
                 child: Text(
-                  t.initials,
+                  s.initials,
                   style: TextStyle(
-                    color: t.avatarColor,
+                    color: s.avatarColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
@@ -280,7 +468,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      t.name,
+                      s.name,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -289,7 +477,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      t.email,
+                      s.email,
                       style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFF999999),
@@ -297,6 +485,29 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
+                ),
+              ),
+              // Status badge
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: isCursando
+                      ? const Color(0xFF4CAF50).withOpacity(0.1)
+                      : const Color(0xFFEF5350).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  isCursando ? 'Activo' : 'Inactivo',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: isCursando
+                        ? const Color(0xFF4CAF50)
+                        : const Color(0xFFEF5350),
+                  ),
                 ),
               ),
             ],
@@ -312,7 +523,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  t.curp,
+                  s.curp,
                   style: const TextStyle(
                     fontSize: 11,
                     color: Color(0xFF555555),
@@ -320,11 +531,17 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const Icon(
+                Icons.cake_outlined,
+                size: 14,
+                color: Color(0xFF888888),
+              ),
+              const SizedBox(width: 4),
               Text(
-                '${t.groups} Grupos',
+                '${s.edad} años',
                 style: const TextStyle(
                   fontSize: 12,
-                  color: Color(0xFF4CAF50),
+                  color: Color(0xFF555555),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -338,28 +555,36 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                 Icons.visibility_outlined,
                 const Color(0xFF7E57C2),
                 'Ver información',
-                () => _showViewTeacherDialog(t),
+                () => _showViewStudentDialog(s),
               ),
               const SizedBox(width: 16),
               _actionBtn(
                 Icons.edit_outlined,
                 const Color(0xFF42A5F5),
                 'Modificar',
-                () => _showEditTeacherDialog(t),
+                () => _showEditStudentDialog(s),
               ),
               const SizedBox(width: 8),
-              _actionBtn(
-                Icons.menu_book_outlined,
-                const Color(0xFF4CAF50),
-                'Asignar materias',
-                () => _showAssignSubjectsDialog(t),
-              ),
+              if (isCursando)
+                _actionBtn(
+                  Icons.arrow_downward,
+                  const Color(0xFFEF5350),
+                  'Dar de baja',
+                  () => _showDarDeBajaDialog(s),
+                )
+              else
+                _actionBtn(
+                  Icons.arrow_upward,
+                  const Color(0xFF4CAF50),
+                  'Dar de alta',
+                  () => _showDarDeAltaDialog(s),
+                ),
               const SizedBox(width: 8),
               _actionBtn(
                 Icons.delete_outline,
                 const Color(0xFFEF5350),
                 'Eliminar',
-                () => _showDeleteDialog(t),
+                () => _showDeleteDialog(s),
               ),
             ],
           ),
@@ -369,7 +594,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
   }
 
   // ──────── TABLE ────────
-  Widget _buildTeacherTable() {
+  Widget _buildStudentTable(List<_StudentData> students, bool isCursando) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -381,8 +606,8 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
         children: [
           LayoutBuilder(
             builder: (context, constraints) {
-              final tableWidth = constraints.maxWidth < 800
-                  ? 800.0
+              final tableWidth = constraints.maxWidth < 900
+                  ? 900.0
                   : constraints.maxWidth;
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -400,7 +625,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                             Expanded(
                               flex: 3,
                               child: Text(
-                                'NOMBRE DEL MAESTRO',
+                                'NOMBRE DEL ALUMNO',
                                 style: _headerStyle,
                               ),
                             ),
@@ -409,10 +634,19 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                               child: Text('CURP', style: _headerStyle),
                             ),
                             Expanded(
-                              flex: 2,
+                              flex: 1,
                               child: Text(
-                                'GRUPOS ASIGNADOS',
+                                'EDAD',
                                 style: _headerStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: Text(
+                                'ESTADO',
+                                style: _headerStyle,
+                                textAlign: TextAlign.center,
                               ),
                             ),
                             Expanded(
@@ -428,8 +662,8 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                       ),
                       const Divider(height: 1, color: Color(0xFFF0F0F0)),
                       ...List.generate(
-                        _teachers.length,
-                        (i) => _buildTeacherRow(_teachers[i]),
+                        students.length,
+                        (i) => _buildStudentRow(students[i], isCursando),
                       ),
                     ],
                   ),
@@ -440,7 +674,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
           const Divider(height: 1, color: Color(0xFFF0F0F0)),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: _buildPaginationContent(),
+            child: _buildPaginationContent(students, isCursando),
           ),
         ],
       ),
@@ -454,7 +688,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     letterSpacing: 0.5,
   );
 
-  Widget _buildTeacherRow(_TeacherData t) {
+  Widget _buildStudentRow(_StudentData s, bool isCursando) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       decoration: const BoxDecoration(
@@ -468,11 +702,11 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: t.avatarColor.withOpacity(0.15),
+                  backgroundColor: s.avatarColor.withOpacity(0.15),
                   child: Text(
-                    t.initials,
+                    s.initials,
                     style: TextStyle(
-                      color: t.avatarColor,
+                      color: s.avatarColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
@@ -484,7 +718,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        t.name,
+                        s.name,
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -494,7 +728,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        t.email,
+                        s.email,
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFF999999),
@@ -510,16 +744,44 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
           Expanded(
             flex: 2,
             child: Text(
-              t.curp,
+              s.curp,
               style: const TextStyle(fontSize: 11, color: Color(0xFF555555)),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           Expanded(
-            flex: 2,
+            flex: 1,
             child: Text(
-              '${t.groups} Grupos',
+              '${s.edad} años',
               style: const TextStyle(fontSize: 13, color: Color(0xFF555555)),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: isCursando
+                      ? const Color(0xFF4CAF50).withOpacity(0.1)
+                      : const Color(0xFFEF5350).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  isCursando ? 'Activo' : 'Inactivo',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: isCursando
+                        ? const Color(0xFF4CAF50)
+                        : const Color(0xFFEF5350),
+                  ),
+                ),
+              ),
             ),
           ),
           Expanded(
@@ -531,28 +793,36 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                   Icons.visibility_outlined,
                   const Color(0xFF7E57C2),
                   'Ver información',
-                  () => _showViewTeacherDialog(t),
+                  () => _showViewStudentDialog(s),
                 ),
                 const SizedBox(width: 16),
                 _actionBtn(
                   Icons.edit_outlined,
                   const Color(0xFF42A5F5),
                   'Modificar',
-                  () => _showEditTeacherDialog(t),
+                  () => _showEditStudentDialog(s),
                 ),
                 const SizedBox(width: 8),
-                _actionBtn(
-                  Icons.menu_book_outlined,
-                  const Color(0xFF4CAF50),
-                  'Asignar materias',
-                  () => _showAssignSubjectsDialog(t),
-                ),
+                if (isCursando)
+                  _actionBtn(
+                    Icons.arrow_downward,
+                    const Color(0xFFEF5350),
+                    'Dar de baja',
+                    () => _showDarDeBajaDialog(s),
+                  )
+                else
+                  _actionBtn(
+                    Icons.arrow_upward,
+                    const Color(0xFF4CAF50),
+                    'Dar de alta',
+                    () => _showDarDeAltaDialog(s),
+                  ),
                 const SizedBox(width: 8),
                 _actionBtn(
                   Icons.delete_outline,
                   const Color(0xFFEF5350),
                   'Eliminar',
-                  () => _showDeleteDialog(t),
+                  () => _showDeleteDialog(s),
                 ),
               ],
             ),
@@ -585,13 +855,19 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     );
   }
 
-  Widget _buildPaginationContent() {
+  Widget _buildPaginationContent(
+    List<_StudentData> students,
+    bool isCursando,
+  ) {
+    final currentPage =
+        isCursando ? _currentPageCursando : _currentPageNoCursando;
+    final totalLabel = isCursando ? '124' : '38';
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Flexible(
           child: Text(
-            'Mostrando ${_teachers.length} de 124 maestros',
+            'Mostrando ${students.length} de $totalLabel alumnos',
             style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
             overflow: TextOverflow.ellipsis,
           ),
@@ -600,21 +876,39 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
           children: [
             _pageBtn(
               '‹',
-              enabled: _currentPage > 1,
-              onTap: () => setState(() => _currentPage--),
+              enabled: currentPage > 1,
+              onTap: () => setState(() {
+                if (isCursando) {
+                  _currentPageCursando--;
+                } else {
+                  _currentPageNoCursando--;
+                }
+              }),
             ),
             ...List.generate(
               _totalPages,
               (i) => _pageBtn(
                 '${i + 1}',
-                isSelected: i + 1 == _currentPage,
-                onTap: () => setState(() => _currentPage = i + 1),
+                isSelected: i + 1 == currentPage,
+                onTap: () => setState(() {
+                  if (isCursando) {
+                    _currentPageCursando = i + 1;
+                  } else {
+                    _currentPageNoCursando = i + 1;
+                  }
+                }),
               ),
             ),
             _pageBtn(
               '›',
-              enabled: _currentPage < _totalPages,
-              onTap: () => setState(() => _currentPage++),
+              enabled: currentPage < _totalPages,
+              onTap: () => setState(() {
+                if (isCursando) {
+                  _currentPageCursando++;
+                } else {
+                  _currentPageNoCursando++;
+                }
+              }),
             ),
           ],
         ),
@@ -737,8 +1031,8 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
   ) async {
     final picked = await showDatePicker(
       context: ctx,
-      initialDate: DateTime(2000),
-      firstDate: DateTime(1940),
+      initialDate: DateTime(2010),
+      firstDate: DateTime(2000),
       lastDate: DateTime.now(),
       builder: (context, child) {
         return Theme(
@@ -814,22 +1108,19 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
   }
 
   // ──────── DIALOG: form fields reutilizable ────────
-  Widget _teacherFormFields({
+  Widget _studentFormFields({
     required TextEditingController nameCtrl,
-    required TextEditingController emailCtrl,
-    required TextEditingController phoneCtrl,
+    required TextEditingController parentNameCtrl,
+    required TextEditingController parentEmailCtrl,
+    required TextEditingController parentPhoneCtrl,
     required TextEditingController curpCtrl,
-    required TextEditingController dateCtrl,
     required TextEditingController birthDateCtrl,
     required TextEditingController ageCtrl,
     required VoidCallback onPickBirthDate,
     required bool isMobile,
     bool readOnly = false,
-    TextEditingController? userCtrl,
     TextEditingController? passCtrl,
-    bool obscureUser = true,
     bool obscurePass = true,
-    VoidCallback? onToggleUser,
     VoidCallback? onTogglePass,
   }) {
     return Padding(
@@ -837,29 +1128,38 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _dialogLabel('NOMBRE COMPLETO DEL PADRE'),
+          const SizedBox(height: 6),
+          _dialogTextField(
+            controller: parentNameCtrl,
+            hint: 'Ej. María Luisa Méndez García',
+            icon: Icons.family_restroom_outlined,
+            readOnly: readOnly,
+          ),
+          const SizedBox(height: 16),
           _dialogLabel('NOMBRE COMPLETO'),
           const SizedBox(height: 6),
           _dialogTextField(
             controller: nameCtrl,
-            hint: 'Ej. Dr. Armando Casas',
+            hint: 'Ej. Carlos Méndez López',
             icon: Icons.person_outline,
             readOnly: readOnly,
           ),
           const SizedBox(height: 16),
           if (isMobile) ...[
-            _dialogLabel('CORREO ELECTRÓNICO'),
+            _dialogLabel('CORREO ELECTRÓNICO DEL PADRE'),
             const SizedBox(height: 6),
             _dialogTextField(
-              controller: emailCtrl,
-              hint: 'maestro@care.edu',
+              controller: parentEmailCtrl,
+              hint: 'padre@correo.com',
               icon: Icons.alternate_email,
               readOnly: readOnly,
             ),
             const SizedBox(height: 16),
-            _dialogLabel('TELÉFONO'),
+            _dialogLabel('TELÉFONO DEL PADRE'),
             const SizedBox(height: 6),
             _dialogTextField(
-              controller: phoneCtrl,
+              controller: parentPhoneCtrl,
               hint: '+52 000 000 0000',
               icon: Icons.phone_outlined,
               readOnly: readOnly,
@@ -873,15 +1173,6 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
               icon: Icons.badge_outlined,
               readOnly: readOnly,
             ),
-            const SizedBox(height: 16),
-            _dialogLabel('FECHA DE CONTRATACIÓN'),
-            const SizedBox(height: 6),
-            _dialogTextField(
-              controller: dateCtrl,
-              hint: 'mm/dd/yyyy',
-              icon: Icons.calendar_today_outlined,
-              readOnly: readOnly,
-            ),
           ] else ...[
             Row(
               children: [
@@ -889,11 +1180,11 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _dialogLabel('CORREO ELECTRÓNICO'),
+                      _dialogLabel('CORREO ELECTRÓNICO DEL PADRE'),
                       const SizedBox(height: 6),
                       _dialogTextField(
-                        controller: emailCtrl,
-                        hint: 'maestro@care.edu',
+                        controller: parentEmailCtrl,
+                        hint: 'padre@correo.com',
                         icon: Icons.alternate_email,
                         readOnly: readOnly,
                       ),
@@ -905,10 +1196,10 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _dialogLabel('TELÉFONO'),
+                      _dialogLabel('TELÉFONO DEL PADRE'),
                       const SizedBox(height: 6),
                       _dialogTextField(
-                        controller: phoneCtrl,
+                        controller: parentPhoneCtrl,
                         hint: '+52 000 000 0000',
                         icon: Icons.phone_outlined,
                         readOnly: readOnly,
@@ -919,40 +1210,14 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
               ],
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _dialogLabel('CURP'),
-                      const SizedBox(height: 6),
-                      _dialogTextField(
-                        controller: curpCtrl,
-                        hint: 'XXXX000000XXXXXXXX',
-                        icon: Icons.badge_outlined,
-                        readOnly: readOnly,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _dialogLabel('FECHA DE CONTRATACIÓN'),
-                      const SizedBox(height: 6),
-                      _dialogTextField(
-                        controller: dateCtrl,
-                        hint: 'mm/dd/yyyy',
-                        icon: Icons.calendar_today_outlined,
-                        readOnly: readOnly,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            // CURP ocupa toda la fila (sin fecha de contratación)
+            _dialogLabel('CURP'),
+            const SizedBox(height: 6),
+            _dialogTextField(
+              controller: curpCtrl,
+              hint: 'XXXX000000XXXXXXXX',
+              icon: Icons.badge_outlined,
+              readOnly: readOnly,
             ),
           ],
           const SizedBox(height: 16),
@@ -1090,221 +1355,71 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
               ],
             ),
           ],
-          // ── Separador y campos de credenciales ──
-          if (userCtrl != null && passCtrl != null) ...[
+          // ── Separador y campo de contraseña ──
+          if (passCtrl != null) ...[
             const SizedBox(height: 12),
             const Divider(color: Color(0xFFE0E0E0)),
             const SizedBox(height: 12),
-            if (isMobile) ...[
-              _dialogLabel('USUARIO'),
-              const SizedBox(height: 6),
-              TextField(
-                controller: userCtrl,
-                readOnly: readOnly,
-                obscureText: obscureUser,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: readOnly ? const Color(0xFF555555) : null,
+            _dialogLabel('CONTRASEÑA'),
+            const SizedBox(height: 6),
+            TextField(
+              controller: passCtrl,
+              readOnly: readOnly,
+              obscureText: obscurePass,
+              style: TextStyle(
+                fontSize: 13,
+                color: readOnly ? const Color(0xFF555555) : null,
+              ),
+              decoration: InputDecoration(
+                hintText: '••••••••',
+                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    obscurePass ? Icons.visibility_off : Icons.visibility,
+                    size: 18,
+                    color: const Color(0xFF999999),
+                  ),
+                  onPressed: onTogglePass,
                 ),
-                decoration: InputDecoration(
-                  hintText: 'Ej. julian.sanchez',
-                  hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      obscureUser ? Icons.visibility_off : Icons.visibility,
-                      size: 18,
-                      color: const Color(0xFF999999),
-                    ),
-                    onPressed: onToggleUser,
-                  ),
-                  filled: true,
-                  fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                  ),
-                  disabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFF4CAF50)),
-                  ),
+                filled: true,
+                fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                ),
+                disabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFF4CAF50)),
                 ),
               ),
-              const SizedBox(height: 16),
-              _dialogLabel('CONTRASEÑA'),
-              const SizedBox(height: 6),
-              TextField(
-                controller: passCtrl,
-                readOnly: readOnly,
-                obscureText: obscurePass,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: readOnly ? const Color(0xFF555555) : null,
-                ),
-                decoration: InputDecoration(
-                  hintText: '••••••••',
-                  hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      obscurePass ? Icons.visibility_off : Icons.visibility,
-                      size: 18,
-                      color: const Color(0xFF999999),
-                    ),
-                    onPressed: onTogglePass,
-                  ),
-                  filled: true,
-                  fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                  ),
-                  disabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFF4CAF50)),
-                  ),
-                ),
-              ),
-            ] else ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _dialogLabel('USUARIO'),
-                        const SizedBox(height: 6),
-                        TextField(
-                          controller: userCtrl,
-                          readOnly: readOnly,
-                          obscureText: obscureUser,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: readOnly ? const Color(0xFF555555) : null,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Ej. julian.sanchez',
-                            hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                obscureUser ? Icons.visibility_off : Icons.visibility,
-                                size: 18,
-                                color: const Color(0xFF999999),
-                              ),
-                              onPressed: onToggleUser,
-                            ),
-                            filled: true,
-                            fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                            ),
-                            disabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFF4CAF50)),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _dialogLabel('CONTRASEÑA'),
-                        const SizedBox(height: 6),
-                        TextField(
-                          controller: passCtrl,
-                          readOnly: readOnly,
-                          obscureText: obscurePass,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: readOnly ? const Color(0xFF555555) : null,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: '••••••••',
-                            hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                obscurePass ? Icons.visibility_off : Icons.visibility,
-                                size: 18,
-                                color: const Color(0xFF999999),
-                              ),
-                              onPressed: onTogglePass,
-                            ),
-                            filled: true,
-                            fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                            ),
-                            disabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFF4CAF50)),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ],
         ],
       ),
     );
   }
 
-  // ──────── AGREGAR MAESTRO ────────
-  void _showAddTeacherDialog() {
+  // ──────── AGREGAR ALUMNO ────────
+  void _showAddStudentDialog() {
     final mobile = _isMobile(context);
     final n = TextEditingController(),
-        e = TextEditingController(),
-        p = TextEditingController(),
+        pn = TextEditingController(),
+        pe = TextEditingController(),
+        pp = TextEditingController(),
         c = TextEditingController(),
-        d = TextEditingController(),
         bd = TextEditingController(),
         age = TextEditingController(),
-        usr = TextEditingController(),
         pwd = TextEditingController();
-    bool hideUser = true, hidePass = true;
+    bool hidePass = true;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1327,24 +1442,22 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                 children: [
                   _dialogHeader(
                     icon: Icons.person_add,
-                    subtitle: 'PERSONAL DOCENTE',
-                    title: 'Agregar Nuevo Maestro',
+                    subtitle: 'REGISTRO DE ALUMNOS',
+                    title: 'Agregar Nuevo Alumno',
                   ),
-                  _teacherFormFields(
+                  _studentFormFields(
                     nameCtrl: n,
-                    emailCtrl: e,
-                    phoneCtrl: p,
+                    parentNameCtrl: pn,
+                    parentEmailCtrl: pe,
+                    parentPhoneCtrl: pp,
                     curpCtrl: c,
-                    dateCtrl: d,
                     birthDateCtrl: bd,
                     ageCtrl: age,
-                    onPickBirthDate: () => _pickBirthDate(ctx, bd, age, setDlg),
+                    onPickBirthDate: () =>
+                        _pickBirthDate(ctx, bd, age, setDlg),
                     isMobile: mobile,
-                    userCtrl: usr,
                     passCtrl: pwd,
-                    obscureUser: hideUser,
                     obscurePass: hidePass,
-                    onToggleUser: () => setDlg(() => hideUser = !hideUser),
                     onTogglePass: () => setDlg(() => hidePass = !hidePass),
                   ),
                   Padding(
@@ -1373,7 +1486,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                             Icons.check_circle_outline,
                             size: 18,
                           ),
-                          label: const Text('Guardar Maestro'),
+                          label: const Text('Guardar Alumno'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF4CAF50),
                             foregroundColor: Colors.white,
@@ -1398,19 +1511,18 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     );
   }
 
-  // ──────── MODIFICAR MAESTRO ────────
-  void _showEditTeacherDialog(_TeacherData t) {
+  // ──────── MODIFICAR ALUMNO ────────
+  void _showEditStudentDialog(_StudentData s) {
     final mobile = _isMobile(context);
-    final n = TextEditingController(text: t.name),
-        e = TextEditingController(text: t.email),
-        p = TextEditingController(),
-        c = TextEditingController(text: t.curp),
-        d = TextEditingController(),
+    final n = TextEditingController(text: s.name),
+        pn = TextEditingController(text: s.parentName),
+        pe = TextEditingController(text: s.parentEmail),
+        pp = TextEditingController(text: s.parentPhone),
+        c = TextEditingController(text: s.curp),
         bd = TextEditingController(),
-        age = TextEditingController(),
-        usr = TextEditingController(),
+        age = TextEditingController(text: '${s.edad}'),
         pwd = TextEditingController();
-    bool hideUser = true, hidePass = true;
+    bool hidePass = true;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1433,24 +1545,22 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                 children: [
                   _dialogHeader(
                     icon: Icons.edit,
-                    subtitle: 'PERSONAL DOCENTE',
+                    subtitle: 'REGISTRO DE ALUMNOS',
                     title: 'Modificar Información',
                   ),
-                  _teacherFormFields(
+                  _studentFormFields(
                     nameCtrl: n,
-                    emailCtrl: e,
-                    phoneCtrl: p,
+                    parentNameCtrl: pn,
+                    parentEmailCtrl: pe,
+                    parentPhoneCtrl: pp,
                     curpCtrl: c,
-                    dateCtrl: d,
                     birthDateCtrl: bd,
                     ageCtrl: age,
-                    onPickBirthDate: () => _pickBirthDate(ctx, bd, age, setDlg),
+                    onPickBirthDate: () =>
+                        _pickBirthDate(ctx, bd, age, setDlg),
                     isMobile: mobile,
-                    userCtrl: usr,
                     passCtrl: pwd,
-                    obscureUser: hideUser,
                     obscurePass: hidePass,
-                    onToggleUser: () => setDlg(() => hideUser = !hideUser),
                     onTogglePass: () => setDlg(() => hidePass = !hidePass),
                   ),
                   Padding(
@@ -1504,25 +1614,26 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     );
   }
 
-  // ──────── VER INFORMACIÓN MAESTRO ────────
-  void _showViewTeacherDialog(_TeacherData t) {
+  // ──────── VER INFORMACIÓN ALUMNO ────────
+  void _showViewStudentDialog(_StudentData s) {
     final mobile = _isMobile(context);
-    final n = TextEditingController(text: t.name),
-        e = TextEditingController(text: t.email),
-        p = TextEditingController(),
-        c = TextEditingController(text: t.curp),
-        d = TextEditingController(),
+    final n = TextEditingController(text: s.name),
+        pn = TextEditingController(text: s.parentName),
+        pe = TextEditingController(text: s.parentEmail),
+        pp = TextEditingController(text: s.parentPhone),
+        c = TextEditingController(text: s.curp),
         bd = TextEditingController(),
-        age = TextEditingController(),
-        usr = TextEditingController(),
+        age = TextEditingController(text: '${s.edad}'),
         pwd = TextEditingController();
-    bool hideUser = true, hidePass = true;
+    bool hidePass = true;
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDlg) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           insetPadding: EdgeInsets.symmetric(
             horizontal: mobile ? 16 : 40,
             vertical: 24,
@@ -1537,25 +1648,22 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                 children: [
                   _dialogHeader(
                     icon: Icons.visibility,
-                    subtitle: 'PERSONAL DOCENTE',
-                    title: 'Información del Maestro',
+                    subtitle: 'REGISTRO DE ALUMNOS',
+                    title: 'Información del Alumno',
                   ),
-                  _teacherFormFields(
+                  _studentFormFields(
                     nameCtrl: n,
-                    emailCtrl: e,
-                    phoneCtrl: p,
+                    parentNameCtrl: pn,
+                    parentEmailCtrl: pe,
+                    parentPhoneCtrl: pp,
                     curpCtrl: c,
-                    dateCtrl: d,
                     birthDateCtrl: bd,
                     ageCtrl: age,
                     onPickBirthDate: () {},
                     isMobile: mobile,
                     readOnly: true,
-                    userCtrl: usr,
                     passCtrl: pwd,
-                    obscureUser: hideUser,
                     obscurePass: hidePass,
-                    onToggleUser: () => setDlg(() => hideUser = !hideUser),
                     onTogglePass: () => setDlg(() => hidePass = !hidePass),
                   ),
                   Padding(
@@ -1569,7 +1677,10 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                       children: [
                         ElevatedButton.icon(
                           onPressed: () => Navigator.pop(ctx),
-                          icon: const Icon(Icons.close, size: 18),
+                          icon: const Icon(
+                            Icons.close,
+                            size: 18,
+                          ),
                           label: const Text('Cerrar'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF757575),
@@ -1595,294 +1706,176 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     );
   }
 
-  // ──────── ASIGNAR MATERIAS ────────
-  void _showAssignSubjectsDialog(_TeacherData t) {
-    final mobile = _isMobile(context);
-    final subjects = [
-      _SubjectData('Matemáticas I', 'Tronco Común', '5h/semana', true),
-      _SubjectData('Física II', 'Especialidad', '4h/semana', true),
-      _SubjectData('Comprensión Lectora', 'Humanidades', '5h/semana', false),
-      _SubjectData('Inglés Básico', 'Lenguas', '6h/semana', false),
-      _SubjectData('Química Inorgánica', 'Laboratorio', '5h/semana', false),
-      _SubjectData('Cálculo Diferencial', 'Avanzado', '5h/semana', false),
-    ];
+  // ──────── DAR DE BAJA ────────
+  void _showDarDeBajaDialog(_StudentData s) {
     showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDlg) {
-          final count = subjects.where((s) => s.selected).length;
-          return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            insetPadding: EdgeInsets.symmetric(
-              horizontal: mobile ? 16 : 40,
-              vertical: 24,
-            ),
-            child: Container(
-              width: mobile ? double.infinity : 540,
-              padding: const EdgeInsets.all(24),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(
-                              Icons.menu_book,
-                              size: 16,
-                              color: Color(0xFF4CAF50),
-                            ),
-                            SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                'GESTIÓN ACADÉMICA',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF4CAF50),
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 1,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        RichText(
-                          text: TextSpan(
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF333333),
-                            ),
-                            children: [
-                              const TextSpan(text: 'Asignar Materias a '),
-                              TextSpan(
-                                text: t.name,
-                                style: const TextStyle(
-                                  color: Color(0xFF4CAF50),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Seleccione las materias que impartirá el docente durante el período escolar actual.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF888888),
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: subjects
-                          .map(
-                            (s) => SizedBox(
-                              width: mobile
-                                  ? double.infinity
-                                  : (540 - 48 - 12) / 2,
-                              child: InkWell(
-                                onTap: () =>
-                                    setDlg(() => s.selected = !s.selected),
-                                borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  padding: const EdgeInsets.all(14),
-                                  decoration: BoxDecoration(
-                                    color: s.selected
-                                        ? const Color(0xFFE8F5E9)
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: s.selected
-                                          ? const Color(
-                                              0xFF4CAF50,
-                                            ).withOpacity(0.3)
-                                          : const Color(0xFFE8E8E8),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 20,
-                                        height: 20,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: s.selected
-                                              ? const Color(0xFF4CAF50)
-                                              : Colors.transparent,
-                                          border: Border.all(
-                                            color: s.selected
-                                                ? const Color(0xFF4CAF50)
-                                                : const Color(0xFFCCCCCC),
-                                            width: 2,
-                                          ),
-                                        ),
-                                        child: s.selected
-                                            ? const Icon(
-                                                Icons.check,
-                                                size: 14,
-                                                color: Colors.white,
-                                              )
-                                            : null,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              s.name,
-                                              style: const TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w600,
-                                                color: Color(0xFF333333),
-                                              ),
-                                            ),
-                                            Text(
-                                              '${s.category} • ${s.hours}',
-                                              style: const TextStyle(
-                                                fontSize: 11,
-                                                color: Color(0xFF999999),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                    const SizedBox(height: 24),
-                    mobile
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    '$count',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF4CAF50),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  const Text(
-                                    'Materias seleccionadas',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Color(0xFF888888),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx),
-                                    child: const Text(
-                                      'Cancelar',
-                                      style: TextStyle(
-                                        color: Color(0xFF888888),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  ElevatedButton(
-                                    onPressed: () => Navigator.pop(ctx),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF4CAF50),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 24,
-                                        vertical: 14,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(24),
-                                      ),
-                                    ),
-                                    child: const Text('Actualizar'),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          )
-                        : Row(
-                            children: [
-                              Text(
-                                '$count',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF4CAF50),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              const Text(
-                                'Materias seleccionadas',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF888888),
-                                ),
-                              ),
-                              const Spacer(),
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx),
-                                child: const Text(
-                                  'Cancelar',
-                                  style: TextStyle(color: Color(0xFF888888)),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              ElevatedButton(
-                                onPressed: () => Navigator.pop(ctx),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4CAF50),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 14,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(24),
-                                  ),
-                                ),
-                                child: const Text('Actualizar Asignaciones'),
-                              ),
-                            ],
-                          ),
-                  ],
-                ),
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF5350).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.arrow_downward,
+                color: Color(0xFFEF5350),
+                size: 24,
               ),
             ),
-          );
-        },
+            const SizedBox(width: 12),
+            const Flexible(
+              child: Text(
+                'Dar de Baja',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: RichText(
+          text: TextSpan(
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF555555),
+              height: 1.5,
+            ),
+            children: [
+              const TextSpan(
+                text: '¿Está seguro de que desea dar de baja a ',
+              ),
+              TextSpan(
+                text: s.name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF333333),
+                ),
+              ),
+              const TextSpan(
+                text:
+                    '? El alumno será movido a la sección de "No Cursando".',
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: Color(0xFF888888)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _studentsCursando.remove(s);
+                _studentsNoCursando.add(s);
+              });
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF5350),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Sí, dar de baja'),
+          ),
+        ],
       ),
     );
   }
 
-  // ──────── ELIMINAR MAESTRO ────────
-  void _showDeleteDialog(_TeacherData t) {
+  // ──────── DAR DE ALTA ────────
+  void _showDarDeAltaDialog(_StudentData s) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4CAF50).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.arrow_upward,
+                color: Color(0xFF4CAF50),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Flexible(
+              child: Text(
+                'Dar de Alta',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: RichText(
+          text: TextSpan(
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF555555),
+              height: 1.5,
+            ),
+            children: [
+              const TextSpan(
+                text: '¿Está seguro de que desea dar de alta a ',
+              ),
+              TextSpan(
+                text: s.name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF333333),
+                ),
+              ),
+              const TextSpan(
+                text:
+                    '? El alumno será movido a la sección de "Cursando".',
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: Color(0xFF888888)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _studentsNoCursando.remove(s);
+                _studentsCursando.add(s);
+              });
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4CAF50),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Sí, dar de alta'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ──────── ELIMINAR ALUMNO ────────
+  void _showDeleteDialog(_StudentData s) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1904,7 +1897,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
             const SizedBox(width: 12),
             const Flexible(
               child: Text(
-                'Eliminar Maestro',
+                'Eliminar Alumno',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
@@ -1920,7 +1913,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
             children: [
               const TextSpan(text: '¿Está seguro de que desea eliminar a '),
               TextSpan(
-                text: t.name,
+                text: s.name,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF333333),
@@ -1939,7 +1932,13 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
             ),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () {
+              setState(() {
+                _studentsCursando.remove(s);
+                _studentsNoCursando.remove(s);
+              });
+              Navigator.pop(ctx);
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF5350),
               foregroundColor: Colors.white,
@@ -1955,23 +1954,20 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
   }
 }
 
-// ──────── DATA MODELS ────────
-class _TeacherData {
-  final String name, email, initials, curp;
+// ──────── DATA MODEL ────────
+class _StudentData {
+  final String name, email, initials, curp, parentName, parentEmail, parentPhone;
   final Color avatarColor;
-  final int groups;
-  const _TeacherData(
+  final int edad;
+  const _StudentData(
     this.name,
     this.email,
     this.initials,
     this.avatarColor,
     this.curp,
-    this.groups,
+    this.parentName,
+    this.parentEmail,
+    this.parentPhone,
+    this.edad,
   );
-}
-
-class _SubjectData {
-  final String name, category, hours;
-  bool selected;
-  _SubjectData(this.name, this.category, this.hours, this.selected);
 }
