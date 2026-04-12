@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'AdminScaffold.dart';
 import 'DashboardAdmin.dart';
 import 'AlumnosAdmin.dart';
+import '../../BD/Maestros.dart'; // <- Import para API
 
 class MaestrosAdmin extends StatefulWidget {
   const MaestrosAdmin({super.key});
@@ -14,40 +15,46 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
   final int _totalPages = 3;
   final TextEditingController _searchController = TextEditingController();
 
-  final List<_TeacherData> _teachers = [
-    _TeacherData(
-      'Julián Sánchez',
-      'julian.sanchez@care.edu.mx',
-      'JS',
-      const Color(0xFF7E57C2),
-      'SACJ850101HDHNLR00',
-      3,
-    ),
-    _TeacherData(
-      'Rosa María Moreno',
-      'rosa.moreno@care.edu.mx',
-      'RM',
-      const Color(0xFF4CAF50),
-      'MORR900215MDFRSN01',
-      5,
-    ),
-    _TeacherData(
-      'Alberto González',
-      'alberto.gonz@care.edu.mx',
-      'AG',
-      const Color(0xFF26A69A),
-      'GOAA880520HDFLBL02',
-      2,
-    ),
-    _TeacherData(
-      'Elena Ledesma',
-      'elena.l@care.edu.mx',
-      'EL',
-      const Color(0xFFE91E63),
-      'LEDE930312MDFLDN03',
-      4,
-    ),
-  ];
+  final List<_TeacherData> _teachers = [];
+  bool _isLoading = true;
+  final MaestrosApiService _apiService = MaestrosApiService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMaestros();
+  }
+
+  Future<void> _loadMaestros() async {
+    setState(() => _isLoading = true);
+    final data = await _apiService.getMaestros();
+    if (mounted) {
+      setState(() {
+        _teachers.clear();
+        _teachers.addAll(data.map((m) => _TeacherData.fromJson(m)).toList());
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _agregarMaestroPrueba() async {
+    setState(() => _isLoading = true);
+    final stamp = DateTime.now().millisecondsSinceEpoch.toString().substring(7);
+    final data = {
+      'nombre_completo': 'Mtro. Prueba $stamp',
+      'correo_electronico': 'prueba$stamp@ejemplo.com',
+      'telefono': '555$stamp',
+      'curp': 'XXXYY9$stamp',
+      'fecha_nacimiento': '1980-05-15',
+      'pin_acceso': '1234',
+    };
+    bool success = await _apiService.agregarMaestro(data);
+    if (success) {
+      _loadMaestros();
+    } else {
+      setState(() => _isLoading = false);
+    }
+  }
 
   bool _isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 1050;
@@ -82,7 +89,13 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
         const SizedBox(height: 24),
         _buildFilterBar(),
         const SizedBox(height: 24),
-        isMobile ? _buildTeacherCards() : _buildTeacherTable(),
+        if (_isLoading)
+          const Padding(
+            padding: EdgeInsets.all(40.0),
+            child: Center(child: CircularProgressIndicator(color: Color(0xFF4CAF50))),
+          )
+        else
+          isMobile ? _buildTeacherCards() : _buildTeacherTable(),
       ],
     );
   }
@@ -108,21 +121,43 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _showAddTeacherDialog(),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Agregar Nuevo Maestro'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 14,
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showAddTeacherDialog(),
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('Agregar Maestro'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4CAF50),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: _agregarMaestroPrueba,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Icon(Icons.bug_report, size: 20),
                 ),
-              ),
+              ],
             ),
           ),
         ],
@@ -154,18 +189,43 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
           ),
         ),
         const SizedBox(width: 16),
-        ElevatedButton.icon(
-          onPressed: () => _showAddTeacherDialog(),
-          icon: const Icon(Icons.add, size: 18),
-          label: const Text('Agregar Nuevo Maestro'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4CAF50),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton(
+              onPressed: _agregarMaestroPrueba,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.bug_report, size: 18),
+                  SizedBox(width: 8),
+                  Text('Prueba'),
+                ],
+              ),
             ),
-          ),
+            const SizedBox(width: 12),
+            ElevatedButton.icon(
+              onPressed: () => _showAddTeacherDialog(),
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Agregar Nuevo Maestro'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -1368,7 +1428,26 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                         ),
                         const SizedBox(width: 12),
                         ElevatedButton.icon(
-                          onPressed: () => Navigator.pop(ctx),
+                          onPressed: () async {
+                            Navigator.pop(ctx);
+                            setState(() => _isLoading = true);
+                            final data = {
+                              'nombre_completo': n.text,
+                              'correo_electronico': e.text,
+                              'telefono': p.text,
+                              'curp': c.text,
+                              'fecha_contratacion': d.text,
+                              'fecha_nacimiento': bd.text,
+                              'edad': int.tryParse(age.text) ?? 0,
+                              if (pwd.text.isNotEmpty) 'pin_acceso': pwd.text,
+                            };
+                            bool success = await _apiService.agregarMaestro(data);
+                            if (success) {
+                              _loadMaestros();
+                            } else {
+                              setState(() => _isLoading = false);
+                            }
+                          },
                           icon: const Icon(
                             Icons.check_circle_outline,
                             size: 18,
@@ -1403,11 +1482,11 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     final mobile = _isMobile(context);
     final n = TextEditingController(text: t.name),
         e = TextEditingController(text: t.email),
-        p = TextEditingController(),
+        p = TextEditingController(text: t.telefono),
         c = TextEditingController(text: t.curp),
-        d = TextEditingController(),
-        bd = TextEditingController(),
-        age = TextEditingController(),
+        d = TextEditingController(text: t.fechaContratacion),
+        bd = TextEditingController(text: t.fechaNacimiento),
+        age = TextEditingController(text: t.edad.toString()),
         usr = TextEditingController(),
         pwd = TextEditingController();
     bool hideUser = true, hidePass = true;
@@ -1474,7 +1553,26 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                         ),
                         const SizedBox(width: 12),
                         ElevatedButton.icon(
-                          onPressed: () => Navigator.pop(ctx),
+                          onPressed: () async {
+                            Navigator.pop(ctx);
+                            setState(() => _isLoading = true);
+                            final data = {
+                              'nombre_completo': n.text,
+                              'correo_electronico': e.text,
+                              'telefono': p.text,
+                              'curp': c.text,
+                              'fecha_contratacion': d.text,
+                              'fecha_nacimiento': bd.text,
+                              'edad': int.tryParse(age.text) ?? 0,
+                              if (pwd.text.isNotEmpty) 'pin_acceso': pwd.text,
+                            };
+                            bool success = await _apiService.actualizarMaestro(t.idMaestro, data);
+                            if (success) {
+                              _loadMaestros();
+                            } else {
+                              setState(() => _isLoading = false);
+                            }
+                          },
                           icon: const Icon(
                             Icons.check_circle_outline,
                             size: 18,
@@ -1509,11 +1607,11 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     final mobile = _isMobile(context);
     final n = TextEditingController(text: t.name),
         e = TextEditingController(text: t.email),
-        p = TextEditingController(),
+        p = TextEditingController(text: t.telefono),
         c = TextEditingController(text: t.curp),
-        d = TextEditingController(),
-        bd = TextEditingController(),
-        age = TextEditingController(),
+        d = TextEditingController(text: t.fechaContratacion),
+        bd = TextEditingController(text: t.fechaNacimiento),
+        age = TextEditingController(text: t.edad.toString()),
         usr = TextEditingController(),
         pwd = TextEditingController();
     bool hideUser = true, hidePass = true;
@@ -1939,7 +2037,16 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
             ),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              setState(() => _isLoading = true);
+              bool success = await _apiService.eliminarMaestro(t.idMaestro);
+              if (success) {
+                _loadMaestros();
+              } else {
+                setState(() => _isLoading = false);
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF5350),
               foregroundColor: Colors.white,
@@ -1957,9 +2064,12 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
 
 // ──────── DATA MODELS ────────
 class _TeacherData {
-  final String name, email, initials, curp;
+  final int idMaestro;
+  final String name, email, initials, curp, telefono, fechaContratacion, fechaNacimiento;
+  final int edad;
   final Color avatarColor;
   final int groups;
+
   const _TeacherData(
     this.name,
     this.email,
@@ -1967,7 +2077,34 @@ class _TeacherData {
     this.avatarColor,
     this.curp,
     this.groups,
+    this.idMaestro,
+    this.telefono,
+    this.fechaContratacion,
+    this.fechaNacimiento,
+    this.edad,
   );
+
+  factory _TeacherData.fromJson(Map<String, dynamic> json) {
+    String nombre = json['nombre_completo'] ?? '';
+    List<String> nomParts = nombre.split(' ');
+    String ini = nomParts.length > 1 
+      ? '${nomParts[0][0]}${nomParts[1][0]}'.toUpperCase()
+      : (nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : '?');
+
+    return _TeacherData(
+      nombre,
+      json['correo_electronico'] ?? '',
+      ini,
+      const Color(0xFF4CAF50), // Color placeholder
+      json['curp'] ?? '',
+      0, // Groups: hardcoded placeholder for now if not in table
+      json['id_maestro'] ?? 0,
+      json['telefono'] ?? '',
+      json['fecha_contratacion'] ?? '',
+      json['fecha_nacimiento'] ?? '',
+      json['edad'] ?? 0,
+    );
+  }
 }
 
 class _SubjectData {
