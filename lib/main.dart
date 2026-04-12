@@ -13,10 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'CARE',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        fontFamily: 'Roboto',
-      ),
+      theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Roboto'),
       home: const PaginaWeb(),
     );
   }

@@ -3,6 +3,7 @@ import 'AdminScaffold.dart';
 import 'DashboardAdmin.dart';
 import 'AlumnosAdmin.dart';
 import '../../BD/Maestros.dart'; // <- Import para API
+import 'GruposAdmin.dart';
 
 class MaestrosAdmin extends StatefulWidget {
   const MaestrosAdmin({super.key});
@@ -74,6 +75,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
       destinations: {
         0: (_) => const DashboardAdmin(),
         2: (_) => const AlumnosAdmin(),
+        3: (_) => const GruposAdmin(),
       },
       bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
       body: _buildContent(mobile),
@@ -92,7 +94,9 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
         if (_isLoading)
           const Padding(
             padding: EdgeInsets.all(40.0),
-            child: Center(child: CircularProgressIndicator(color: Color(0xFF4CAF50))),
+            child: Center(
+              child: CircularProgressIndicator(color: Color(0xFF4CAF50)),
+            ),
           )
         else
           isMobile ? _buildTeacherCards() : _buildTeacherTable(),
@@ -197,7 +201,10 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -219,7 +226,10 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4CAF50),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 14,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -1168,7 +1178,10 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                 ),
                 decoration: InputDecoration(
                   hintText: 'Ej. julian.sanchez',
-                  hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
+                  hintStyle: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFFBBBBBB),
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
                       obscureUser ? Icons.visibility_off : Icons.visibility,
@@ -1178,8 +1191,13 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                     onPressed: onToggleUser,
                   ),
                   filled: true,
-                  fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                  fillColor: readOnly
+                      ? const Color(0xFFEFEFEF)
+                      : const Color(0xFFF9F9F9),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 14,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
@@ -1211,7 +1229,10 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                 ),
                 decoration: InputDecoration(
                   hintText: '••••••••',
-                  hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
+                  hintStyle: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFFBBBBBB),
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
                       obscurePass ? Icons.visibility_off : Icons.visibility,
@@ -1221,8 +1242,13 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                     onPressed: onTogglePass,
                   ),
                   filled: true,
-                  fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                  fillColor: readOnly
+                      ? const Color(0xFFEFEFEF)
+                      : const Color(0xFFF9F9F9),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 14,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
@@ -1260,33 +1286,51 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                           ),
                           decoration: InputDecoration(
                             hintText: 'Ej. julian.sanchez',
-                            hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
+                            hintStyle: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFFBBBBBB),
+                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                obscureUser ? Icons.visibility_off : Icons.visibility,
+                                obscureUser
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 size: 18,
                                 color: const Color(0xFF999999),
                               ),
                               onPressed: onToggleUser,
                             ),
                             filled: true,
-                            fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                            fillColor: readOnly
+                                ? const Color(0xFFEFEFEF)
+                                : const Color(0xFFF9F9F9),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 14,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE0E0E0),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE0E0E0),
+                              ),
                             ),
                             disabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE0E0E0),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFF4CAF50)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF4CAF50),
+                              ),
                             ),
                           ),
                         ),
@@ -1310,33 +1354,51 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                           ),
                           decoration: InputDecoration(
                             hintText: '••••••••',
-                            hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
+                            hintStyle: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFFBBBBBB),
+                            ),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                obscurePass ? Icons.visibility_off : Icons.visibility,
+                                obscurePass
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 size: 18,
                                 color: const Color(0xFF999999),
                               ),
                               onPressed: onTogglePass,
                             ),
                             filled: true,
-                            fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                            fillColor: readOnly
+                                ? const Color(0xFFEFEFEF)
+                                : const Color(0xFFF9F9F9),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 14,
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE0E0E0),
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE0E0E0),
+                              ),
                             ),
                             disabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE0E0E0),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFF4CAF50)),
+                              borderSide: const BorderSide(
+                                color: Color(0xFF4CAF50),
+                              ),
                             ),
                           ),
                         ),
@@ -1441,7 +1503,9 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                               'edad': int.tryParse(age.text) ?? 0,
                               if (pwd.text.isNotEmpty) 'pin_acceso': pwd.text,
                             };
-                            bool success = await _apiService.agregarMaestro(data);
+                            bool success = await _apiService.agregarMaestro(
+                              data,
+                            );
                             if (success) {
                               _loadMaestros();
                             } else {
@@ -1566,7 +1630,10 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                               'edad': int.tryParse(age.text) ?? 0,
                               if (pwd.text.isNotEmpty) 'pin_acceso': pwd.text,
                             };
-                            bool success = await _apiService.actualizarMaestro(t.idMaestro, data);
+                            bool success = await _apiService.actualizarMaestro(
+                              t.idMaestro,
+                              data,
+                            );
                             if (success) {
                               _loadMaestros();
                             } else {
@@ -1620,7 +1687,9 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
       barrierDismissible: true,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDlg) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           insetPadding: EdgeInsets.symmetric(
             horizontal: mobile ? 16 : 40,
             vertical: 24,
@@ -2065,7 +2134,13 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
 // ──────── DATA MODELS ────────
 class _TeacherData {
   final int idMaestro;
-  final String name, email, initials, curp, telefono, fechaContratacion, fechaNacimiento;
+  final String name,
+      email,
+      initials,
+      curp,
+      telefono,
+      fechaContratacion,
+      fechaNacimiento;
   final int edad;
   final Color avatarColor;
   final int groups;
@@ -2087,9 +2162,9 @@ class _TeacherData {
   factory _TeacherData.fromJson(Map<String, dynamic> json) {
     String nombre = json['nombre_completo'] ?? '';
     List<String> nomParts = nombre.split(' ');
-    String ini = nomParts.length > 1 
-      ? '${nomParts[0][0]}${nomParts[1][0]}'.toUpperCase()
-      : (nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : '?');
+    String ini = nomParts.length > 1
+        ? '${nomParts[0][0]}${nomParts[1][0]}'.toUpperCase()
+        : (nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : '?');
 
     return _TeacherData(
       nombre,

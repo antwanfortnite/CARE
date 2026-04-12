@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'AdminScaffold.dart';
 import 'MaestrosAdmin.dart';
 import 'AlumnosAdmin.dart';
+import 'GruposAdmin.dart';
 
 class DashboardAdmin extends StatelessWidget {
   const DashboardAdmin({super.key});
@@ -18,6 +19,7 @@ class DashboardAdmin extends StatelessWidget {
       destinations: {
         1: (_) => const MaestrosAdmin(),
         2: (_) => const AlumnosAdmin(),
+        3: (_) => const GruposAdmin(),
       },
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
