@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'AdminScaffold.dart';
 import 'DashboardAdmin.dart';
 import 'AlumnosAdmin.dart';
+import 'GruposAdmin.dart';
 
 class MaestrosAdmin extends StatefulWidget {
   const MaestrosAdmin({super.key});
@@ -67,6 +68,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
       destinations: {
         0: (_) => const DashboardAdmin(),
         2: (_) => const AlumnosAdmin(),
+        3: (_) => const GruposAdmin(),
       },
       bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
       body: _buildContent(mobile),
