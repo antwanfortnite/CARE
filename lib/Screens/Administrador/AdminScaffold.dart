@@ -55,7 +55,7 @@ class _AdminScaffoldState extends State<AdminScaffold> {
     AdminNavItem(Icons.school_outlined, 'Maestros'),
     AdminNavItem(Icons.person_outline, 'Alumnos'),
     AdminNavItem(Icons.group_outlined, 'Grupos'),
-    AdminNavItem(Icons.menu_book_outlined, 'Materias'),
+    AdminNavItem(Icons.folder_shared_outlined, 'Evidencias'),
     AdminNavItem(Icons.admin_panel_settings_outlined, 'Administradores'),
   ];
 

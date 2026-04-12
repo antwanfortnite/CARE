@@ -3,6 +3,7 @@ import 'AdminScaffold.dart';
 import 'MaestrosAdmin.dart';
 import 'AlumnosAdmin.dart';
 import 'GruposAdmin.dart';
+import 'EvidenciasAdmin.dart';
 
 class DashboardAdmin extends StatelessWidget {
   const DashboardAdmin({super.key});
@@ -20,6 +21,7 @@ class DashboardAdmin extends StatelessWidget {
         1: (_) => const MaestrosAdmin(),
         2: (_) => const AlumnosAdmin(),
         3: (_) => const GruposAdmin(),
+        4: (_) => const EvidenciasAdmin(),
       },
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
