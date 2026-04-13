@@ -32,7 +32,15 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     if (mounted) {
       setState(() {
         _teachers.clear();
-        _teachers.addAll(data.map((m) => _TeacherData.fromJson(m)).toList());
+        _teachers.addAll(
+          data
+              .where((m) {
+                final estado = m['estado'];
+                return estado == 1;
+              })
+              .map((m) => _TeacherData.fromJson(m))
+              .toList(),
+        );
         _isLoading = false;
       });
     }
@@ -47,7 +55,10 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
       'telefono': '555$stamp',
       'curp': 'XXXYY9$stamp',
       'fecha_nacimiento': '1980-05-15',
+      'fecha_contratacion': '2023-01-10',
+      'edad': 40,
       'pin_acceso': '1234',
+      'estado': 1,
     };
     bool success = await _apiService.agregarMaestro(data);
     if (success) {
@@ -828,8 +839,42 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
       final day = picked.day.toString().padLeft(2, '0');
       final month = picked.month.toString().padLeft(2, '0');
       setDlg(() {
-        birthDateCtrl.text = '$day/$month/${picked.year}';
+        birthDateCtrl.text = '${picked.year}-$month-$day';
         ageCtrl.text = '${_calculateAge(picked)}';
+      });
+    }
+  }
+
+  Future<void> _pickHireDate(
+    BuildContext ctx,
+    TextEditingController dateCtrl,
+    StateSetter setDlg,
+  ) async {
+    final picked = await showDatePicker(
+      context: ctx,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1960),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: const Color(0xFF4CAF50),
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF4CAF50),
+              secondary: Color(0xFF4CAF50),
+              onPrimary: Colors.white,
+              onSurface: Color(0xFF333333),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      final day = picked.day.toString().padLeft(2, '0');
+      final month = picked.month.toString().padLeft(2, '0');
+      setDlg(() {
+        dateCtrl.text = '${picked.year}-$month-$day';
       });
     }
   }
@@ -893,6 +938,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     required TextEditingController birthDateCtrl,
     required TextEditingController ageCtrl,
     required VoidCallback onPickBirthDate,
+    required VoidCallback onPickHireDate,
     required bool isMobile,
     bool readOnly = false,
     TextEditingController? userCtrl,
@@ -946,11 +992,16 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
             const SizedBox(height: 16),
             _dialogLabel('FECHA DE CONTRATACIÓN'),
             const SizedBox(height: 6),
-            _dialogTextField(
-              controller: dateCtrl,
-              hint: 'mm/dd/yyyy',
-              icon: Icons.calendar_today_outlined,
-              readOnly: readOnly,
+            GestureDetector(
+              onTap: readOnly ? null : onPickHireDate,
+              child: AbsorbPointer(
+                child: _dialogTextField(
+                  controller: dateCtrl,
+                  hint: 'yyyy-mm-dd',
+                  icon: Icons.calendar_today_outlined,
+                  readOnly: readOnly,
+                ),
+              ),
             ),
           ] else ...[
             Row(
@@ -1013,11 +1064,16 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                     children: [
                       _dialogLabel('FECHA DE CONTRATACIÓN'),
                       const SizedBox(height: 6),
-                      _dialogTextField(
-                        controller: dateCtrl,
-                        hint: 'mm/dd/yyyy',
-                        icon: Icons.calendar_today_outlined,
-                        readOnly: readOnly,
+                      GestureDetector(
+                        onTap: readOnly ? null : onPickHireDate,
+                        child: AbsorbPointer(
+                          child: _dialogTextField(
+                            controller: dateCtrl,
+                            hint: 'yyyy-mm-dd',
+                            icon: Icons.calendar_today_outlined,
+                            readOnly: readOnly,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -1034,7 +1090,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
               child: AbsorbPointer(
                 child: _dialogTextField(
                   controller: birthDateCtrl,
-                  hint: 'Seleccione una fecha',
+                  hint: 'yyyy-mm-dd',
                   icon: Icons.cake_outlined,
                   readOnly: readOnly,
                 ),
@@ -1093,7 +1149,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                         child: AbsorbPointer(
                           child: _dialogTextField(
                             controller: birthDateCtrl,
-                            hint: 'Seleccione una fecha',
+                            hint: 'yyyy-mm-dd',
                             icon: Icons.cake_outlined,
                             readOnly: readOnly,
                           ),
@@ -1461,6 +1517,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                     birthDateCtrl: bd,
                     ageCtrl: age,
                     onPickBirthDate: () => _pickBirthDate(ctx, bd, age, setDlg),
+                    onPickHireDate: () => _pickHireDate(ctx, d, setDlg),
                     isMobile: mobile,
                     userCtrl: usr,
                     passCtrl: pwd,
@@ -1500,8 +1557,10 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                               'curp': c.text,
                               'fecha_contratacion': d.text,
                               'fecha_nacimiento': bd.text,
+
                               'edad': int.tryParse(age.text) ?? 0,
-                              if (pwd.text.isNotEmpty) 'pin_acceso': pwd.text,
+                              'pin_acceso': pwd.text,
+                              'estado': true,
                             };
                             bool success = await _apiService.agregarMaestro(
                               data,
@@ -1552,7 +1611,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
         bd = TextEditingController(text: t.fechaNacimiento),
         age = TextEditingController(text: t.edad.toString()),
         usr = TextEditingController(),
-        pwd = TextEditingController();
+        pwd = TextEditingController(text: t.pinAcceso);
     bool hideUser = true, hidePass = true;
     showDialog(
       context: context,
@@ -1588,6 +1647,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                     birthDateCtrl: bd,
                     ageCtrl: age,
                     onPickBirthDate: () => _pickBirthDate(ctx, bd, age, setDlg),
+                    onPickHireDate: () => _pickHireDate(ctx, d, setDlg),
                     isMobile: mobile,
                     userCtrl: usr,
                     passCtrl: pwd,
@@ -1627,8 +1687,10 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                               'curp': c.text,
                               'fecha_contratacion': d.text,
                               'fecha_nacimiento': bd.text,
+
                               'edad': int.tryParse(age.text) ?? 0,
-                              if (pwd.text.isNotEmpty) 'pin_acceso': pwd.text,
+                              'pin_acceso': pwd.text,
+                              'estado': 1,
                             };
                             bool success = await _apiService.actualizarMaestro(
                               t.idMaestro,
@@ -1680,7 +1742,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
         bd = TextEditingController(text: t.fechaNacimiento),
         age = TextEditingController(text: t.edad.toString()),
         usr = TextEditingController(),
-        pwd = TextEditingController();
+        pwd = TextEditingController(text: t.pinAcceso);
     bool hideUser = true, hidePass = true;
     showDialog(
       context: context,
@@ -1716,6 +1778,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                     birthDateCtrl: bd,
                     ageCtrl: age,
                     onPickBirthDate: () {},
+                    onPickHireDate: () {},
                     isMobile: mobile,
                     readOnly: true,
                     userCtrl: usr,
@@ -2109,7 +2172,18 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
             onPressed: () async {
               Navigator.pop(ctx);
               setState(() => _isLoading = true);
-              bool success = await _apiService.eliminarMaestro(t.idMaestro);
+              final data = {
+                'nombre_completo': t.name,
+                'correo_electronico': t.email,
+                'telefono': t.telefono,
+                'curp': t.curp,
+                'fecha_contratacion': t.fechaContratacion,
+                'fecha_nacimiento': t.fechaNacimiento,
+                'edad': t.edad,
+                'pin_acceso': t.pinAcceso,
+                'estado': 0,
+              };
+              bool success = await _apiService.eliminarMaestro(t.idMaestro, data);
               if (success) {
                 _loadMaestros();
               } else {
@@ -2140,7 +2214,8 @@ class _TeacherData {
       curp,
       telefono,
       fechaContratacion,
-      fechaNacimiento;
+      fechaNacimiento,
+      pinAcceso;
   final int edad;
   final Color avatarColor;
   final int groups;
@@ -2157,27 +2232,39 @@ class _TeacherData {
     this.fechaContratacion,
     this.fechaNacimiento,
     this.edad,
+    this.pinAcceso,
   );
 
   factory _TeacherData.fromJson(Map<String, dynamic> json) {
-    String nombre = json['nombre_completo'] ?? '';
+    String nombre = json['nombre_completo']?.toString() ?? '';
     List<String> nomParts = nombre.split(' ');
     String ini = nomParts.length > 1
         ? '${nomParts[0][0]}${nomParts[1][0]}'.toUpperCase()
         : (nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : '?');
 
+    String parseDate(dynamic val) {
+      if (val == null) return '';
+      String s = val.toString();
+      return s.contains('T') ? s.split('T')[0] : s;
+    }
+
     return _TeacherData(
       nombre,
-      json['correo_electronico'] ?? '',
+      json['correo_electronico']?.toString() ?? '',
       ini,
       const Color(0xFF4CAF50), // Color placeholder
-      json['curp'] ?? '',
+      json['curp']?.toString() ?? '',
       0, // Groups: hardcoded placeholder for now if not in table
-      json['id_maestro'] ?? 0,
-      json['telefono'] ?? '',
-      json['fecha_contratacion'] ?? '',
-      json['fecha_nacimiento'] ?? '',
-      json['edad'] ?? 0,
+      json['id_maestro'] is int
+          ? json['id_maestro']
+          : int.tryParse(json['id_maestro'].toString()) ?? 0,
+      json['telefono']?.toString() ?? '',
+      parseDate(json['fecha_contratacion']),
+      parseDate(json['fecha_nacimiento']),
+      json['edad'] is int
+          ? json['edad']
+          : int.tryParse(json['edad'].toString()) ?? 0,
+      json['pin_acceso']?.toString() ?? '',
     );
   }
 }

@@ -44,7 +44,10 @@ class MaestrosApiService {
   }
 
   // Actualizar un maestro
-  Future<bool> actualizarMaestro(int idMaestro, Map<String, dynamic> data) async {
+  Future<bool> actualizarMaestro(
+    int idMaestro,
+    Map<String, dynamic> data,
+  ) async {
     try {
       final response = await http.put(
         Uri.parse('$baseUrl/maestros/$idMaestro'),
@@ -65,16 +68,17 @@ class MaestrosApiService {
     }
   }
 
-  // Eliminar un maestro
-  Future<bool> eliminarMaestro(int idMaestro) async {
+  // Eliminar un maestro (Eliminado Lógico)
+  Future<bool> eliminarMaestro(int idMaestro, Map<String, dynamic> data) async {
     try {
-      final response = await http.delete(
+      final response = await http.put(
         Uri.parse('$baseUrl/maestros/$idMaestro'),
         headers: {"Content-Type": "application/json"},
+        body: jsonEncode(data),
       );
 
       if (response.statusCode == 200) {
-        print('Maestro eliminado exitosamente');
+        print('Maestro eliminado (lógicamente) exitosamente');
         return true;
       } else {
         print('Error al eliminar maestro: ${response.statusCode}');
