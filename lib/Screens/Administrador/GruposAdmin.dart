@@ -3,6 +3,7 @@ import 'AdminScaffold.dart';
 import 'DashboardAdmin.dart';
 import 'MaestrosAdmin.dart';
 import 'AlumnosAdmin.dart';
+import 'EvidenciasAdmin.dart';
 
 class GruposAdmin extends StatefulWidget {
   const GruposAdmin({super.key});
@@ -100,6 +101,7 @@ class _GruposAdminState extends State<GruposAdmin> {
         0: (_) => const DashboardAdmin(),
         1: (_) => const MaestrosAdmin(),
         2: (_) => const AlumnosAdmin(),
+        4: (_) => const EvidenciasAdmin(),
       },
       bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
       body: _buildContent(mobile),

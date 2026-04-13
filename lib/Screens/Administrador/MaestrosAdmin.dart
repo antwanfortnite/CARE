@@ -4,6 +4,7 @@ import 'DashboardAdmin.dart';
 import 'AlumnosAdmin.dart';
 import '../../BD/Maestros.dart'; // <- Import para API
 import 'GruposAdmin.dart';
+import 'EvidenciasAdmin.dart';
 
 class MaestrosAdmin extends StatefulWidget {
   const MaestrosAdmin({super.key});
@@ -87,6 +88,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
         0: (_) => const DashboardAdmin(),
         2: (_) => const AlumnosAdmin(),
         3: (_) => const GruposAdmin(),
+        4: (_) => const EvidenciasAdmin(),
       },
       bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
       body: _buildContent(mobile),
