@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'AdminScaffold.dart';
-import 'MaestrosAdmin.dart';
-import 'AlumnosAdmin.dart';
-import 'GruposAdmin.dart';
-import 'EvidenciasAdmin.dart';
-import 'AdministradoresAdmin.dart';
+import 'ProfesorScaffold.dart';
+import 'GruposProfesor.dart';
+import 'EvidenciasProfesor.dart';
 
-class DashboardAdmin extends StatelessWidget {
-  const DashboardAdmin({super.key});
+class DashboardProfesor extends StatelessWidget {
+  const DashboardProfesor({super.key});
 
   bool _isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 700;
@@ -16,14 +13,11 @@ class DashboardAdmin extends StatelessWidget {
   Widget build(BuildContext context) {
     final mobile = _isMobile(context);
 
-    return AdminScaffold(
+    return ProfesorScaffold(
       selectedIndex: 0,
       destinations: {
-        1: (_) => const MaestrosAdmin(),
-        2: (_) => const AlumnosAdmin(),
-        3: (_) => const GruposAdmin(),
-        4: (_) => const EvidenciasAdmin(),
-        5: (_) => const AdministradoresAdmin(),
+        1: (_) => const GruposProfesor(),
+        2: (_) => const EvidenciasProfesor(),
       },
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,7 +49,7 @@ class DashboardAdmin extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '¡Buen día, Administrador!',
+            '¡Buen día, Profesor!',
             style: TextStyle(
               color: Colors.white,
               fontSize: isMobile ? 18 : 24,
@@ -65,8 +59,8 @@ class DashboardAdmin extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             isMobile
-                ? 'Bienvenido al sistema CARE. Resumen de actividad escolar.'
-                : 'Bienvenido al sistema CARE. Aquí tienes un resumen de la actividad escolar y el\nrendimiento institucional de hoy.',
+                ? 'Bienvenido al sistema CARE. Resumen de tu actividad docente.'
+                : 'Bienvenido al sistema CARE. Aquí tienes un resumen de tu actividad\ndocente y el avance de tus grupos.',
             style: const TextStyle(
               color: Colors.white70,
               fontSize: 13,
@@ -82,32 +76,32 @@ class DashboardAdmin extends StatelessWidget {
   Widget _buildStatCards(bool isMobile) {
     final stats = [
       _StatData(
-        Icons.people_outline,
-        'Total Alumnos',
-        '1,284',
-        '+12%',
-        const Color(0xFF4CAF50),
-      ),
-      _StatData(
-        Icons.person_outline,
-        'Total Maestros',
-        '86',
-        'Estable',
-        const Color(0xFF26A69A),
-      ),
-      _StatData(
-        Icons.grid_view,
-        'Grupos Activos',
-        '42',
+        Icons.group_outlined,
+        'Mis Grupos',
+        '4',
         'Activos',
         const Color(0xFF4CAF50),
       ),
       _StatData(
-        Icons.calendar_today_outlined,
-        'Próximas Clases',
+        Icons.people_outline,
+        'Total Alumnos',
+        '87',
+        '+5 nuevos',
+        const Color(0xFF26A69A),
+      ),
+      _StatData(
+        Icons.folder_shared_outlined,
+        'Evidencias Subidas',
+        '34',
+        'Este mes',
+        const Color(0xFF7E57C2),
+      ),
+      _StatData(
+        Icons.pending_actions_outlined,
+        'Pendientes',
         '12',
-        'Próximas',
-        const Color(0xFF66BB6A),
+        'Por subir',
+        const Color(0xFFFFA726),
       ),
     ];
 
@@ -211,7 +205,7 @@ class DashboardAdmin extends StatelessWidget {
         children: [
           _buildActivitySection(),
           const SizedBox(height: 20),
-          _buildSystemStatusSection(),
+          _buildQuickActionsSection(),
         ],
       );
     }
@@ -220,7 +214,7 @@ class DashboardAdmin extends StatelessWidget {
       children: [
         Expanded(flex: 3, child: _buildActivitySection()),
         const SizedBox(width: 20),
-        Expanded(flex: 2, child: _buildSystemStatusSection()),
+        Expanded(flex: 2, child: _buildQuickActionsSection()),
       ],
     );
   }
@@ -260,44 +254,44 @@ class DashboardAdmin extends StatelessWidget {
             ],
           ),
           const Text(
-            'Últimos movimientos registrados en la plataforma',
+            'Últimas actividades en tus grupos',
             style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
           ),
           const SizedBox(height: 16),
           _activityTile(
-            Icons.person_add_outlined,
-            const Color(0xFF7E57C2),
-            'Nuevo alumno inscrito',
-            'Carlos Méndez se unió al grupo 3A de Ciencias',
-            'Hace 15 min',
+            Icons.add_photo_alternate,
+            const Color(0xFF4CAF50),
+            'Evidencia subida',
+            'Subiste evidencia de Carlos Méndez - Grupo 3A',
+            'Hace 30 min',
           ),
           _activityTile(
-            Icons.description_outlined,
-            const Color(0xFF42A5F5),
-            'Reporte de calificaciones',
-            'La Profesora Elena subió notas parciales - Matemáticas I',
+            Icons.person_add_outlined,
+            const Color(0xFF7E57C2),
+            'Nuevo alumno asignado',
+            'Ana Sofía Rivera fue asignada al Grupo 3A',
             'Hace 2 horas',
           ),
           _activityTile(
-            Icons.swap_horiz,
-            const Color(0xFFFFA726),
-            'Cambio de horario',
-            'Aula 402 reasignada para el taller de Arte Digital',
-            'Hace 5 horas',
+            Icons.folder_outlined,
+            const Color(0xFF42A5F5),
+            'Evidencia pendiente',
+            'Grupo 3B tiene 5 alumnos sin evidencias esta semana',
+            'Hace 4 horas',
           ),
           _activityTile(
-            Icons.lock_outline,
-            const Color(0xFFEF5350),
-            'Seguridad',
-            'Restablecimiento de contraseña solicitado por Admin #3',
-            'Ayer, 18:30',
+            Icons.check_circle_outline,
+            const Color(0xFF26A69A),
+            'Evidencias completas',
+            'Grupo 2A tiene todas las evidencias al día',
+            'Ayer, 16:00',
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSystemStatusSection() {
+  Widget _buildQuickActionsSection() {
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -309,53 +303,153 @@ class DashboardAdmin extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Estado del Sistema',
+            'Acciones Rápidas',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Color(0xFF333333),
             ),
           ),
+          const SizedBox(height: 6),
+          const Text(
+            'Accesos directos a funciones frecuentes',
+            style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
+          ),
           const SizedBox(height: 20),
-          _systemBar('Capacidad Alumnos', 0.82, '82%', const Color(0xFF4CAF50)),
-          const SizedBox(height: 16),
-          _systemBar('Uso de Servidores', 0.45, '45%', const Color(0xFF4CAF50)),
-          const SizedBox(height: 16),
-          _systemBar(
-            'Documentación Digital',
-            0.96,
-            '96%',
+          _quickActionBtn(
+            Icons.add_photo_alternate,
+            'Subir Evidencia',
+            'Agregar evidencia a un alumno',
             const Color(0xFF4CAF50),
           ),
-          const SizedBox(height: 24),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              height: 120,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8F5E9),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.dns_outlined, size: 40, color: Color(0xFF4CAF50)),
-                  SizedBox(height: 8),
-                  Text(
-                    'Servidor Norte 4WS-2 (CDMX)',
-                    style: TextStyle(fontSize: 11, color: Color(0xFF666666)),
-                  ),
-                  Text(
-                    'Último respaldo 04:00 AM',
-                    style: TextStyle(fontSize: 10, color: Color(0xFF999999)),
-                  ),
-                ],
-              ),
+          const SizedBox(height: 12),
+          _quickActionBtn(
+            Icons.group_outlined,
+            'Ver Mis Grupos',
+            'Consultar alumnos y grupos',
+            const Color(0xFF42A5F5),
+          ),
+          const SizedBox(height: 12),
+          _quickActionBtn(
+            Icons.folder_shared_outlined,
+            'Gestión de Evidencias',
+            'Administrar todas las evidencias',
+            const Color(0xFF7E57C2),
+          ),
+          const SizedBox(height: 20),
+          // Progress bar
+          const Text(
+            'Progreso de Evidencias',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF555555),
             ),
+          ),
+          const SizedBox(height: 12),
+          _progressBar('Grupo 3A', 0.85, '85%', const Color(0xFF4CAF50)),
+          const SizedBox(height: 10),
+          _progressBar('Grupo 3B', 0.60, '60%', const Color(0xFFFFA726)),
+          const SizedBox(height: 10),
+          _progressBar('Grupo 2A', 1.0, '100%', const Color(0xFF4CAF50)),
+          const SizedBox(height: 10),
+          _progressBar('Grupo 1A', 0.45, '45%', const Color(0xFFEF5350)),
+        ],
+      ),
+    );
+  }
+
+  Widget _quickActionBtn(
+    IconData icon,
+    String title,
+    String subtitle,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.15)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF999999),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.arrow_forward_ios,
+            size: 14,
+            color: color.withOpacity(0.5),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _progressBar(String label, double value, String percent, Color color) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(fontSize: 12, color: Color(0xFF666666)),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text(
+              percent,
+              style: TextStyle(
+                fontSize: 12,
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: value,
+            minHeight: 8,
+            backgroundColor: const Color(0xFFE8E8E8),
+            valueColor: AlwaysStoppedAnimation(color),
+          ),
+        ),
+      ],
     );
   }
 
@@ -417,44 +511,7 @@ class DashboardAdmin extends StatelessWidget {
     );
   }
 
-  Widget _systemBar(String label, double value, String percent, Color color) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Flexible(
-              child: Text(
-                label,
-                style: const TextStyle(fontSize: 12, color: Color(0xFF666666)),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Text(
-              percent,
-              style: TextStyle(
-                fontSize: 12,
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: value,
-            minHeight: 8,
-            backgroundColor: const Color(0xFFE8E8E8),
-            valueColor: AlwaysStoppedAnimation(color),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ──────── CALENDARIO INSTITUCIONAL ────────
+  // ──────── CALENDARIO / PRÓXIMOS EVENTOS ────────
   Widget _buildCalendarSection(bool isMobile) {
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 22),
@@ -471,7 +528,7 @@ class DashboardAdmin extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Calendario Institucional',
+                      'Próximos Eventos',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -480,31 +537,8 @@ class DashboardAdmin extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      'Eventos y fechas críticas próximas',
+                      'Fechas importantes para tus grupos',
                       style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.add, size: 18),
-                        label: const Text(
-                          'Nuevo Evento',
-                          style: TextStyle(fontSize: 13),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4CAF50),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 12,
-                          ),
-                        ),
-                      ),
                     ),
                   ],
                 )
@@ -515,7 +549,7 @@ class DashboardAdmin extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Calendario Institucional',
+                          'Próximos Eventos',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -524,32 +558,13 @@ class DashboardAdmin extends StatelessWidget {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'Eventos y fechas críticas próximas',
+                          'Fechas importantes para tus grupos',
                           style: TextStyle(
                             fontSize: 12,
                             color: Color(0xFF999999),
                           ),
                         ),
                       ],
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text(
-                        'Nuevo Evento',
-                        style: TextStyle(fontSize: 13),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4CAF50),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 12,
-                        ),
-                      ),
                     ),
                   ],
                 ),
@@ -558,26 +573,26 @@ class DashboardAdmin extends StatelessWidget {
               ? Column(
                   children: [
                     _eventCardMobile(
-                      '15',
-                      'OCT',
-                      'Cierre de Actas',
-                      'Límite para captura de calificaciones del primer parcial.',
-                      const Color(0xFF4CAF50),
-                    ),
-                    const SizedBox(height: 12),
-                    _eventCardMobile(
-                      '22',
-                      'OCT',
-                      'Junta Académica',
-                      'Reunión general de directivos y coordinadores de área.',
+                      '20',
+                      'ABR',
+                      'Entrega de Evidencias',
+                      'Límite para subir evidencias del mes de abril.',
                       const Color(0xFFEF5350),
                     ),
                     const SizedBox(height: 12),
                     _eventCardMobile(
+                      '25',
+                      'ABR',
+                      'Junta de Maestros',
+                      'Reunión de coordinación académica con dirección.',
+                      const Color(0xFF4CAF50),
+                    ),
+                    const SizedBox(height: 12),
+                    _eventCardMobile(
                       '01',
-                      'NOV',
-                      'Feriado Nacional',
-                      'Suspensión de labores académicas y administrativas.',
+                      'MAY',
+                      'Día del Trabajo',
+                      'Suspensión de labores académicas.',
                       const Color(0xFF333333),
                     ),
                   ],
@@ -585,26 +600,26 @@ class DashboardAdmin extends StatelessWidget {
               : Row(
                   children: [
                     _eventCard(
-                      '15',
-                      'OCT',
-                      'Cierre de Actas',
-                      'Límite para captura de calificaciones del primer parcial.',
-                      const Color(0xFF4CAF50),
-                    ),
-                    const SizedBox(width: 16),
-                    _eventCard(
-                      '22',
-                      'OCT',
-                      'Junta Académica',
-                      'Reunión general de directivos y coordinadores de área.',
+                      '20',
+                      'ABR',
+                      'Entrega de Evidencias',
+                      'Límite para subir evidencias del mes de abril.',
                       const Color(0xFFEF5350),
                     ),
                     const SizedBox(width: 16),
                     _eventCard(
+                      '25',
+                      'ABR',
+                      'Junta de Maestros',
+                      'Reunión de coordinación académica con dirección.',
+                      const Color(0xFF4CAF50),
+                    ),
+                    const SizedBox(width: 16),
+                    _eventCard(
                       '01',
-                      'NOV',
-                      'Feriado Nacional',
-                      'Suspensión de labores académicas y administrativas.',
+                      'MAY',
+                      'Día del Trabajo',
+                      'Suspensión de labores académicas.',
                       const Color(0xFF333333),
                     ),
                   ],

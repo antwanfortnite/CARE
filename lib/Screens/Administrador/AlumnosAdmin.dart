@@ -4,6 +4,7 @@ import 'DashboardAdmin.dart';
 import 'MaestrosAdmin.dart';
 import 'GruposAdmin.dart';
 import 'EvidenciasAdmin.dart';
+import 'AdministradoresAdmin.dart';
 
 class AlumnosAdmin extends StatefulWidget {
   const AlumnosAdmin({super.key});
@@ -129,6 +130,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
         1: (_) => const MaestrosAdmin(),
         3: (_) => const GruposAdmin(),
         4: (_) => const EvidenciasAdmin(),
+        5: (_) => const AdministradoresAdmin(),
       },
       bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
       body: _buildContent(mobile),
@@ -148,11 +150,11 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
         const SizedBox(height: 20),
         _tabController.index == 0
             ? (isMobile
-                ? _buildStudentCards(_studentsCursando, true)
-                : _buildStudentTable(_studentsCursando, true))
+                  ? _buildStudentCards(_studentsCursando, true)
+                  : _buildStudentTable(_studentsCursando, true))
             : (isMobile
-                ? _buildStudentCards(_studentsNoCursando, false)
-                : _buildStudentTable(_studentsNoCursando, false)),
+                  ? _buildStudentCards(_studentsNoCursando, false)
+                  : _buildStudentTable(_studentsNoCursando, false)),
       ],
     );
   }
@@ -312,10 +314,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
         onTap: (_) => setState(() {}),
         labelColor: Colors.white,
         unselectedLabelColor: const Color(0xFF555555),
-        labelStyle: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
+        labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         unselectedLabelStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.normal,
@@ -493,10 +492,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
               ),
               // Status badge
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: isCursando
                       ? const Color(0xFF4CAF50).withOpacity(0.1)
@@ -859,12 +855,10 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
     );
   }
 
-  Widget _buildPaginationContent(
-    List<_StudentData> students,
-    bool isCursando,
-  ) {
-    final currentPage =
-        isCursando ? _currentPageCursando : _currentPageNoCursando;
+  Widget _buildPaginationContent(List<_StudentData> students, bool isCursando) {
+    final currentPage = isCursando
+        ? _currentPageCursando
+        : _currentPageNoCursando;
     final totalLabel = isCursando ? '124' : '38';
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1376,7 +1370,10 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
               ),
               decoration: InputDecoration(
                 hintText: '••••••••',
-                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
+                hintStyle: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFFBBBBBB),
+                ),
                 suffixIcon: IconButton(
                   icon: Icon(
                     obscurePass ? Icons.visibility_off : Icons.visibility,
@@ -1386,8 +1383,13 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                   onPressed: onTogglePass,
                 ),
                 filled: true,
-                fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                fillColor: readOnly
+                    ? const Color(0xFFEFEFEF)
+                    : const Color(0xFFF9F9F9),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
@@ -1457,8 +1459,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                     curpCtrl: c,
                     birthDateCtrl: bd,
                     ageCtrl: age,
-                    onPickBirthDate: () =>
-                        _pickBirthDate(ctx, bd, age, setDlg),
+                    onPickBirthDate: () => _pickBirthDate(ctx, bd, age, setDlg),
                     isMobile: mobile,
                     passCtrl: pwd,
                     obscurePass: hidePass,
@@ -1560,8 +1561,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                     curpCtrl: c,
                     birthDateCtrl: bd,
                     ageCtrl: age,
-                    onPickBirthDate: () =>
-                        _pickBirthDate(ctx, bd, age, setDlg),
+                    onPickBirthDate: () => _pickBirthDate(ctx, bd, age, setDlg),
                     isMobile: mobile,
                     passCtrl: pwd,
                     obscurePass: hidePass,
@@ -1681,10 +1681,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                       children: [
                         ElevatedButton.icon(
                           onPressed: () => Navigator.pop(ctx),
-                          icon: const Icon(
-                            Icons.close,
-                            size: 18,
-                          ),
+                          icon: const Icon(Icons.close, size: 18),
                           label: const Text('Cerrar'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF757575),
@@ -1747,9 +1744,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
               height: 1.5,
             ),
             children: [
-              const TextSpan(
-                text: '¿Está seguro de que desea dar de baja a ',
-              ),
+              const TextSpan(text: '¿Está seguro de que desea dar de baja a '),
               TextSpan(
                 text: s.name,
                 style: const TextStyle(
@@ -1758,8 +1753,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                 ),
               ),
               const TextSpan(
-                text:
-                    '? El alumno será movido a la sección de "No Cursando".',
+                text: '? El alumno será movido a la sección de "No Cursando".',
               ),
             ],
           ),
@@ -1831,9 +1825,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
               height: 1.5,
             ),
             children: [
-              const TextSpan(
-                text: '¿Está seguro de que desea dar de alta a ',
-              ),
+              const TextSpan(text: '¿Está seguro de que desea dar de alta a '),
               TextSpan(
                 text: s.name,
                 style: const TextStyle(
@@ -1842,8 +1834,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                 ),
               ),
               const TextSpan(
-                text:
-                    '? El alumno será movido a la sección de "Cursando".',
+                text: '? El alumno será movido a la sección de "Cursando".',
               ),
             ],
           ),
@@ -1960,7 +1951,13 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
 
 // ──────── DATA MODEL ────────
 class _StudentData {
-  final String name, email, initials, curp, parentName, parentEmail, parentPhone;
+  final String name,
+      email,
+      initials,
+      curp,
+      parentName,
+      parentEmail,
+      parentPhone;
   final Color avatarColor;
   final int edad;
   const _StudentData(

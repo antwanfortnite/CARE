@@ -4,6 +4,7 @@ import 'DashboardAdmin.dart';
 import 'MaestrosAdmin.dart';
 import 'AlumnosAdmin.dart';
 import 'GruposAdmin.dart';
+import 'AdministradoresAdmin.dart';
 
 class EvidenciasAdmin extends StatefulWidget {
   const EvidenciasAdmin({super.key});
@@ -280,6 +281,7 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
         1: (_) => const MaestrosAdmin(),
         2: (_) => const AlumnosAdmin(),
         3: (_) => const GruposAdmin(),
+        5: (_) => const AdministradoresAdmin(),
       },
       bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
       body: _buildBody(mobile),
@@ -1273,87 +1275,522 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
                 ),
               )
             else
-              ...evids.map((e) => _buildEvidenciaItem(e, isMobile)),
+              ...evids.map((e) => _buildEvidenciaItem(e, isMobile, teacher, group, student)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildEvidenciaItem(_EvidenciaData e, bool isMobile) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFF0F0F0)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Photo thumbnail placeholder
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: const Color(0xFF42A5F5).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: const Color(0xFF42A5F5).withOpacity(0.2),
-              ),
-            ),
-            child: const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.image_outlined, size: 22, color: Color(0xFF42A5F5)),
-                SizedBox(height: 2),
-                Text(
-                  'Foto',
-                  style: TextStyle(
-                    fontSize: 8,
-                    color: Color(0xFF42A5F5),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+  Widget _buildEvidenciaItem(
+    _EvidenciaData e,
+    bool isMobile,
+    _TeacherPlan teacher,
+    _GroupInfo group,
+    _StudentInfo student,
+  ) {
+    // Format date for header label (e.g. "12 DE MARZO, 2026")
+    String dateHeader = '';
+    try {
+      final parts = e.fechaSubida.split('-');
+      final months = [
+        '', 'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+        'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE',
+      ];
+      dateHeader = '${parts[2]} DE ${months[int.parse(parts[1])]}, ${parts[0]}';
+    } catch (_) {
+      dateHeader = e.fechaSubida;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Date header above the card
+        Padding(
+          padding: const EdgeInsets.only(bottom: 6, top: 4),
+          child: Text(
+            dateHeader,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFFEF5350),
+              letterSpacing: 0.5,
             ),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+        ),
+        // Evidence card
+        Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFAFAFA),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFF0F0F0)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Photo icon
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F0EC),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.camera_alt_outlined,
+                  size: 22,
+                  color: Color(0xFFCBBEB5),
+                ),
+              ),
+              const SizedBox(width: 14),
+              // Description
+              Expanded(
+                child: Text(
                   e.descripcion,
                   style: const TextStyle(
                     fontSize: 12,
                     color: Color(0xFF444444),
                     height: 1.4,
                   ),
-                  maxLines: 3,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.calendar_today_outlined,
-                      size: 12,
-                      color: Color(0xFF999999),
+              ),
+              const SizedBox(width: 8),
+              // Action buttons
+              _actionBtn(
+                Icons.visibility_outlined,
+                const Color(0xFF7E57C2),
+                'Ver información',
+                () => _showViewEvidenciaDialog(e, teacher, group, student),
+              ),
+              const SizedBox(width: 6),
+              _actionBtn(
+                Icons.delete_outline,
+                const Color(0xFFEF5350),
+                'Eliminar',
+                () => _showDeleteEvidenciaDialog(e, teacher, group, student),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ──────── VER EVIDENCIA (read-only) ────────
+  void _showViewEvidenciaDialog(
+    _EvidenciaData e,
+    _TeacherPlan teacher,
+    _GroupInfo group,
+    _StudentInfo student,
+  ) {
+    final mobile = _isMobile(context);
+
+    // Parse date for display
+    String formattedDate = '';
+    try {
+      final parts = e.fechaSubida.split('-');
+      formattedDate =
+          '${parts[2]}/${parts[1]}/${parts[0]}';
+    } catch (_) {
+      formattedDate = e.fechaSubida;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: mobile ? 16 : 40,
+          vertical: 24,
+        ),
+        child: Container(
+          width: mobile ? double.infinity : 520,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF2E7D32), Color(0xFF388E3C)],
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatDate(e.fechaSubida),
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF999999),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.photo_library_outlined,
+                            size: 16,
+                            color: Colors.white70,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'DETALLE DE EVIDENCIA',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.white.withOpacity(0.8),
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Información de Evidencia',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Alumno: ${student.name}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Form (read-only)
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Teacher & Group info
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5F5F5),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.info_outline,
+                              size: 16,
+                              color: Color(0xFF888888),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                '${teacher.name}  •  ${group.name}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF666666),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // FECHA
+                      const Text(
+                        'FECHA DE LA EVIDENCIA',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF555555),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFEFEF),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE0E0E0)),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                formattedDate,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF555555),
+                                ),
+                              ),
+                            ),
+                            const Icon(
+                              Icons.calendar_month_rounded,
+                              size: 18,
+                              color: Color(0xFF999999),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // FOTO
+                      const Text(
+                        'FOTO ADJUNTADA',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF555555),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: TextEditingController(text: e.urlFoto),
+                        readOnly: true,
+                        enabled: false,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF555555),
+                        ),
+                        decoration: InputDecoration(
+                          suffixIcon: const Icon(
+                            Icons.link,
+                            size: 18,
+                            color: Color(0xFF999999),
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFEFEFEF),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 14,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E0E0),
+                            ),
+                          ),
+                          disabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E0E0),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // DESCRIPCIÓN
+                      const Text(
+                        'DESCRIPCIÓN',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF555555),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: TextEditingController(text: e.descripcion),
+                        readOnly: true,
+                        enabled: false,
+                        maxLines: 4,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF555555),
+                        ),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: const Color(0xFFEFEFEF),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 14,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E0E0),
+                            ),
+                          ),
+                          disabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E0E0),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Close button
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: 24,
+                    right: 24,
+                    bottom: 24,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4CAF50),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                        ),
+                        child: const Text('Cerrar'),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ──────── ELIMINAR EVIDENCIA ────────
+  void _showDeleteEvidenciaDialog(
+    _EvidenciaData e,
+    _TeacherPlan teacher,
+    _GroupInfo group,
+    _StudentInfo student,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          '¿Eliminar evidencia?',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '¿Estás seguro de que deseas eliminar esta evidencia?',
+              style: const TextStyle(fontSize: 14, color: Color(0xFF555555)),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFAFAFA),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFF0F0F0)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    e.descripcion,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF444444),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today_outlined,
+                        size: 12,
+                        color: Color(0xFF999999),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _formatDate(e.fechaSubida),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF999999),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Esta acción no se puede deshacer.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFFEF5350),
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: Color(0xFF888888)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final key =
+                  '${teacher.name}|${group.name}|${student.name}';
+              setState(() {
+                _evidencias[key]?.removeWhere(
+                  (ev) => ev.idEvidencia == e.idEvidencia,
+                );
+              });
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF5350),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Sí, eliminar'),
           ),
         ],
       ),

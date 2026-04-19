@@ -4,6 +4,7 @@ import 'DashboardAdmin.dart';
 import 'MaestrosAdmin.dart';
 import 'AlumnosAdmin.dart';
 import 'EvidenciasAdmin.dart';
+import 'AdministradoresAdmin.dart';
 
 class GruposAdmin extends StatefulWidget {
   const GruposAdmin({super.key});
@@ -16,16 +17,56 @@ class _GruposAdminState extends State<GruposAdmin> {
 
   // ──────── Datos de ejemplo de estudiantes disponibles ────────
   final List<_StudentOption> _allStudents = [
-    _StudentOption('Carlos Méndez', 'MECC080515HDHNRL01', const Color(0xFF7E57C2)),
-    _StudentOption('Ana Sofía Rivera', 'RIAA090320MDFVNN02', const Color(0xFF4CAF50)),
-    _StudentOption('Diego Hernández', 'HEAD071205HDFRGL03', const Color(0xFF26A69A)),
-    _StudentOption('Valentina Torres', 'TORV100810MDFRLR04', const Color(0xFFE91E63)),
-    _StudentOption('Miguel Ángel Ruiz', 'RUIM060714HDFRGL05', const Color(0xFFFFA726)),
-    _StudentOption('Fernanda López', 'LOPF080922MDFPZR06', const Color(0xFF42A5F5)),
-    _StudentOption('Emilio Castro', 'CASE091130HDFSML07', const Color(0xFF66BB6A)),
-    _StudentOption('Sofía Ramírez', 'RAMS100215MDFMFR08', const Color(0xFFAB47BC)),
-    _StudentOption('Andrés Martínez', 'MARA080730HDFNRD09', const Color(0xFF29B6F6)),
-    _StudentOption('Camila Delgado', 'DELC090412MDFMLC10', const Color(0xFFEF5350)),
+    _StudentOption(
+      'Carlos Méndez',
+      'MECC080515HDHNRL01',
+      const Color(0xFF7E57C2),
+    ),
+    _StudentOption(
+      'Ana Sofía Rivera',
+      'RIAA090320MDFVNN02',
+      const Color(0xFF4CAF50),
+    ),
+    _StudentOption(
+      'Diego Hernández',
+      'HEAD071205HDFRGL03',
+      const Color(0xFF26A69A),
+    ),
+    _StudentOption(
+      'Valentina Torres',
+      'TORV100810MDFRLR04',
+      const Color(0xFFE91E63),
+    ),
+    _StudentOption(
+      'Miguel Ángel Ruiz',
+      'RUIM060714HDFRGL05',
+      const Color(0xFFFFA726),
+    ),
+    _StudentOption(
+      'Fernanda López',
+      'LOPF080922MDFPZR06',
+      const Color(0xFF42A5F5),
+    ),
+    _StudentOption(
+      'Emilio Castro',
+      'CASE091130HDFSML07',
+      const Color(0xFF66BB6A),
+    ),
+    _StudentOption(
+      'Sofía Ramírez',
+      'RAMS100215MDFMFR08',
+      const Color(0xFFAB47BC),
+    ),
+    _StudentOption(
+      'Andrés Martínez',
+      'MARA080730HDFNRD09',
+      const Color(0xFF29B6F6),
+    ),
+    _StudentOption(
+      'Camila Delgado',
+      'DELC090412MDFMLC10',
+      const Color(0xFFEF5350),
+    ),
   ];
 
   // ──────── Datos de ejemplo de maestros disponibles ────────
@@ -38,48 +79,38 @@ class _GruposAdminState extends State<GruposAdmin> {
 
   // ──────── Datos de ejemplo de grupos ────────
   final List<_GroupData> _groups = [
-    _GroupData(
-      'Grupo 3A',
-      'Matutino',
-      const Color(0xFF7E57C2),
-      ['Carlos Méndez', 'Ana Sofía Rivera', 'Diego Hernández'],
-      'Julián Sánchez',
-    ),
-    _GroupData(
-      'Grupo 1B',
-      'Vespertino',
-      const Color(0xFF4CAF50),
-      ['Valentina Torres', 'Miguel Ángel Ruiz', 'Fernanda López', 'Emilio Castro'],
-      'Rosa María Moreno',
-    ),
-    _GroupData(
-      'Grupo 2A',
-      'Matutino',
-      const Color(0xFF26A69A),
-      ['Sofía Ramírez', 'Andrés Martínez'],
-      'Alberto González',
-    ),
-    _GroupData(
-      'Grupo 1A',
-      'Matutino',
-      const Color(0xFFE91E63),
-      ['Camila Delgado', 'Carlos Méndez', 'Ana Sofía Rivera', 'Valentina Torres', 'Emilio Castro'],
-      'Elena Ledesma',
-    ),
-    _GroupData(
-      'Grupo 3B',
-      'Vespertino',
-      const Color(0xFF42A5F5),
-      ['Diego Hernández', 'Miguel Ángel Ruiz', 'Andrés Martínez'],
-      'Julián Sánchez',
-    ),
-    _GroupData(
-      'Grupo 2B',
-      'Vespertino',
-      const Color(0xFFFFA726),
-      ['Fernanda López', 'Sofía Ramírez', 'Camila Delgado'],
-      'Rosa María Moreno',
-    ),
+    _GroupData('Grupo 3A', 'Matutino', const Color(0xFF7E57C2), [
+      'Carlos Méndez',
+      'Ana Sofía Rivera',
+      'Diego Hernández',
+    ], 'Julián Sánchez'),
+    _GroupData('Grupo 1B', 'Vespertino', const Color(0xFF4CAF50), [
+      'Valentina Torres',
+      'Miguel Ángel Ruiz',
+      'Fernanda López',
+      'Emilio Castro',
+    ], 'Rosa María Moreno'),
+    _GroupData('Grupo 2A', 'Matutino', const Color(0xFF26A69A), [
+      'Sofía Ramírez',
+      'Andrés Martínez',
+    ], 'Alberto González'),
+    _GroupData('Grupo 1A', 'Matutino', const Color(0xFFE91E63), [
+      'Camila Delgado',
+      'Carlos Méndez',
+      'Ana Sofía Rivera',
+      'Valentina Torres',
+      'Emilio Castro',
+    ], 'Elena Ledesma'),
+    _GroupData('Grupo 3B', 'Vespertino', const Color(0xFF42A5F5), [
+      'Diego Hernández',
+      'Miguel Ángel Ruiz',
+      'Andrés Martínez',
+    ], 'Julián Sánchez'),
+    _GroupData('Grupo 2B', 'Vespertino', const Color(0xFFFFA726), [
+      'Fernanda López',
+      'Sofía Ramírez',
+      'Camila Delgado',
+    ], 'Rosa María Moreno'),
   ];
 
   bool _isMobile(BuildContext context) =>
@@ -102,6 +133,7 @@ class _GruposAdminState extends State<GruposAdmin> {
         1: (_) => const MaestrosAdmin(),
         2: (_) => const AlumnosAdmin(),
         4: (_) => const EvidenciasAdmin(),
+        5: (_) => const AdministradoresAdmin(),
       },
       bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
       body: _buildContent(mobile),
@@ -269,9 +301,7 @@ class _GruposAdminState extends State<GruposAdmin> {
   // ──────── GROUP CARDS GRID ────────
   Widget _buildGroupCards(bool isMobile) {
     if (isMobile) {
-      return Column(
-        children: _groups.map((g) => _buildGroupCard(g)).toList(),
-      );
+      return Column(children: _groups.map((g) => _buildGroupCard(g)).toList());
     }
 
     // Desktop: grid de 2 o 3 columnas
@@ -291,10 +321,12 @@ class _GruposAdminState extends State<GruposAdmin> {
           rowChildren.add(const SizedBox(width: 16));
         }
       }
-      rows.add(Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: rowChildren,
-      ));
+      rows.add(
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: rowChildren,
+        ),
+      );
       if (i + crossAxisCount < _groups.length) {
         rows.add(const SizedBox(height: 0)); // spacing handled by card margin
       }
@@ -402,7 +434,10 @@ class _GruposAdminState extends State<GruposAdmin> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF42A5F5).withOpacity(0.08),
                         borderRadius: BorderRadius.circular(6),
@@ -410,7 +445,11 @@ class _GruposAdminState extends State<GruposAdmin> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.schedule, size: 13, color: Color(0xFF42A5F5)),
+                          const Icon(
+                            Icons.schedule,
+                            size: 13,
+                            color: Color(0xFF42A5F5),
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             g.turno,
@@ -426,7 +465,10 @@ class _GruposAdminState extends State<GruposAdmin> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF26A69A).withOpacity(0.08),
                           borderRadius: BorderRadius.circular(6),
@@ -434,7 +476,11 @@ class _GruposAdminState extends State<GruposAdmin> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.person_outline, size: 13, color: Color(0xFF26A69A)),
+                            const Icon(
+                              Icons.person_outline,
+                              size: 13,
+                              color: Color(0xFF26A69A),
+                            ),
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
@@ -755,27 +801,31 @@ class _GruposAdminState extends State<GruposAdmin> {
                 style: TextStyle(fontSize: 13, color: Color(0xFF999999)),
               ),
             ),
-            ..._allTeachers.map((t) => DropdownMenuItem<String>(
-              value: t,
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 12,
-                    backgroundColor: const Color(0xFF26A69A).withOpacity(0.15),
-                    child: Text(
-                      _getInitials(t),
-                      style: const TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF26A69A),
+            ..._allTeachers.map(
+              (t) => DropdownMenuItem<String>(
+                value: t,
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 12,
+                      backgroundColor: const Color(
+                        0xFF26A69A,
+                      ).withOpacity(0.15),
+                      child: Text(
+                        _getInitials(t),
+                        style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF26A69A),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(t, style: const TextStyle(fontSize: 13)),
-                ],
+                    const SizedBox(width: 8),
+                    Text(t, style: const TextStyle(fontSize: 13)),
+                  ],
+                ),
               ),
-            )),
+            ),
           ],
           onChanged: readOnly ? null : (val) => onChanged(val ?? ''),
         ),
@@ -827,7 +877,9 @@ class _GruposAdminState extends State<GruposAdmin> {
                     children: [
                       CircleAvatar(
                         radius: 10,
-                        backgroundColor: const Color(0xFF4CAF50).withOpacity(0.2),
+                        backgroundColor: const Color(
+                          0xFF4CAF50,
+                        ).withOpacity(0.2),
                         child: Text(
                           _getInitials(name),
                           style: const TextStyle(
@@ -881,7 +933,10 @@ class _GruposAdminState extends State<GruposAdmin> {
             style: const TextStyle(fontSize: 13),
             decoration: InputDecoration(
               hintText: 'Buscar alumno por nombre...',
-              hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
+              hintStyle: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFFBBBBBB),
+              ),
               prefixIcon: const Icon(
                 Icons.search,
                 size: 18,
@@ -921,7 +976,8 @@ class _GruposAdminState extends State<GruposAdmin> {
               builder: (context) {
                 final query = searchCtrl.text.toLowerCase();
                 final filtered = _allStudents.where((s) {
-                  final matchesSearch = query.isEmpty ||
+                  final matchesSearch =
+                      query.isEmpty ||
                       s.name.toLowerCase().contains(query) ||
                       s.curp.toLowerCase().contains(query);
                   final notSelected = !selectedStudents.contains(s.name);
@@ -947,10 +1003,8 @@ class _GruposAdminState extends State<GruposAdmin> {
                   shrinkWrap: true,
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   itemCount: filtered.length,
-                  separatorBuilder: (_, __) => const Divider(
-                    height: 1,
-                    color: Color(0xFFF0F0F0),
-                  ),
+                  separatorBuilder: (_, __) =>
+                      const Divider(height: 1, color: Color(0xFFF0F0F0)),
                   itemBuilder: (context, index) {
                     final student = filtered[index];
                     return InkWell(
@@ -1088,7 +1142,8 @@ class _GruposAdminState extends State<GruposAdmin> {
                         const SizedBox(height: 6),
                         _buildTeacherDropdown(
                           selectedTeacher: selectedTeacher,
-                          onChanged: (val) => setDlg(() => selectedTeacher = val),
+                          onChanged: (val) =>
+                              setDlg(() => selectedTeacher = val),
                         ),
                         const SizedBox(height: 20),
                         const Divider(color: Color(0xFFE0E0E0)),
@@ -1135,20 +1190,25 @@ class _GruposAdminState extends State<GruposAdmin> {
                                 const Color(0xFFFFA726),
                               ];
                               setState(() {
-                                _groups.add(_GroupData(
-                                  nameCtrl.text.trim(),
-                                  turnoCtrl.text.trim().isEmpty
-                                      ? 'Sin turno'
-                                      : turnoCtrl.text.trim(),
-                                  colors[_groups.length % colors.length],
-                                  List.from(selectedStudents),
-                                  selectedTeacher,
-                                ));
+                                _groups.add(
+                                  _GroupData(
+                                    nameCtrl.text.trim(),
+                                    turnoCtrl.text.trim().isEmpty
+                                        ? 'Sin turno'
+                                        : turnoCtrl.text.trim(),
+                                    colors[_groups.length % colors.length],
+                                    List.from(selectedStudents),
+                                    selectedTeacher,
+                                  ),
+                                );
                               });
                             }
                             Navigator.pop(ctx);
                           },
-                          icon: const Icon(Icons.check_circle_outline, size: 18),
+                          icon: const Icon(
+                            Icons.check_circle_outline,
+                            size: 18,
+                          ),
                           label: const Text('Guardar Grupo'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF4CAF50),
@@ -1234,7 +1294,8 @@ class _GruposAdminState extends State<GruposAdmin> {
                         const SizedBox(height: 6),
                         _buildTeacherDropdown(
                           selectedTeacher: selectedTeacher,
-                          onChanged: (val) => setDlg(() => selectedTeacher = val),
+                          onChanged: (val) =>
+                              setDlg(() => selectedTeacher = val),
                         ),
                         const SizedBox(height: 20),
                         const Divider(color: Color(0xFFE0E0E0)),
@@ -1288,7 +1349,10 @@ class _GruposAdminState extends State<GruposAdmin> {
                             }
                             Navigator.pop(ctx);
                           },
-                          icon: const Icon(Icons.check_circle_outline, size: 18),
+                          icon: const Icon(
+                            Icons.check_circle_outline,
+                            size: 18,
+                          ),
                           label: const Text('Guardar Cambios'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF4CAF50),
@@ -1319,7 +1383,9 @@ class _GruposAdminState extends State<GruposAdmin> {
     final mobile = _isMobile(context);
     final nameCtrl = TextEditingController(text: g.name);
     final turnoCtrl = TextEditingController(text: g.turno);
-    final teacherCtrl = TextEditingController(text: g.teacher.isEmpty ? 'Sin maestro asignado' : g.teacher);
+    final teacherCtrl = TextEditingController(
+      text: g.teacher.isEmpty ? 'Sin maestro asignado' : g.teacher,
+    );
     final studentSearchCtrl = TextEditingController();
 
     showDialog(
@@ -1466,7 +1532,9 @@ class _GruposAdminState extends State<GruposAdmin> {
               height: 1.5,
             ),
             children: [
-              const TextSpan(text: '¿Está seguro de que desea eliminar el grupo '),
+              const TextSpan(
+                text: '¿Está seguro de que desea eliminar el grupo ',
+              ),
               TextSpan(
                 text: g.name,
                 style: const TextStyle(
@@ -1475,7 +1543,8 @@ class _GruposAdminState extends State<GruposAdmin> {
                 ),
               ),
               TextSpan(
-                text: '? Este grupo tiene ${g.students.length} ${g.students.length == 1 ? 'alumno asignado' : 'alumnos asignados'}. Esta acción no se puede deshacer.',
+                text:
+                    '? Este grupo tiene ${g.students.length} ${g.students.length == 1 ? 'alumno asignado' : 'alumnos asignados'}. Esta acción no se puede deshacer.',
               ),
             ],
           ),
@@ -1517,7 +1586,13 @@ class _GroupData {
   final Color accentColor;
   final List<String> students;
   final String teacher;
-  const _GroupData(this.name, this.turno, this.accentColor, this.students, this.teacher);
+  const _GroupData(
+    this.name,
+    this.turno,
+    this.accentColor,
+    this.students,
+    this.teacher,
+  );
 }
 
 class _StudentOption {

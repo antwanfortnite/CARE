@@ -2,39 +2,25 @@ import 'package:flutter/material.dart';
 import '../InicioSesion.dart';
 
 /// Data model for navigation items in the sidebar.
-class AdminNavItem {
+class ProfesorNavItem {
   final IconData icon;
   final String label;
-  const AdminNavItem(this.icon, this.label);
+  const ProfesorNavItem(this.icon, this.label);
 }
 
-/// A generic admin dashboard scaffold.
+/// A generic profesor dashboard scaffold.
 ///
 /// Provides the sidebar, top bar (with hamburger on mobile), and navigation.
-/// Each admin screen only needs to provide its [body] widget and its
+/// Each profesor screen only needs to provide its [body] widget and its
 /// [selectedIndex] in the nav list.
-///
-/// Navigation between screens is handled via [onNavChanged] callback or,
-/// if not provided, via the built-in [destinations] map that maps nav indices
-/// to widget builders for pushReplacement navigation.
-class AdminScaffold extends StatefulWidget {
-  /// The content to display in the main area.
+class ProfesorScaffold extends StatefulWidget {
   final Widget body;
-
-  /// The currently selected navigation index (0 = Dashboard, 1 = Maestros, etc.)
   final int selectedIndex;
-
-  /// Optional padding for the body's scroll view. Defaults to 24 (desktop) / 16 (mobile).
   final EdgeInsets? bodyPadding;
-
-  /// Optional: override the top bar title. If null, uses the nav item label.
   final String? topBarTitle;
-
-  /// Map from nav index → WidgetBuilder for screens that should be navigated to
-  /// via pushReplacement. The current screen's index should NOT be in this map.
   final Map<int, WidgetBuilder> destinations;
 
-  const AdminScaffold({
+  const ProfesorScaffold({
     super.key,
     required this.body,
     required this.selectedIndex,
@@ -44,34 +30,26 @@ class AdminScaffold extends StatefulWidget {
   });
 
   @override
-  State<AdminScaffold> createState() => _AdminScaffoldState();
+  State<ProfesorScaffold> createState() => _ProfesorScaffoldState();
 }
 
-class _AdminScaffoldState extends State<AdminScaffold> {
+class _ProfesorScaffoldState extends State<ProfesorScaffold> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  static const List<AdminNavItem> _navItems = [
-    AdminNavItem(Icons.dashboard_outlined, 'Dashboard'),
-    AdminNavItem(Icons.school_outlined, 'Maestros'),
-    AdminNavItem(Icons.person_outline, 'Alumnos'),
-    AdminNavItem(Icons.group_outlined, 'Grupos'),
-    AdminNavItem(Icons.folder_shared_outlined, 'Evidencias'),
-    AdminNavItem(Icons.admin_panel_settings_outlined, 'Administradores'),
+  static const List<ProfesorNavItem> _navItems = [
+    ProfesorNavItem(Icons.dashboard_outlined, 'Dashboard'),
+    ProfesorNavItem(Icons.group_outlined, 'Mis Grupos'),
+    ProfesorNavItem(Icons.folder_shared_outlined, 'Evidencias'),
   ];
 
   bool _isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 700;
 
   void _onNavTap(int i) {
-    // Close drawer first if open
     if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
       _scaffoldKey.currentState?.closeDrawer();
     }
-
-    // If we're already on this index, do nothing
     if (i == widget.selectedIndex) return;
-
-    // Navigate to the destination if it exists
     final builder = widget.destinations[i];
     if (builder != null) {
       Navigator.pushReplacement(
@@ -162,7 +140,7 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                     ),
                   ),
                   Text(
-                    'Santuario Académico',
+                    'Portal Docente',
                     style: TextStyle(fontSize: 10, color: Color(0xFF999999)),
                   ),
                 ],
@@ -332,7 +310,7 @@ class _AdminScaffoldState extends State<AdminScaffold> {
             const SizedBox(width: 8),
           ],
 
-          // Perfil admin
+          // Perfil profesor
           if (!isMobile)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -344,12 +322,12 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Admin Principal',
+                    'Prof. Julián Sánchez',
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                   SizedBox(width: 4),
                   Text(
-                    'SUPERUSUARIO',
+                    'DOCENTE',
                     style: TextStyle(fontSize: 9, color: Color(0xFF999999)),
                   ),
                   SizedBox(width: 8),
@@ -378,17 +356,16 @@ class _AdminScaffoldState extends State<AdminScaffold> {
   // ──────── PERFIL DIALOG ────────
   void _showProfileDialog() {
     final mobile = _isMobile(context);
-    // Datos falsos del admin actual
-    final nameCtrl = TextEditingController(text: 'Carlos Rodríguez López');
-    final emailCtrl = TextEditingController(text: 'carlos.rodriguez@care.edu');
-    final phoneCtrl = TextEditingController(text: '+52 614 123 4567');
-    final curpCtrl = TextEditingController(text: 'ROLC850312HDFDRR08');
-    final fechaNacCtrl = TextEditingController(text: '1985-03-12');
-    final edadCtrl = TextEditingController(text: '41');
-    final fechaContrCtrl = TextEditingController(text: '2018-08-15');
-    final rolCtrl = TextEditingController(text: 'Superusuario');
-    final userCtrl = TextEditingController(text: 'carlos.rodriguez');
-    final passCtrl = TextEditingController(text: 'admin1234');
+    final nameCtrl = TextEditingController(text: 'Julián Sánchez Romero');
+    final emailCtrl = TextEditingController(text: 'julian.sanchez@care.edu.mx');
+    final phoneCtrl = TextEditingController(text: '+52 614 987 6543');
+    final curpCtrl = TextEditingController(text: 'SARJ880215HDFNCL04');
+    final fechaNacCtrl = TextEditingController(text: '1988-02-15');
+    final edadCtrl = TextEditingController(text: '38');
+    final fechaContrCtrl = TextEditingController(text: '2015-08-20');
+    final rolCtrl = TextEditingController(text: 'Docente');
+    final userCtrl = TextEditingController(text: 'julian.sanchez');
+    final passCtrl = TextEditingController(text: 'prof1234');
     bool hideUser = true, hidePass = true;
 
     showDialog(
@@ -476,7 +453,7 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                             const SizedBox(height: 6),
                             _profileTextField(
                               controller: emailCtrl,
-                              hint: 'admin@care.edu',
+                              hint: 'profesor@care.edu',
                               icon: Icons.alternate_email,
                             ),
                             const SizedBox(height: 16),
@@ -498,7 +475,7 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                                       const SizedBox(height: 6),
                                       _profileTextField(
                                         controller: emailCtrl,
-                                        hint: 'admin@care.edu',
+                                        hint: 'profesor@care.edu',
                                         icon: Icons.alternate_email,
                                       ),
                                     ],
@@ -634,7 +611,7 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                           _profileTextField(
                             controller: rolCtrl,
                             hint: 'Rol',
-                            icon: Icons.admin_panel_settings_outlined,
+                            icon: Icons.school_outlined,
                             readOnly: true,
                           ),
                           const SizedBox(height: 12),
@@ -877,4 +854,3 @@ class _AdminScaffoldState extends State<AdminScaffold> {
     );
   }
 }
-

@@ -16,11 +16,7 @@ class MyApp extends StatelessWidget {
       title: 'CARE',
       theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Roboto'),
       locale: const Locale('es', 'MX'),
-      supportedLocales: const [
-        Locale('es', 'MX'),
-        Locale('es'),
-        Locale('en'),
-      ],
+      supportedLocales: const [Locale('es', 'MX'), Locale('es'), Locale('en')],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
