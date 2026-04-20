@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'Administrador/DashboardAdmin.dart';
 import 'Profesor/DashboardProfesor.dart';
+import 'Alumno/DashboardAlumno.dart';
 
 class InicioSesion extends StatefulWidget {
   const InicioSesion({super.key});
@@ -283,6 +284,15 @@ class _InicioSesionState extends State<InicioSesion> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const DashboardProfesor()),
+      );
+      return;
+    }
+
+    // Alumno -> navegar directamente al Dashboard Alumno (Padre)
+    if (_selectedRole == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const DashboardAlumno()),
       );
       return;
     }
