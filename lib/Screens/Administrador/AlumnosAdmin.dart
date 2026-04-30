@@ -5,7 +5,7 @@ import 'MaestrosAdmin.dart';
 import 'GruposAdmin.dart';
 import 'EvidenciasAdmin.dart';
 import 'AdministradoresAdmin.dart';
-
+import '../../BD/Alumnos.dart';
 class AlumnosAdmin extends StatefulWidget {
   const AlumnosAdmin({super.key});
   @override
@@ -20,88 +20,59 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
   final int _totalPages = 3;
   final TextEditingController _searchController = TextEditingController();
 
-  final List<_StudentData> _studentsCursando = [
-    _StudentData(
-      'Carlos Méndez',
-      'carlos.mendez@correo.com',
-      'CM',
-      const Color(0xFF7E57C2),
-      'MECC080515HDHNRL01',
-      'María Luisa Méndez García',
-      'maria.mendez@correo.com',
-      '6441234567',
-      16,
-    ),
-    _StudentData(
-      'Ana Sofía Rivera',
-      'ana.rivera@correo.com',
-      'AR',
-      const Color(0xFF4CAF50),
-      'RIAA090320MDFVNN02',
-      'Laura Patricia Rivera López',
-      'laura.rivera@correo.com',
-      '6449876543',
-      15,
-    ),
-    _StudentData(
-      'Diego Hernández',
-      'diego.hernan@correo.com',
-      'DH',
-      const Color(0xFF26A69A),
-      'HEAD071205HDFRGL03',
-      'Pedro Hernández Ruiz',
-      'pedro.hernandez@correo.com',
-      '6442345678',
-      17,
-    ),
-    _StudentData(
-      'Valentina Torres',
-      'val.torres@correo.com',
-      'VT',
-      const Color(0xFFE91E63),
-      'TORV100810MDFRLR04',
-      'Rosa María Torres Vega',
-      'rosa.torres@correo.com',
-      '6443456789',
-      14,
-    ),
-  ];
+  List<_StudentData> _studentsCursando = [];
+  List<_StudentData> _studentsNoCursando = [];
+  bool _isLoadingAlumnos = true;
+  final ApiService _apiService = ApiService();
 
-  final List<_StudentData> _studentsNoCursando = [
-    _StudentData(
-      'Miguel Ángel Ruiz',
-      'miguel.ruiz@correo.com',
-      'MR',
-      const Color(0xFFFFA726),
-      'RUIM060714HDFRGL05',
-      'Elena Ruiz Sánchez',
-      'elena.ruiz@correo.com',
-      '6444567890',
-      18,
-    ),
-    _StudentData(
-      'Fernanda López',
-      'fer.lopez@correo.com',
-      'FL',
-      const Color(0xFF42A5F5),
-      'LOPF080922MDFPZR06',
-      'Carmen López Díaz',
-      'carmen.lopez@correo.com',
-      '6445678901',
-      16,
-    ),
-    _StudentData(
-      'Emilio Castro',
-      'emilio.c@correo.com',
-      'EC',
-      const Color(0xFF66BB6A),
-      'CASE091130HDFSML07',
-      'Jorge Castro Mendoza',
-      'jorge.castro@correo.com',
-      '6446789012',
-      15,
-    ),
-  ];
+  Future<void> _cargarAlumnos() async {
+    setState(() {
+      _isLoadingAlumnos = true;
+    });
+    
+    final alumnos = await _apiService.getAlumnos();
+    
+    List<_StudentData> cursando = [];
+    List<_StudentData> noCursando = [];
+    
+    for (var a in alumnos) {
+      final String name = a['nombre_completo'] ?? 'Sin Nombre';
+      final String email = a['correo'] ?? 'sin@correo.com'; // Por ahora no existe en la DB alumnos directamente
+      
+      // Construir iniciales
+      final parts = name.split(' ');
+      String initials = '';
+      if (parts.isNotEmpty) initials += parts[0].substring(0, 1);
+      if (parts.length > 1) initials += parts[1].substring(0, 1);
+      if (initials.isEmpty) initials = 'A';
+      
+      final int edad = a['fecha_nacimiento'] != null ? _calculateAge(DateTime.parse(a['fecha_nacimiento'])) : 0;
+      
+      final student = _StudentData(
+        name,
+        email,
+        initials.toUpperCase(),
+        const Color(0xFF4CAF50), // Color default
+        a['curp'] ?? 'SIN CURP',
+        a['nombre_padre'] ?? 'Padre No Asignado', // Podría venir con un JOIN en el backend
+        a['correo_padre'] ?? 'N/A',
+        a['telefono_padre'] ?? 'N/A',
+        edad,
+      );
+      
+      if (a['estado'] == 1 || a['estado'] == '1') {
+        cursando.add(student);
+      } else {
+        noCursando.add(student);
+      }
+    }
+    
+    setState(() {
+      _studentsCursando = cursando;
+      _studentsNoCursando = noCursando;
+      _isLoadingAlumnos = false;
+    });
+  }
 
   bool _isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 1050;
@@ -110,6 +81,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _cargarAlumnos();
   }
 
   @override
@@ -1426,6 +1398,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
         age = TextEditingController(),
         pwd = TextEditingController();
     bool hidePass = true;
+    bool isSaving = false;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1475,7 +1448,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
-                          onPressed: () => Navigator.pop(ctx),
+                          onPressed: isSaving ? null : () => Navigator.pop(ctx),
                           child: const Text(
                             'Cancelar',
                             style: TextStyle(
@@ -1486,12 +1459,89 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                         ),
                         const SizedBox(width: 12),
                         ElevatedButton.icon(
-                          onPressed: () => Navigator.pop(ctx),
-                          icon: const Icon(
-                            Icons.check_circle_outline,
-                            size: 18,
-                          ),
-                          label: const Text('Guardar Alumno'),
+                          onPressed: isSaving ? null : () async {
+                            print('--- Inciando proceso de guardar alumno ---');
+                            print('Nombre: ${n.text}');
+                            print('CURP: ${c.text}');
+                            print('Padre: ${pn.text}');
+                            print('Fecha nacimiento input: ${bd.text}');
+                            
+                            if (n.text.isEmpty || pn.text.isEmpty || c.text.isEmpty || pwd.text.isEmpty || bd.text.isEmpty) {
+                              print('Error: Faltan campos requeridos');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Por favor llena todos los campos requeridos.')),
+                              );
+                              return;
+                            }
+                            
+                            setDlg(() {
+                              isSaving = true;
+                            });
+
+                            // Parsear fecha DD/MM/YYYY a YYYY-MM-DD
+                            String fechaNacimientoStr = bd.text;
+                            try {
+                              final parts = bd.text.split('/');
+                              if (parts.length == 3) {
+                                fechaNacimientoStr = '${parts[2]}-${parts[1]}-${parts[0]}';
+                              }
+                            } catch (_) {}
+                            
+                            print('Fecha convertida: $fechaNacimientoStr');
+
+                            // Guardar Padre
+                            print('Llamando a API agregarPadre...');
+                            final int? idPadre = await _apiService.agregarPadre(
+                              pn.text,
+                              pe.text,
+                              pp.text,
+                            );
+
+                            print('Resultado de agregarPadre: idPadre = $idPadre');
+
+                            if (idPadre != null) {
+                              // Guardar Alumno
+                              print('Llamando a API agregarAlumno...');
+                              final bool success = await _apiService.agregarAlumno(
+                                idPadre,
+                                n.text,
+                                c.text,
+                                pwd.text,
+                                fechaNacimientoStr,
+                              );
+                              
+                              print('Resultado de agregarAlumno: $success');
+
+                              if (success) {
+                                print('Éxito total, cerrando modal y recargando alumnos');
+                                Navigator.pop(ctx);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Alumno registrado exitosamente')),
+                                );
+                                _cargarAlumnos();
+                              } else {
+                                print('Error en agregarAlumno (backend devolvió false)');
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Error al guardar el alumno')),
+                                );
+                              }
+                            } else {
+                              print('Error en agregarPadre (backend devolvió null)');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Error al registrar al padre')),
+                              );
+                            }
+
+                            if (mounted) {
+                              setDlg(() {
+                                isSaving = false;
+                              });
+                            }
+                          },
+                          icon: isSaving 
+                            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                            : const Icon(Icons.check_circle_outline, size: 18),
+                          label: Text(isSaving ? 'Guardando...' : 'Guardar Alumno'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF4CAF50),
                             foregroundColor: Colors.white,
