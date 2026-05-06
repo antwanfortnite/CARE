@@ -427,7 +427,11 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                           const CircleAvatar(
                             radius: 36,
                             backgroundColor: Colors.white24,
-                            child: Icon(Icons.person, size: 40, color: Colors.white),
+                            child: Icon(
+                              Icons.person,
+                              size: 40,
+                              color: Colors.white,
+                            ),
                           ),
                           const SizedBox(height: 12),
                           Text(
@@ -440,7 +444,10 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                           ),
                           const SizedBox(height: 4),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(12),
@@ -492,7 +499,8 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       _profileLabel('CORREO ELECTRÓNICO'),
                                       const SizedBox(height: 6),
@@ -507,7 +515,8 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       _profileLabel('TELÉFONO'),
                                       const SizedBox(height: 6),
@@ -553,7 +562,8 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       _profileLabel('CURP'),
                                       const SizedBox(height: 6),
@@ -568,7 +578,8 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       _profileLabel('FECHA DE NACIMIENTO'),
                                       const SizedBox(height: 6),
@@ -587,7 +598,8 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       _profileLabel('EDAD'),
                                       const SizedBox(height: 6),
@@ -603,7 +615,8 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       _profileLabel('FECHA DE CONTRATACIÓN'),
                                       const SizedBox(height: 6),
@@ -649,21 +662,45 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                               style: const TextStyle(fontSize: 13),
                               decoration: InputDecoration(
                                 hintText: 'Usuario',
-                                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
+                                hintStyle: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFFBBBBBB),
+                                ),
                                 suffixIcon: IconButton(
                                   icon: Icon(
-                                    hideUser ? Icons.visibility_off : Icons.visibility,
+                                    hideUser
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
                                     size: 18,
                                     color: const Color(0xFF999999),
                                   ),
-                                  onPressed: () => setDlg(() => hideUser = !hideUser),
+                                  onPressed: () =>
+                                      setDlg(() => hideUser = !hideUser),
                                 ),
                                 filled: true,
                                 fillColor: const Color(0xFFF9F9F9),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF4CAF50))),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 14,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE0E0E0),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE0E0E0),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF4CAF50),
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -675,21 +712,45 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                               style: const TextStyle(fontSize: 13),
                               decoration: InputDecoration(
                                 hintText: '••••••••',
-                                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
+                                hintStyle: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFFBBBBBB),
+                                ),
                                 suffixIcon: IconButton(
                                   icon: Icon(
-                                    hidePass ? Icons.visibility_off : Icons.visibility,
+                                    hidePass
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
                                     size: 18,
                                     color: const Color(0xFF999999),
                                   ),
-                                  onPressed: () => setDlg(() => hidePass = !hidePass),
+                                  onPressed: () =>
+                                      setDlg(() => hidePass = !hidePass),
                                 ),
                                 filled: true,
                                 fillColor: const Color(0xFFF9F9F9),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF4CAF50))),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 14,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE0E0E0),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE0E0E0),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF4CAF50),
+                                  ),
+                                ),
                               ),
                             ),
                           ] else ...[
@@ -697,7 +758,8 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       _profileLabel('USUARIO'),
                                       const SizedBox(height: 6),
@@ -707,21 +769,53 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                                         style: const TextStyle(fontSize: 13),
                                         decoration: InputDecoration(
                                           hintText: 'Usuario',
-                                          hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
+                                          hintStyle: const TextStyle(
+                                            fontSize: 13,
+                                            color: Color(0xFFBBBBBB),
+                                          ),
                                           suffixIcon: IconButton(
                                             icon: Icon(
-                                              hideUser ? Icons.visibility_off : Icons.visibility,
+                                              hideUser
+                                                  ? Icons.visibility_off
+                                                  : Icons.visibility,
                                               size: 18,
                                               color: const Color(0xFF999999),
                                             ),
-                                            onPressed: () => setDlg(() => hideUser = !hideUser),
+                                            onPressed: () => setDlg(
+                                              () => hideUser = !hideUser,
+                                            ),
                                           ),
                                           filled: true,
                                           fillColor: const Color(0xFFF9F9F9),
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF4CAF50))),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 14,
+                                                vertical: 14,
+                                              ),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            borderSide: const BorderSide(
+                                              color: Color(0xFFE0E0E0),
+                                            ),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            borderSide: const BorderSide(
+                                              color: Color(0xFFE0E0E0),
+                                            ),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            borderSide: const BorderSide(
+                                              color: Color(0xFF4CAF50),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -730,7 +824,8 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       _profileLabel('CONTRASEÑA'),
                                       const SizedBox(height: 6),
@@ -740,21 +835,53 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                                         style: const TextStyle(fontSize: 13),
                                         decoration: InputDecoration(
                                           hintText: '••••••••',
-                                          hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
+                                          hintStyle: const TextStyle(
+                                            fontSize: 13,
+                                            color: Color(0xFFBBBBBB),
+                                          ),
                                           suffixIcon: IconButton(
                                             icon: Icon(
-                                              hidePass ? Icons.visibility_off : Icons.visibility,
+                                              hidePass
+                                                  ? Icons.visibility_off
+                                                  : Icons.visibility,
                                               size: 18,
                                               color: const Color(0xFF999999),
                                             ),
-                                            onPressed: () => setDlg(() => hidePass = !hidePass),
+                                            onPressed: () => setDlg(
+                                              () => hidePass = !hidePass,
+                                            ),
                                           ),
                                           filled: true,
                                           fillColor: const Color(0xFFF9F9F9),
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF4CAF50))),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 14,
+                                                vertical: 14,
+                                              ),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            borderSide: const BorderSide(
+                                              color: Color(0xFFE0E0E0),
+                                            ),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            borderSide: const BorderSide(
+                                              color: Color(0xFFE0E0E0),
+                                            ),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                            borderSide: const BorderSide(
+                                              color: Color(0xFF4CAF50),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -768,7 +895,11 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                     ),
                     // Botones
                     Padding(
-                      padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+                      padding: const EdgeInsets.only(
+                        left: 24,
+                        right: 24,
+                        bottom: 24,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -846,7 +977,10 @@ class _AdminScaffoldState extends State<AdminScaffold> {
         suffixIcon: Icon(icon, size: 18, color: const Color(0xFF999999)),
         filled: true,
         fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
@@ -877,4 +1011,3 @@ class _AdminScaffoldState extends State<AdminScaffold> {
     );
   }
 }
-

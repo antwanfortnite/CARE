@@ -211,10 +211,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF4CAF50),
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 14,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -374,7 +371,10 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: a.rol == 'Superusuario'
                       ? const Color(0xFF4CAF50).withOpacity(0.1)
@@ -574,7 +574,10 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: a.rol == 'Superusuario'
                         ? const Color(0xFF4CAF50).withOpacity(0.1)

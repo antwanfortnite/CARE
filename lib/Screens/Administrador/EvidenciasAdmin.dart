@@ -46,7 +46,9 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
   ];
 
   // ──────── PLANES DE SEGUIMIENTO (maestros agregados) ────────
-  final List<_TeacherPlan> _teacherPlans = [];
+  late final List<_TeacherPlan> _teacherPlans = _allTeachers
+      .map((t) => _TeacherPlan(t.name, t.email, t.color))
+      .toList();
 
   // ──────── DATOS MOCK DE GRUPOS POR MAESTRO ────────
   final Map<String, List<_GroupInfo>> _teacherGroups = {
@@ -289,23 +291,51 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
   }
 
   Widget _buildBody(bool isMobile) {
-    switch (_currentLevel) {
-      case 0:
-        return _buildTeachersLevel(isMobile);
-      case 1:
-        return _buildGroupsLevel(isMobile);
-      case 2:
-        return _buildStudentsLevel(isMobile);
-      default:
-        return _buildTeachersLevel(isMobile);
+    if (isMobile) {
+      switch (_currentLevel) {
+        case 0:
+          return _buildTeachersLevel(isMobile);
+        case 1:
+          return _buildGroupsLevel(isMobile);
+        case 2:
+          return _buildStudentsLevel(isMobile);
+        default:
+          return _buildTeachersLevel(isMobile);
+      }
     }
+
+    // Split screen layout for desktop/tablet
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // LEFT COLUMN: Teachers
+        Expanded(
+          flex: 4,
+          child: _buildTeachersLevel(isMobile, isSplitScreen: true),
+        ),
+        const SizedBox(width: 24),
+        // RIGHT COLUMN: Groups or Evidences
+        Expanded(
+          flex: 6,
+          child: _selectedTeacher == null
+              ? _buildEmptyState(
+                  Icons.person_search_outlined,
+                  'Selecciona un maestro',
+                  'Haz clic en un maestro de la lista para ver sus clases.',
+                )
+              : (_currentLevel == 2 && _selectedGroup != null
+                  ? _buildStudentsLevel(isMobile)
+                  : _buildGroupsLevel(isMobile)),
+        ),
+      ],
+    );
   }
 
   // ═══════════════════════════════════════════════════════════════
   // NIVEL 0: LISTA DE MAESTROS (Planes de Seguimiento)
   // ═══════════════════════════════════════════════════════════════
 
-  Widget _buildTeachersLevel(bool isMobile) {
+  Widget _buildTeachersLevel(bool isMobile, {bool isSplitScreen = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -320,17 +350,17 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
             'Agrega un maestro para comenzar a gestionar las evidencias de sus alumnos.',
           )
         else
-          _buildTeacherCards(isMobile),
+          _buildTeacherCards(isMobile, isSplitScreen: isSplitScreen),
       ],
     );
   }
 
   Widget _buildTeachersHeader(bool isMobile) {
     if (isMobile) {
-      return Column(
+      return const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Gestión de Evidencias',
             style: TextStyle(
               fontSize: 22,
@@ -338,40 +368,20 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
               color: Color(0xFF333333),
             ),
           ),
-          const SizedBox(height: 4),
-          const Text(
+          SizedBox(height: 4),
+          Text(
             'Seguimiento de evidencias por maestro, grupo y alumno.',
             style: TextStyle(fontSize: 14, color: Color(0xFF888888)),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _showAddTeacherPlanDialog(),
-              icon: const Icon(Icons.person_add_alt_1, size: 18),
-              label: const Text('Asignar Seguimiento'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 14,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
           ),
         ],
       );
     }
 
-    return Row(
+    return const Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Flexible(
+        Flexible(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -391,26 +401,12 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
             ],
           ),
         ),
-        const SizedBox(width: 16),
-        ElevatedButton.icon(
-          onPressed: () => _showAddTeacherPlanDialog(),
-          icon: const Icon(Icons.person_add_alt_1, size: 18),
-          label: const Text('Asignar Seguimiento'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4CAF50),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
       ],
     );
   }
 
-  Widget _buildTeacherCards(bool isMobile) {
-    if (isMobile) {
+  Widget _buildTeacherCards(bool isMobile, {bool isSplitScreen = false}) {
+    if (isMobile || isSplitScreen) {
       return Column(
         children: _teacherPlans.map((t) => _buildTeacherCard(t)).toList(),
       );
@@ -458,6 +454,7 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
       onTap: () {
         setState(() {
           _selectedTeacher = t;
+          _selectedGroup = null;
           _currentLevel = 1;
         });
       },
@@ -585,6 +582,7 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
                         onTap: () {
                           setState(() {
                             _selectedTeacher = t;
+                            _selectedGroup = null;
                             _currentLevel = 1;
                           });
                         },
@@ -608,7 +606,7 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
                               ),
                               SizedBox(width: 6),
                               Text(
-                                'Ver Grupos',
+                                'Ver Clases',
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -618,12 +616,6 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
                             ],
                           ),
                         ),
-                      ),
-                      _actionBtn(
-                        Icons.delete_outline,
-                        const Color(0xFFEF5350),
-                        'Eliminar',
-                        () => _showDeleteTeacherPlanDialog(t),
                       ),
                     ],
                   ),
@@ -757,7 +749,7 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
   ) {
     if (isMobile) {
       return Column(
-        children: groups.map((g) => _buildGroupInfoCard(g, teacher)).toList(),
+        children: groups.map((g) => _buildGroupInfoCard(g, teacher, isMobile)).toList(),
       );
     }
 
@@ -770,7 +762,7 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
       for (int j = 0; j < crossAxisCount; j++) {
         if (i + j < groups.length) {
           rowChildren.add(
-            Expanded(child: _buildGroupInfoCard(groups[i + j], teacher)),
+            Expanded(child: _buildGroupInfoCard(groups[i + j], teacher, isMobile)),
           );
         } else {
           rowChildren.add(const Expanded(child: SizedBox()));
@@ -790,7 +782,7 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
     return Column(children: rows);
   }
 
-  Widget _buildGroupInfoCard(_GroupInfo g, _TeacherPlan teacher) {
+  Widget _buildGroupInfoCard(_GroupInfo g, _TeacherPlan teacher, bool isMobile) {
     final evidCount = _countEvidenciasForGroup(teacher.name, g.name);
     final initials = g.name.length >= 2
         ? g.name.substring(0, 2).toUpperCase()
