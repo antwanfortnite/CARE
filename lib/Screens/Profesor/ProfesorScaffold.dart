@@ -353,440 +353,206 @@ class _ProfesorScaffoldState extends State<ProfesorScaffold> {
     );
   }
 
-  // ──────── PERFIL DIALOG ────────
+  // ──────── PERFIL DIALOG (solo lectura) ────────
   void _showProfileDialog() {
     final mobile = _isMobile(context);
-    final nameCtrl = TextEditingController(text: 'Julián Sánchez Romero');
-    final emailCtrl = TextEditingController(text: 'julian.sanchez@care.edu.mx');
-    final phoneCtrl = TextEditingController(text: '+52 614 987 6543');
-    final curpCtrl = TextEditingController(text: 'SARJ880215HDFNCL04');
-    final fechaNacCtrl = TextEditingController(text: '1988-02-15');
-    final edadCtrl = TextEditingController(text: '38');
-    final fechaContrCtrl = TextEditingController(text: '2015-08-20');
-    final rolCtrl = TextEditingController(text: 'Docente');
-    final userCtrl = TextEditingController(text: 'julian.sanchez');
-    final passCtrl = TextEditingController(text: 'prof1234');
-    bool hideUser = true, hidePass = true;
 
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDlg) {
-          return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            insetPadding: EdgeInsets.symmetric(
-              horizontal: mobile ? 16 : 40,
-              vertical: 24,
-            ),
-            child: Container(
-              width: mobile ? double.infinity : 520,
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Header
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF2E7D32), Color(0xFF388E3C)],
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: mobile ? 16 : 40,
+          vertical: 24,
+        ),
+        child: Container(
+          width: mobile ? double.infinity : 520,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF2E7D32), Color(0xFF388E3C)],
+                    ),
+                  ),
+                  child: const Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 36,
+                        backgroundColor: Colors.white24,
+                        child: Icon(Icons.person, size: 40, color: Colors.white),
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        'Julián Sánchez Romero',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
-                      child: Column(
-                        children: [
-                          const CircleAvatar(
-                            radius: 36,
-                            backgroundColor: Colors.white24,
-                            child: Icon(Icons.person, size: 40, color: Colors.white),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            nameCtrl.text,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              rolCtrl.text,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Form
-                    Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _profileLabel('NOMBRE COMPLETO'),
-                          const SizedBox(height: 6),
-                          _profileTextField(
-                            controller: nameCtrl,
-                            hint: 'Nombre completo',
-                            icon: Icons.person_outline,
-                          ),
-                          const SizedBox(height: 16),
-                          if (mobile) ...[
-                            _profileLabel('CORREO ELECTRÓNICO'),
-                            const SizedBox(height: 6),
-                            _profileTextField(
-                              controller: emailCtrl,
-                              hint: 'profesor@care.edu',
-                              icon: Icons.alternate_email,
-                            ),
-                            const SizedBox(height: 16),
-                            _profileLabel('TELÉFONO'),
-                            const SizedBox(height: 6),
-                            _profileTextField(
-                              controller: phoneCtrl,
-                              hint: '+52 000 000 0000',
-                              icon: Icons.phone_outlined,
-                            ),
-                          ] else ...[
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _profileLabel('CORREO ELECTRÓNICO'),
-                                      const SizedBox(height: 6),
-                                      _profileTextField(
-                                        controller: emailCtrl,
-                                        hint: 'profesor@care.edu',
-                                        icon: Icons.alternate_email,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _profileLabel('TELÉFONO'),
-                                      const SizedBox(height: 6),
-                                      _profileTextField(
-                                        controller: phoneCtrl,
-                                        hint: '+52 000 000 0000',
-                                        icon: Icons.phone_outlined,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                          const SizedBox(height: 16),
-                          if (mobile) ...[
-                            _profileLabel('CURP'),
-                            const SizedBox(height: 6),
-                            _profileTextField(
-                              controller: curpCtrl,
-                              hint: 'XXXX000000XXXXXXXX',
-                              icon: Icons.badge_outlined,
-                            ),
-                            const SizedBox(height: 16),
-                            _profileLabel('FECHA DE NACIMIENTO'),
-                            const SizedBox(height: 6),
-                            _profileTextField(
-                              controller: fechaNacCtrl,
-                              hint: 'yyyy-mm-dd',
-                              icon: Icons.cake_outlined,
-                            ),
-                            const SizedBox(height: 16),
-                            _profileLabel('EDAD'),
-                            const SizedBox(height: 6),
-                            _profileTextField(
-                              controller: edadCtrl,
-                              hint: 'Edad',
-                              icon: Icons.hourglass_bottom,
-                              readOnly: true,
-                            ),
-                          ] else ...[
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _profileLabel('CURP'),
-                                      const SizedBox(height: 6),
-                                      _profileTextField(
-                                        controller: curpCtrl,
-                                        hint: 'XXXX000000XXXXXXXX',
-                                        icon: Icons.badge_outlined,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _profileLabel('FECHA DE NACIMIENTO'),
-                                      const SizedBox(height: 6),
-                                      _profileTextField(
-                                        controller: fechaNacCtrl,
-                                        hint: 'yyyy-mm-dd',
-                                        icon: Icons.cake_outlined,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _profileLabel('EDAD'),
-                                      const SizedBox(height: 6),
-                                      _profileTextField(
-                                        controller: edadCtrl,
-                                        hint: 'Edad',
-                                        icon: Icons.hourglass_bottom,
-                                        readOnly: true,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _profileLabel('FECHA DE CONTRATACIÓN'),
-                                      const SizedBox(height: 6),
-                                      _profileTextField(
-                                        controller: fechaContrCtrl,
-                                        hint: 'yyyy-mm-dd',
-                                        icon: Icons.calendar_today_outlined,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                          if (mobile) ...[
-                            const SizedBox(height: 16),
-                            _profileLabel('FECHA DE CONTRATACIÓN'),
-                            const SizedBox(height: 6),
-                            _profileTextField(
-                              controller: fechaContrCtrl,
-                              hint: 'yyyy-mm-dd',
-                              icon: Icons.calendar_today_outlined,
-                            ),
-                          ],
-                          const SizedBox(height: 16),
-                          _profileLabel('ROL'),
-                          const SizedBox(height: 6),
-                          _profileTextField(
-                            controller: rolCtrl,
-                            hint: 'Rol',
-                            icon: Icons.school_outlined,
-                            readOnly: true,
-                          ),
-                          const SizedBox(height: 12),
-                          const Divider(color: Color(0xFFE0E0E0)),
-                          const SizedBox(height: 12),
-                          if (mobile) ...[
-                            _profileLabel('USUARIO'),
-                            const SizedBox(height: 6),
-                            TextField(
-                              controller: userCtrl,
-                              obscureText: hideUser,
-                              style: const TextStyle(fontSize: 13),
-                              decoration: InputDecoration(
-                                hintText: 'Usuario',
-                                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    hideUser ? Icons.visibility_off : Icons.visibility,
-                                    size: 18,
-                                    color: const Color(0xFF999999),
-                                  ),
-                                  onPressed: () => setDlg(() => hideUser = !hideUser),
-                                ),
-                                filled: true,
-                                fillColor: const Color(0xFFF9F9F9),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF4CAF50))),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            _profileLabel('CONTRASEÑA'),
-                            const SizedBox(height: 6),
-                            TextField(
-                              controller: passCtrl,
-                              obscureText: hidePass,
-                              style: const TextStyle(fontSize: 13),
-                              decoration: InputDecoration(
-                                hintText: '••••••••',
-                                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    hidePass ? Icons.visibility_off : Icons.visibility,
-                                    size: 18,
-                                    color: const Color(0xFF999999),
-                                  ),
-                                  onPressed: () => setDlg(() => hidePass = !hidePass),
-                                ),
-                                filled: true,
-                                fillColor: const Color(0xFFF9F9F9),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF4CAF50))),
-                              ),
-                            ),
-                          ] else ...[
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _profileLabel('USUARIO'),
-                                      const SizedBox(height: 6),
-                                      TextField(
-                                        controller: userCtrl,
-                                        obscureText: hideUser,
-                                        style: const TextStyle(fontSize: 13),
-                                        decoration: InputDecoration(
-                                          hintText: 'Usuario',
-                                          hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
-                                          suffixIcon: IconButton(
-                                            icon: Icon(
-                                              hideUser ? Icons.visibility_off : Icons.visibility,
-                                              size: 18,
-                                              color: const Color(0xFF999999),
-                                            ),
-                                            onPressed: () => setDlg(() => hideUser = !hideUser),
-                                          ),
-                                          filled: true,
-                                          fillColor: const Color(0xFFF9F9F9),
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF4CAF50))),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _profileLabel('CONTRASEÑA'),
-                                      const SizedBox(height: 6),
-                                      TextField(
-                                        controller: passCtrl,
-                                        obscureText: hidePass,
-                                        style: const TextStyle(fontSize: 13),
-                                        decoration: InputDecoration(
-                                          hintText: '••••••••',
-                                          hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
-                                          suffixIcon: IconButton(
-                                            icon: Icon(
-                                              hidePass ? Icons.visibility_off : Icons.visibility,
-                                              size: 18,
-                                              color: const Color(0xFF999999),
-                                            ),
-                                            onPressed: () => setDlg(() => hidePass = !hidePass),
-                                          ),
-                                          filled: true,
-                                          fillColor: const Color(0xFFF9F9F9),
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
-                                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF4CAF50))),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    // Botones
-                    Padding(
-                      padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: const Text(
-                              'Cancelar',
-                              style: TextStyle(
-                                color: Color(0xFF888888),
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.pop(ctx);
-                            },
-                            icon: const Icon(Icons.save_outlined, size: 18),
-                            label: const Text('Guardar Cambios'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4CAF50),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 14,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+                // Info (read-only)
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _profileLabel('NOMBRE COMPLETO'),
+                      const SizedBox(height: 6),
+                      _profileReadOnlyField('Julián Sánchez Romero', Icons.person_outline),
+                      const SizedBox(height: 16),
+                      if (mobile) ...[
+                        _profileLabel('CORREO ELECTRÓNICO'),
+                        const SizedBox(height: 6),
+                        _profileReadOnlyField('julian.sanchez@care.edu.mx', Icons.alternate_email),
+                        const SizedBox(height: 16),
+                        _profileLabel('TELÉFONO'),
+                        const SizedBox(height: 6),
+                        _profileReadOnlyField('+52 614 987 6543', Icons.phone_outlined),
+                      ] else ...[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _profileLabel('CORREO ELECTRÓNICO'),
+                                  const SizedBox(height: 6),
+                                  _profileReadOnlyField('julian.sanchez@care.edu.mx', Icons.alternate_email),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _profileLabel('TELÉFONO'),
+                                  const SizedBox(height: 6),
+                                  _profileReadOnlyField('+52 614 987 6543', Icons.phone_outlined),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+                      if (mobile) ...[
+                        _profileLabel('CURP'),
+                        const SizedBox(height: 6),
+                        _profileReadOnlyField('SARJ880215HDFNCL04', Icons.badge_outlined),
+                        const SizedBox(height: 16),
+                        _profileLabel('FECHA DE NACIMIENTO'),
+                        const SizedBox(height: 6),
+                        _profileReadOnlyField('1988-02-15', Icons.cake_outlined),
+                        const SizedBox(height: 16),
+                        _profileLabel('EDAD'),
+                        const SizedBox(height: 6),
+                        _profileReadOnlyField('38', Icons.hourglass_bottom),
+                      ] else ...[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _profileLabel('CURP'),
+                                  const SizedBox(height: 6),
+                                  _profileReadOnlyField('SARJ880215HDFNCL04', Icons.badge_outlined),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _profileLabel('FECHA DE NACIMIENTO'),
+                                  const SizedBox(height: 6),
+                                  _profileReadOnlyField('1988-02-15', Icons.cake_outlined),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _profileLabel('EDAD'),
+                                  const SizedBox(height: 6),
+                                  _profileReadOnlyField('38', Icons.hourglass_bottom),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _profileLabel('FECHA DE CONTRATACIÓN'),
+                                  const SizedBox(height: 6),
+                                  _profileReadOnlyField('2015-08-20', Icons.calendar_today_outlined),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      if (mobile) ...[
+                        const SizedBox(height: 16),
+                        _profileLabel('FECHA DE CONTRATACIÓN'),
+                        const SizedBox(height: 6),
+                        _profileReadOnlyField('2015-08-20', Icons.calendar_today_outlined),
+                      ],
+                    ],
+                  ),
+                ),
+                // Botón cerrar
+                Padding(
+                  padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4CAF50),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                        ),
+                        child: const Text('Cerrar'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
@@ -803,43 +569,29 @@ class _ProfesorScaffoldState extends State<ProfesorScaffold> {
     );
   }
 
-  Widget _profileTextField({
-    required TextEditingController controller,
-    required String hint,
-    required IconData icon,
-    bool readOnly = false,
-  }) {
-    return TextField(
-      controller: controller,
-      readOnly: readOnly,
-      enabled: !readOnly,
-      style: TextStyle(
-        fontSize: 13,
-        color: readOnly ? const Color(0xFF555555) : null,
+  Widget _profileReadOnlyField(String value, IconData icon) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFEFEF),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE0E0E0)),
       ),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
-        suffixIcon: Icon(icon, size: 18, color: const Color(0xFF999999)),
-        filled: true,
-        fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-        ),
-        disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF4CAF50)),
-        ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: const Color(0xFF999999)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF555555),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

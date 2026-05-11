@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'AdminScaffold.dart';
 import 'DashboardAdmin.dart';
 import 'MaestrosAdmin.dart';
@@ -30,7 +31,6 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
       fechaNacimiento: '1985-03-12',
       fechaContratacion: '2018-08-15',
       edad: 41,
-      rol: 'Superusuario',
       usuario: 'carlos.rodriguez',
       contrasena: 'admin1234',
     ),
@@ -45,7 +45,6 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
       fechaNacimiento: '1990-06-25',
       fechaContratacion: '2020-01-10',
       edad: 35,
-      rol: 'Administrador',
       usuario: 'maria.fernandez',
       contrasena: 'admin5678',
     ),
@@ -60,7 +59,6 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
       fechaNacimiento: '1988-09-14',
       fechaContratacion: '2019-05-20',
       edad: 37,
-      rol: 'Administrador',
       usuario: 'roberto.sanchez',
       contrasena: 'admin9012',
     ),
@@ -75,7 +73,6 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
       fechaNacimiento: '1992-01-30',
       fechaContratacion: '2021-09-01',
       edad: 34,
-      rol: 'Administrador',
       usuario: 'ana.morales',
       contrasena: 'admin3456',
     ),
@@ -90,7 +87,6 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
       fechaNacimiento: '1987-07-20',
       fechaContratacion: '2017-03-15',
       edad: 38,
-      rol: 'Superusuario',
       usuario: 'javier.hernandez',
       contrasena: 'admin7890',
     ),
@@ -370,28 +366,6 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: a.rol == 'Superusuario'
-                      ? const Color(0xFF4CAF50).withOpacity(0.1)
-                      : const Color(0xFF42A5F5).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  a.rol,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: a.rol == 'Superusuario'
-                        ? const Color(0xFF4CAF50)
-                        : const Color(0xFF42A5F5),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -465,10 +439,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                               flex: 2,
                               child: Text('CURP', style: _headerStyle),
                             ),
-                            Expanded(
-                              flex: 2,
-                              child: Text('ROL', style: _headerStyle),
-                            ),
+
                             Expanded(
                               flex: 2,
                               child: Text(
@@ -569,35 +540,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          Expanded(
-            flex: 2,
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: a.rol == 'Superusuario'
-                        ? const Color(0xFF4CAF50).withOpacity(0.1)
-                        : const Color(0xFF42A5F5).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    a.rol,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: a.rol == 'Superusuario'
-                          ? const Color(0xFF4CAF50)
-                          : const Color(0xFF42A5F5),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+
           Expanded(
             flex: 2,
             child: Row(
@@ -748,11 +691,21 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
     required String hint,
     required IconData icon,
     bool readOnly = false,
+    bool isCurp = false,
   }) {
     return TextField(
       controller: controller,
       readOnly: readOnly,
       enabled: !readOnly,
+      maxLength: isCurp ? 18 : null,
+      textCapitalization: isCurp ? TextCapitalization.characters : TextCapitalization.none,
+      inputFormatters: isCurp
+          ? [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+              UpperCaseTextFormatter(),
+              LengthLimitingTextInputFormatter(18),
+            ]
+          : null,
       style: TextStyle(
         fontSize: 13,
         color: readOnly ? const Color(0xFF555555) : null,
@@ -761,6 +714,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
         hintText: hint,
         hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
         suffixIcon: Icon(icon, size: 18, color: const Color(0xFF999999)),
+        counterText: '',
         filled: true,
         fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
         contentPadding: const EdgeInsets.symmetric(
@@ -923,7 +877,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
     required TextEditingController dateCtrl,
     required TextEditingController birthDateCtrl,
     required TextEditingController ageCtrl,
-    required TextEditingController rolCtrl,
+
     required VoidCallback onPickBirthDate,
     required VoidCallback onPickHireDate,
     required bool isMobile,
@@ -975,6 +929,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
               hint: 'XXXX000000XXXXXXXX',
               icon: Icons.badge_outlined,
               readOnly: readOnly,
+              isCurp: !readOnly,
             ),
             const SizedBox(height: 16),
             _dialogLabel('FECHA DE CONTRATACIÓN'),
@@ -1040,6 +995,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                         hint: 'XXXX000000XXXXXXXX',
                         icon: Icons.badge_outlined,
                         readOnly: readOnly,
+                        isCurp: !readOnly,
                       ),
                     ],
                   ),
@@ -1122,15 +1078,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            _dialogLabel('ROL'),
-            const SizedBox(height: 6),
-            _dialogTextField(
-              controller: rolCtrl,
-              hint: 'Ej. Administrador',
-              icon: Icons.admin_panel_settings_outlined,
-              readOnly: readOnly,
-            ),
+
           ] else ...[
             Row(
               children: [
@@ -1211,15 +1159,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            _dialogLabel('ROL'),
-            const SizedBox(height: 6),
-            _dialogTextField(
-              controller: rolCtrl,
-              hint: 'Ej. Administrador',
-              icon: Icons.admin_panel_settings_outlined,
-              readOnly: readOnly,
-            ),
+
           ],
           // ── Credenciales ──
           if (userCtrl != null && passCtrl != null) ...[
@@ -1485,7 +1425,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
         d = TextEditingController(),
         bd = TextEditingController(),
         age = TextEditingController(),
-        rol = TextEditingController(),
+
         usr = TextEditingController(),
         pwd = TextEditingController();
     bool hideUser = true, hidePass = true;
@@ -1522,7 +1462,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                     dateCtrl: d,
                     birthDateCtrl: bd,
                     ageCtrl: age,
-                    rolCtrl: rol,
+
                     onPickBirthDate: () => _pickBirthDate(ctx, bd, age, setDlg),
                     onPickHireDate: () => _pickHireDate(ctx, d, setDlg),
                     isMobile: mobile,
@@ -1596,7 +1536,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
         d = TextEditingController(text: a.fechaContratacion),
         bd = TextEditingController(text: a.fechaNacimiento),
         age = TextEditingController(text: a.edad.toString()),
-        rol = TextEditingController(text: a.rol),
+
         usr = TextEditingController(text: a.usuario),
         pwd = TextEditingController(text: a.contrasena);
     bool hideUser = true, hidePass = true;
@@ -1632,7 +1572,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                     dateCtrl: d,
                     birthDateCtrl: bd,
                     ageCtrl: age,
-                    rolCtrl: rol,
+
                     onPickBirthDate: () {},
                     onPickHireDate: () {},
                     isMobile: mobile,
@@ -1690,7 +1630,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
         d = TextEditingController(text: a.fechaContratacion),
         bd = TextEditingController(text: a.fechaNacimiento),
         age = TextEditingController(text: a.edad.toString()),
-        rol = TextEditingController(text: a.rol),
+
         usr = TextEditingController(text: a.usuario),
         pwd = TextEditingController(text: a.contrasena);
     bool hideUser = true, hidePass = true;
@@ -1727,7 +1667,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                     dateCtrl: d,
                     birthDateCtrl: bd,
                     ageCtrl: age,
-                    rolCtrl: rol,
+
                     onPickBirthDate: () => _pickBirthDate(ctx, bd, age, setDlg),
                     onPickHireDate: () => _pickHireDate(ctx, d, setDlg),
                     isMobile: mobile,
@@ -1836,7 +1776,7 @@ class _AdminData {
   final String fechaNacimiento, fechaContratacion;
   final int edad;
   final Color avatarColor;
-  final String rol;
+
   final String usuario, contrasena;
 
   const _AdminData({
@@ -1850,8 +1790,22 @@ class _AdminData {
     required this.fechaNacimiento,
     required this.fechaContratacion,
     required this.edad,
-    required this.rol,
+
     required this.usuario,
     required this.contrasena,
   });
+}
+
+/// Converts all typed text to uppercase.
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+    );
+  }
 }

@@ -386,7 +386,6 @@ class _AdminScaffoldState extends State<AdminScaffold> {
     final fechaNacCtrl = TextEditingController(text: '1985-03-12');
     final edadCtrl = TextEditingController(text: '41');
     final fechaContrCtrl = TextEditingController(text: '2018-08-15');
-    final rolCtrl = TextEditingController(text: 'Superusuario');
     final userCtrl = TextEditingController(text: 'carlos.rodriguez');
     final passCtrl = TextEditingController(text: 'admin1234');
     bool hideUser = true, hidePass = true;
@@ -442,25 +441,7 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                               color: Colors.white,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              rolCtrl.text,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
+
                         ],
                       ),
                     ),
@@ -641,15 +622,6 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                               icon: Icons.calendar_today_outlined,
                             ),
                           ],
-                          const SizedBox(height: 16),
-                          _profileLabel('ROL'),
-                          const SizedBox(height: 6),
-                          _profileTextField(
-                            controller: rolCtrl,
-                            hint: 'Rol',
-                            icon: Icons.admin_panel_settings_outlined,
-                            readOnly: true,
-                          ),
                           const SizedBox(height: 12),
                           const Divider(color: Color(0xFFE0E0E0)),
                           const SizedBox(height: 12),

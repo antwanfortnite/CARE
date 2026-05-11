@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'AdminScaffold.dart';
 import 'DashboardAdmin.dart';
 import 'AlumnosAdmin.dart';
@@ -434,13 +435,6 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
               ),
               const SizedBox(width: 8),
               _actionBtn(
-                Icons.menu_book_outlined,
-                const Color(0xFF4CAF50),
-                'Asignar materias',
-                () => _showAssignSubjectsDialog(t),
-              ),
-              const SizedBox(width: 8),
-              _actionBtn(
                 Icons.delete_outline,
                 const Color(0xFFEF5350),
                 'Eliminar',
@@ -627,13 +621,6 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                 ),
                 const SizedBox(width: 8),
                 _actionBtn(
-                  Icons.menu_book_outlined,
-                  const Color(0xFF4CAF50),
-                  'Asignar materias',
-                  () => _showAssignSubjectsDialog(t),
-                ),
-                const SizedBox(width: 8),
-                _actionBtn(
                   Icons.delete_outline,
                   const Color(0xFFEF5350),
                   'Eliminar',
@@ -764,11 +751,21 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     required String hint,
     required IconData icon,
     bool readOnly = false,
+    bool isCurp = false,
   }) {
     return TextField(
       controller: controller,
       readOnly: readOnly,
       enabled: !readOnly,
+      maxLength: isCurp ? 18 : null,
+      textCapitalization: isCurp ? TextCapitalization.characters : TextCapitalization.none,
+      inputFormatters: isCurp
+          ? [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+              UpperCaseTextFormatter(),
+              LengthLimitingTextInputFormatter(18),
+            ]
+          : null,
       style: TextStyle(
         fontSize: 13,
         color: readOnly ? const Color(0xFF555555) : null,
@@ -777,6 +774,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
         hintText: hint,
         hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
         suffixIcon: Icon(icon, size: 18, color: const Color(0xFF999999)),
+        counterText: '',
         filled: true,
         fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
         contentPadding: const EdgeInsets.symmetric(
@@ -992,6 +990,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
               hint: 'XXXX000000XXXXXXXX',
               icon: Icons.badge_outlined,
               readOnly: readOnly,
+              isCurp: !readOnly,
             ),
             const SizedBox(height: 16),
             _dialogLabel('FECHA DE CONTRATACIÓN'),
@@ -1057,6 +1056,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                         hint: 'XXXX000000XXXXXXXX',
                         icon: Icons.badge_outlined,
                         readOnly: readOnly,
+                        isCurp: !readOnly,
                       ),
                     ],
                   ),
@@ -1829,291 +1829,6 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
     );
   }
 
-  // ──────── ASIGNAR MATERIAS ────────
-  void _showAssignSubjectsDialog(_TeacherData t) {
-    final mobile = _isMobile(context);
-    final subjects = [
-      _SubjectData('Matemáticas I', 'Tronco Común', '5h/semana', true),
-      _SubjectData('Física II', 'Especialidad', '4h/semana', true),
-      _SubjectData('Comprensión Lectora', 'Humanidades', '5h/semana', false),
-      _SubjectData('Inglés Básico', 'Lenguas', '6h/semana', false),
-      _SubjectData('Química Inorgánica', 'Laboratorio', '5h/semana', false),
-      _SubjectData('Cálculo Diferencial', 'Avanzado', '5h/semana', false),
-    ];
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDlg) {
-          final count = subjects.where((s) => s.selected).length;
-          return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            insetPadding: EdgeInsets.symmetric(
-              horizontal: mobile ? 16 : 40,
-              vertical: 24,
-            ),
-            child: Container(
-              width: mobile ? double.infinity : 540,
-              padding: const EdgeInsets.all(24),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(
-                              Icons.menu_book,
-                              size: 16,
-                              color: Color(0xFF4CAF50),
-                            ),
-                            SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                'GESTIÓN ACADÉMICA',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF4CAF50),
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 1,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        RichText(
-                          text: TextSpan(
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF333333),
-                            ),
-                            children: [
-                              const TextSpan(text: 'Asignar Materias a '),
-                              TextSpan(
-                                text: t.name,
-                                style: const TextStyle(
-                                  color: Color(0xFF4CAF50),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Seleccione las materias que impartirá el docente durante el período escolar actual.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF888888),
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: subjects
-                          .map(
-                            (s) => SizedBox(
-                              width: mobile
-                                  ? double.infinity
-                                  : (540 - 48 - 12) / 2,
-                              child: InkWell(
-                                onTap: () =>
-                                    setDlg(() => s.selected = !s.selected),
-                                borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  padding: const EdgeInsets.all(14),
-                                  decoration: BoxDecoration(
-                                    color: s.selected
-                                        ? const Color(0xFFE8F5E9)
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: s.selected
-                                          ? const Color(
-                                              0xFF4CAF50,
-                                            ).withOpacity(0.3)
-                                          : const Color(0xFFE8E8E8),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 20,
-                                        height: 20,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: s.selected
-                                              ? const Color(0xFF4CAF50)
-                                              : Colors.transparent,
-                                          border: Border.all(
-                                            color: s.selected
-                                                ? const Color(0xFF4CAF50)
-                                                : const Color(0xFFCCCCCC),
-                                            width: 2,
-                                          ),
-                                        ),
-                                        child: s.selected
-                                            ? const Icon(
-                                                Icons.check,
-                                                size: 14,
-                                                color: Colors.white,
-                                              )
-                                            : null,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              s.name,
-                                              style: const TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w600,
-                                                color: Color(0xFF333333),
-                                              ),
-                                            ),
-                                            Text(
-                                              '${s.category} • ${s.hours}',
-                                              style: const TextStyle(
-                                                fontSize: 11,
-                                                color: Color(0xFF999999),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                    const SizedBox(height: 24),
-                    mobile
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    '$count',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF4CAF50),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  const Text(
-                                    'Materias seleccionadas',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Color(0xFF888888),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(ctx),
-                                    child: const Text(
-                                      'Cancelar',
-                                      style: TextStyle(
-                                        color: Color(0xFF888888),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  ElevatedButton(
-                                    onPressed: () => Navigator.pop(ctx),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF4CAF50),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 24,
-                                        vertical: 14,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(24),
-                                      ),
-                                    ),
-                                    child: const Text('Actualizar'),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          )
-                        : Row(
-                            children: [
-                              Text(
-                                '$count',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF4CAF50),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              const Text(
-                                'Materias seleccionadas',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF888888),
-                                ),
-                              ),
-                              const Spacer(),
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx),
-                                child: const Text(
-                                  'Cancelar',
-                                  style: TextStyle(color: Color(0xFF888888)),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              ElevatedButton(
-                                onPressed: () => Navigator.pop(ctx),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4CAF50),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 14,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(24),
-                                  ),
-                                ),
-                                child: const Text('Actualizar Asignaciones'),
-                              ),
-                            ],
-                          ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
 
   // ──────── ELIMINAR MAESTRO ────────
   void _showDeleteDialog(_TeacherData t) {
@@ -2276,8 +1991,16 @@ class _TeacherData {
   }
 }
 
-class _SubjectData {
-  final String name, category, hours;
-  bool selected;
-  _SubjectData(this.name, this.category, this.hours, this.selected);
+/// Converts all typed text to uppercase.
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+    );
+  }
 }

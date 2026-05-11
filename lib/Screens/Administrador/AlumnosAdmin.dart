@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'AdminScaffold.dart';
 import 'DashboardAdmin.dart';
 import 'MaestrosAdmin.dart';
@@ -943,11 +944,21 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
     required String hint,
     required IconData icon,
     bool readOnly = false,
+    bool isCurp = false,
   }) {
     return TextField(
       controller: controller,
       readOnly: readOnly,
       enabled: !readOnly,
+      maxLength: isCurp ? 18 : null,
+      textCapitalization: isCurp ? TextCapitalization.characters : TextCapitalization.none,
+      inputFormatters: isCurp
+          ? [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+              UpperCaseTextFormatter(),
+              LengthLimitingTextInputFormatter(18),
+            ]
+          : null,
       style: TextStyle(
         fontSize: 13,
         color: readOnly ? const Color(0xFF555555) : null,
@@ -956,6 +967,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
         hintText: hint,
         hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFBBBBBB)),
         suffixIcon: Icon(icon, size: 18, color: const Color(0xFF999999)),
+        counterText: '',
         filled: true,
         fillColor: readOnly ? const Color(0xFFEFEFEF) : const Color(0xFFF9F9F9),
         contentPadding: const EdgeInsets.symmetric(
@@ -1142,6 +1154,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
               hint: 'XXXX000000XXXXXXXX',
               icon: Icons.badge_outlined,
               readOnly: readOnly,
+              isCurp: !readOnly,
             ),
           ] else ...[
             Row(
@@ -1188,6 +1201,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
               hint: 'XXXX000000XXXXXXXX',
               icon: Icons.badge_outlined,
               readOnly: readOnly,
+              isCurp: !readOnly,
             ),
           ],
           const SizedBox(height: 16),
@@ -2021,4 +2035,18 @@ class _StudentData {
     this.parentPhone,
     this.edad,
   );
+}
+
+/// Converts all typed text to uppercase.
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+    );
+  }
 }
