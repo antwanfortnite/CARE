@@ -31,7 +31,23 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
       _isLoadingAlumnos = true;
     });
     
-    final alumnos = await _apiService.getAlumnos();
+    final results = await Future.wait([
+      _apiService.getAlumnos(),
+      _apiService.getPadres(),
+    ]);
+    
+    final alumnos = results[0];
+    final padres = results[1];
+
+    final Map<int, dynamic> mapPadres = {};
+    for (var p in padres) {
+      if (p['id_padre'] != null) {
+        final id = int.tryParse(p['id_padre'].toString());
+        if (id != null) {
+          mapPadres[id] = p;
+        }
+      }
+    }
     
     List<_StudentData> cursando = [];
     List<_StudentData> noCursando = [];
@@ -48,20 +64,36 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
       if (initials.isEmpty) initials = 'A';
       
       final int edad = a['fecha_nacimiento'] != null ? _calculateAge(DateTime.parse(a['fecha_nacimiento'])) : 0;
+      final String fechaNacimiento = a['fecha_nacimiento']?.toString().split('T')[0] ?? '';
       
+      int? idPadre;
+      if (a['id_padre'] != null) {
+        idPadre = int.tryParse(a['id_padre'].toString());
+      }
+      final padre = idPadre != null ? mapPadres[idPadre] : null;
+
+      final int idAlumno = a['id_alumno'] != null ? int.tryParse(a['id_alumno'].toString()) ?? 0 : 0;
+      final int estado = a['estado'] != null ? int.tryParse(a['estado'].toString()) ?? 0 : 0;
+      final int? idGrupo = a['id_grupo'] != null ? int.tryParse(a['id_grupo'].toString()) : null;
+
       final student = _StudentData(
+        idAlumno,
+        idPadre,
+        idGrupo,
+        estado,
+        fechaNacimiento,
         name,
         email,
         initials.toUpperCase(),
         const Color(0xFF4CAF50), // Color default
         a['curp'] ?? 'SIN CURP',
-        a['nombre_padre'] ?? 'Padre No Asignado', // Podría venir con un JOIN en el backend
-        a['correo_padre'] ?? 'N/A',
-        a['telefono_padre'] ?? 'N/A',
+        padre != null ? (padre['nombre_padre'] ?? 'Padre No Asignado') : 'Padre No Asignado',
+        padre != null ? (padre['email'] ?? 'N/A') : 'N/A',
+        padre != null ? (padre['contacto'] ?? 'N/A') : 'N/A',
         edad,
       );
       
-      if (a['estado'] == 1 || a['estado'] == '1') {
+      if (estado == 1) {
         cursando.add(student);
       } else {
         noCursando.add(student);
@@ -1509,6 +1541,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                               pn.text,
                               pe.text,
                               pp.text,
+                              pwd.text,
                             );
 
                             print('Resultado de agregarPadre: idPadre = $idPadre');
@@ -1583,15 +1616,28 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
   // ──────── MODIFICAR ALUMNO ────────
   void _showEditStudentDialog(_StudentData s) {
     final mobile = _isMobile(context);
+    
+    // Parse fechaNacimiento to DD/MM/YYYY for the text field
+    String formattedDate = '';
+    if (s.fechaNacimiento.isNotEmpty) {
+      try {
+        final parts = s.fechaNacimiento.split('-');
+        if (parts.length == 3) {
+          formattedDate = '${parts[2]}/${parts[1]}/${parts[0]}';
+        }
+      } catch (_) {}
+    }
+
     final n = TextEditingController(text: s.name),
         pn = TextEditingController(text: s.parentName),
         pe = TextEditingController(text: s.parentEmail),
         pp = TextEditingController(text: s.parentPhone),
         c = TextEditingController(text: s.curp),
-        bd = TextEditingController(),
+        bd = TextEditingController(text: formattedDate),
         age = TextEditingController(text: '${s.edad}'),
         pwd = TextEditingController();
     bool hidePass = true;
+    bool isSaving = false;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1652,12 +1698,54 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                         ),
                         const SizedBox(width: 12),
                         ElevatedButton.icon(
-                          onPressed: () => Navigator.pop(ctx),
-                          icon: const Icon(
-                            Icons.check_circle_outline,
-                            size: 18,
-                          ),
-                          label: const Text('Guardar Cambios'),
+                          onPressed: isSaving ? null : () async {
+                            if (n.text.isEmpty || c.text.isEmpty || bd.text.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Faltan campos requeridos')),
+                              );
+                              return;
+                            }
+                            
+                            setDlg(() => isSaving = true);
+                            
+                            // Parsear fecha DD/MM/YYYY a YYYY-MM-DD
+                            String fechaNacimientoStr = bd.text;
+                            try {
+                              final parts = bd.text.split('/');
+                              if (parts.length == 3) {
+                                fechaNacimientoStr = '${parts[2]}-${parts[1]}-${parts[0]}';
+                              }
+                            } catch (_) {}
+
+                            if (s.idPadre != null) {
+                              await _apiService.actualizarPadre(
+                                s.idPadre!,
+                                pn.text,
+                                pe.text,
+                                pp.text,
+                                pwd.text,
+                              );
+                            }
+
+                            final success = await _apiService.actualizarAlumno(
+                              s.idAlumno,
+                              n.text,
+                              c.text,
+                              s.estado,
+                              fechaNacimientoStr,
+                              s.idGrupo,
+                            );
+
+                            if (success) {
+                              _cargarAlumnos();
+                            }
+                            
+                            if (mounted) Navigator.pop(ctx);
+                          },
+                          icon: isSaving 
+                            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                            : const Icon(Icons.check_circle_outline, size: 18),
+                          label: Text(isSaving ? 'Guardando...' : 'Guardar Cambios'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF4CAF50),
                             foregroundColor: Colors.white,
@@ -1685,12 +1773,24 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
   // ──────── VER INFORMACIÓN ALUMNO ────────
   void _showViewStudentDialog(_StudentData s) {
     final mobile = _isMobile(context);
+    
+    // Parse fechaNacimiento to DD/MM/YYYY
+    String formattedDate = '';
+    if (s.fechaNacimiento.isNotEmpty) {
+      try {
+        final parts = s.fechaNacimiento.split('-');
+        if (parts.length == 3) {
+          formattedDate = '${parts[2]}/${parts[1]}/${parts[0]}';
+        }
+      } catch (_) {}
+    }
+
     final n = TextEditingController(text: s.name),
         pn = TextEditingController(text: s.parentName),
         pe = TextEditingController(text: s.parentEmail),
         pp = TextEditingController(text: s.parentPhone),
         c = TextEditingController(text: s.curp),
-        bd = TextEditingController(),
+        bd = TextEditingController(text: formattedDate),
         age = TextEditingController(text: '${s.edad}'),
         pwd = TextEditingController();
     bool hidePass = true;
@@ -1831,12 +1931,19 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
             ),
           ),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _studentsCursando.remove(s);
-                _studentsNoCursando.add(s);
-              });
-              Navigator.pop(ctx);
+            onPressed: () async {
+              final success = await _apiService.actualizarAlumno(
+                s.idAlumno,
+                s.name,
+                s.curp,
+                0, // 0 = Inactivo/Dar de baja
+                s.fechaNacimiento,
+                s.idGrupo,
+              );
+              if (success) {
+                _cargarAlumnos();
+              }
+              if (mounted) Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF5350),
@@ -1912,12 +2019,19 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
             ),
           ),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _studentsNoCursando.remove(s);
-                _studentsCursando.add(s);
-              });
-              Navigator.pop(ctx);
+            onPressed: () async {
+              final success = await _apiService.actualizarAlumno(
+                s.idAlumno,
+                s.name,
+                s.curp,
+                1, // 1 = Activo/Cursando
+                s.fechaNacimiento,
+                s.idGrupo,
+              );
+              if (success) {
+                _cargarAlumnos();
+              }
+              if (mounted) Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4CAF50),
@@ -2015,6 +2129,11 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
 
 // ──────── DATA MODEL ────────
 class _StudentData {
+  final int idAlumno;
+  final int? idPadre;
+  final int? idGrupo;
+  final int estado;
+  final String fechaNacimiento;
   final String name,
       email,
       initials,
@@ -2025,6 +2144,11 @@ class _StudentData {
   final Color avatarColor;
   final int edad;
   const _StudentData(
+    this.idAlumno,
+    this.idPadre,
+    this.idGrupo,
+    this.estado,
+    this.fechaNacimiento,
     this.name,
     this.email,
     this.initials,

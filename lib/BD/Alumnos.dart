@@ -25,8 +25,30 @@ class ApiService {
     }
   }
 
+  // Función para obtener la lista de padres
+  Future<List<dynamic>> getPadres() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/padres'));
+
+      if (response.statusCode == 200) {
+        List<dynamic> padres = jsonDecode(response.body);
+        return padres;
+      } else {
+        throw Exception('Error en el servidor: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Ocurrió un error de conexión al obtener padres: $e');
+      return [];
+    }
+  }
+
   // Agregar un padre y retornar su ID
-  Future<int?> agregarPadre(String nombre, String correo, String telefono) async {
+  Future<int?> agregarPadre(
+    String nombre,
+    String correo,
+    String telefono,
+    String pin,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/padres'),
@@ -34,17 +56,30 @@ class ApiService {
         body: jsonEncode({
           "nombre_padre": nombre,
           "email": correo,
-          "contacto": telefono
+          "contacto": telefono,
+          "pin_acceso": pin,
         }),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         print('Padre guardado exitosamente');
+
+        // --- AGREGA ESTE PRINT PARA DEBUGEAR ---
+        print('RESPUESTA DEL SERVIDOR: ${response.body}');
+        // ---------------------------------------
+
         final data = jsonDecode(response.body);
-        // Intentar obtener el ID generado del padre (puede variar según el backend)
-        return data['id'] ?? data['id_padre'] ?? data['insertId'];
+
+        // Dependiendo de lo que imprima el log de arriba, ajusta esta línea.
+        // Ejemplo: Si imprime {"success": true, "nuevoPadreId": 5}, cambiarías a data['nuevoPadreId']
+        return data['id_nuevo'] ??
+            data['id'] ??
+            data['id_padre'] ??
+            data['insertId'];
       } else {
-        print('Error al guardar padre: ${response.statusCode} - ${response.body}');
+        print(
+          'Error al guardar padre: ${response.statusCode} - ${response.body}',
+        );
         return null;
       }
     } catch (e) {
@@ -53,8 +88,15 @@ class ApiService {
     }
   }
 
-  // Agregar un alumno (ahora incluye fecha_nacimiento)
-  Future<bool> agregarAlumno(int idPadre, String nombre, String curp, String pin, String fechaNacimiento) async {
+  // Agregar un alumno (ahora incluye fecha_nacimiento y estado)
+  Future<bool> agregarAlumno(
+    int idPadre,
+    String nombre,
+    String curp,
+    String pin,
+    String fechaNacimiento, {
+    int estado = 1,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/alumnos'),
@@ -64,7 +106,8 @@ class ApiService {
           "nombre_completo": nombre,
           "curp": curp,
           "pin_acceso": pin,
-          "fecha_nacimiento": fechaNacimiento
+          "fecha_nacimiento": fechaNacimiento,
+          "estado": estado,
         }),
       );
 
@@ -72,11 +115,79 @@ class ApiService {
         print('Alumno guardado exitosamente en la base de datos');
         return true;
       } else {
-        print('Error al guardar alumno: ${response.statusCode} - ${response.body}');
+        print(
+          'Error al guardar alumno: ${response.statusCode} - ${response.body}',
+        );
         return false;
       }
     } catch (e) {
       print('Error de conexión al guardar alumno: $e');
+      return false;
+    }
+  }
+
+  // Actualizar un alumno
+  Future<bool> actualizarAlumno(
+    int idAlumno,
+    String nombre,
+    String curp,
+    int estado,
+    String fechaNacimiento,
+    int? idGrupo,
+  ) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/alumnos/$idAlumno'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "nombre_completo": nombre,
+          "curp": curp,
+          "estado": estado,
+          "fecha_nacimiento": fechaNacimiento,
+          "id_grupo": idGrupo,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        print('Error al actualizar alumno: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Error de conexión al actualizar alumno: $e');
+      return false;
+    }
+  }
+
+  // Actualizar un padre
+  Future<bool> actualizarPadre(
+    int idPadre,
+    String nombre,
+    String correo,
+    String telefono,
+    String pin,
+  ) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/padres/$idPadre'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "nombre_padre": nombre,
+          "email": correo,
+          "contacto": telefono,
+          "pin_acceso": pin,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        print('Error al actualizar padre: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Error de conexión al actualizar padre: $e');
       return false;
     }
   }
