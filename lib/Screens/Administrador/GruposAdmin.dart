@@ -5,6 +5,9 @@ import 'MaestrosAdmin.dart';
 import 'AlumnosAdmin.dart';
 import 'EvidenciasAdmin.dart';
 import 'AdministradoresAdmin.dart';
+import '../../BD/Grupos.dart';
+import '../../BD/Maestros.dart';
+import '../../BD/Alumnos.dart';
 
 class GruposAdmin extends StatefulWidget {
   const GruposAdmin({super.key});
@@ -15,104 +18,69 @@ class GruposAdmin extends StatefulWidget {
 class _GruposAdminState extends State<GruposAdmin> {
   final TextEditingController _searchController = TextEditingController();
 
-  // ──────── Datos de ejemplo de estudiantes disponibles ────────
-  final List<_StudentOption> _allStudents = [
-    _StudentOption(
-      'Carlos Méndez',
-      'MECC080515HDHNRL01',
-      const Color(0xFF7E57C2),
-    ),
-    _StudentOption(
-      'Ana Sofía Rivera',
-      'RIAA090320MDFVNN02',
-      const Color(0xFF4CAF50),
-    ),
-    _StudentOption(
-      'Diego Hernández',
-      'HEAD071205HDFRGL03',
-      const Color(0xFF26A69A),
-    ),
-    _StudentOption(
-      'Valentina Torres',
-      'TORV100810MDFRLR04',
-      const Color(0xFFE91E63),
-    ),
-    _StudentOption(
-      'Miguel Ángel Ruiz',
-      'RUIM060714HDFRGL05',
-      const Color(0xFFFFA726),
-    ),
-    _StudentOption(
-      'Fernanda López',
-      'LOPF080922MDFPZR06',
-      const Color(0xFF42A5F5),
-    ),
-    _StudentOption(
-      'Emilio Castro',
-      'CASE091130HDFSML07',
-      const Color(0xFF66BB6A),
-    ),
-    _StudentOption(
-      'Sofía Ramírez',
-      'RAMS100215MDFMFR08',
-      const Color(0xFFAB47BC),
-    ),
-    _StudentOption(
-      'Andrés Martínez',
-      'MARA080730HDFNRD09',
-      const Color(0xFF29B6F6),
-    ),
-    _StudentOption(
-      'Camila Delgado',
-      'DELC090412MDFMLC10',
-      const Color(0xFFEF5350),
-    ),
-  ];
+  bool _isLoading = true;
+  List<_GroupData> _groups = [];
+  List<dynamic> _alumnos = [];
+  List<dynamic> _maestros = [];
 
-  // ──────── Datos de ejemplo de maestros disponibles ────────
-  final List<String> _allTeachers = [
-    'Julián Sánchez',
-    'Rosa María Moreno',
-    'Alberto González',
-    'Elena Ledesma',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _cargarDatos();
+  }
 
-  // ──────── Datos de ejemplo de grupos ────────
-  final List<_GroupData> _groups = [
-    _GroupData('Grupo 3A', 'Matutino', const Color(0xFF7E57C2), [
-      'Carlos Méndez',
-      'Ana Sofía Rivera',
-      'Diego Hernández',
-    ], 'Julián Sánchez'),
-    _GroupData('Grupo 1B', 'Vespertino', const Color(0xFF4CAF50), [
-      'Valentina Torres',
-      'Miguel Ángel Ruiz',
-      'Fernanda López',
-      'Emilio Castro',
-    ], 'Rosa María Moreno'),
-    _GroupData('Grupo 2A', 'Matutino', const Color(0xFF26A69A), [
-      'Sofía Ramírez',
-      'Andrés Martínez',
-    ], 'Alberto González'),
-    _GroupData('Grupo 1A', 'Matutino', const Color(0xFFE91E63), [
-      'Camila Delgado',
-      'Carlos Méndez',
-      'Ana Sofía Rivera',
-      'Valentina Torres',
-      'Emilio Castro',
-    ], 'Elena Ledesma'),
-    _GroupData('Grupo 3B', 'Vespertino', const Color(0xFF42A5F5), [
-      'Diego Hernández',
-      'Miguel Ángel Ruiz',
-      'Andrés Martínez',
-    ], 'Julián Sánchez'),
-    _GroupData('Grupo 2B', 'Vespertino', const Color(0xFFFFA726), [
-      'Fernanda López',
-      'Sofía Ramírez',
-      'Camila Delgado',
-    ], 'Rosa María Moreno'),
-  ];
+  Future<void> _cargarDatos() async {
+    setState(() => _isLoading = true);
+    try {
+      final gruposData = await GruposApiService().getGrupos();
+      final maestrosData = await MaestrosApiService().getMaestros();
+      final alumnosData = await ApiService().getAlumnos();
+      
+      final colors = [
+        const Color(0xFF7E57C2),
+        const Color(0xFF4CAF50),
+        const Color(0xFF26A69A),
+        const Color(0xFFE91E63),
+        const Color(0xFF42A5F5),
+        const Color(0xFFFFA726),
+      ];
+      
+      final mappedGroups = gruposData.map((g) {
+        final idMaestro = g['id_maestro'];
+        final teacherObj = maestrosData.firstWhere(
+          (m) => m['id_maestro'] == idMaestro, 
+          orElse: () => null
+        );
+        final String teacherName = teacherObj != null ? (teacherObj['nombre_completo'] ?? 'Sin maestro') : 'Sin maestro';
+        
+        final assignedStudents = alumnosData.where((a) => a['id_grupo'] == g['id_grupo']).toList();
+        
+        return _GroupData(
+          idGrupo: g['id_grupo'] ?? 0,
+          name: g['nombre_grupo'] ?? 'Sin nombre',
+          turno: g['turno'] ?? 'N/A',
+          aula: g['aula'] ?? 'N/A',
+          capacidadMaxima: g['capacidad_maxima'] ?? 30,
+          accentColor: colors[(g['id_grupo'] ?? 0) % colors.length],
+          students: assignedStudents,
+          teacherName: teacherName,
+          idMaestro: idMaestro,
+        );
+      }).toList();
 
+      if (mounted) {
+        setState(() {
+          _groups = mappedGroups.cast<_GroupData>();
+          _maestros = maestrosData;
+          _alumnos = alumnosData;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error cargando datos: ');
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
   bool _isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 1050;
 
@@ -142,6 +110,7 @@ class _GruposAdminState extends State<GruposAdmin> {
 
   // ──────── CONTENT ────────
   Widget _buildContent(bool isMobile) {
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -484,7 +453,7 @@ class _GruposAdminState extends State<GruposAdmin> {
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
-                                g.teacher.isEmpty ? 'Sin maestro' : g.teacher,
+                                g.teacherName.isEmpty ? 'Sin maestro' : g.teacherName,
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
@@ -542,7 +511,7 @@ class _GruposAdminState extends State<GruposAdmin> {
                                     ),
                                     child: Center(
                                       child: Text(
-                                        _getInitials(g.students[i]),
+                                        _getInitials(g.students[i]['nombre_completo'] ?? ''),
                                         style: TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.bold,
@@ -766,8 +735,8 @@ class _GruposAdminState extends State<GruposAdmin> {
 
   // ──────── TEACHER DROPDOWN ────────
   Widget _buildTeacherDropdown({
-    required String selectedTeacher,
-    required void Function(String) onChanged,
+    required int? selectedTeacherId,
+    required void Function(int?) onChanged,
     bool readOnly = false,
   }) {
     return Container(
@@ -778,8 +747,8 @@ class _GruposAdminState extends State<GruposAdmin> {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: selectedTeacher.isEmpty ? null : selectedTeacher,
+        child: DropdownButton<int>(
+          value: selectedTeacherId,
           isExpanded: true,
           hint: const Text(
             'Seleccionar maestro...',
@@ -794,25 +763,23 @@ class _GruposAdminState extends State<GruposAdmin> {
           dropdownColor: Colors.white,
           borderRadius: BorderRadius.circular(10),
           items: [
-            const DropdownMenuItem<String>(
-              value: '',
+            const DropdownMenuItem<int>(
+              value: null,
               child: Text(
                 'Sin maestro asignado',
                 style: TextStyle(fontSize: 13, color: Color(0xFF999999)),
               ),
             ),
-            ..._allTeachers.map(
-              (t) => DropdownMenuItem<String>(
-                value: t,
+            ..._maestros.map(
+              (t) => DropdownMenuItem<int>(
+                value: t['id_maestro'],
                 child: Row(
                   children: [
                     CircleAvatar(
                       radius: 12,
-                      backgroundColor: const Color(
-                        0xFF26A69A,
-                      ).withOpacity(0.15),
+                      backgroundColor: const Color(0xFF26A69A).withOpacity(0.15),
                       child: Text(
-                        _getInitials(t),
+                        _getInitials(t['nombre_completo'] ?? ''),
                         style: const TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.bold,
@@ -821,13 +788,13 @@ class _GruposAdminState extends State<GruposAdmin> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(t, style: const TextStyle(fontSize: 13)),
+                    Text(t['nombre_completo'] ?? 'Sin Nombre', style: const TextStyle(fontSize: 13)),
                   ],
                 ),
               ),
             ),
           ],
-          onChanged: readOnly ? null : (val) => onChanged(val ?? ''),
+          onChanged: readOnly ? null : onChanged,
         ),
       ),
     );
@@ -835,7 +802,7 @@ class _GruposAdminState extends State<GruposAdmin> {
 
   // ──────── STUDENT SELECTOR WIDGET ────────
   Widget _buildStudentSelector({
-    required List<String> selectedStudents,
+    required List<dynamic> selectedStudents,
     required void Function(VoidCallback) setDlg,
     required TextEditingController searchCtrl,
     bool readOnly = false,
@@ -859,7 +826,8 @@ class _GruposAdminState extends State<GruposAdmin> {
             child: Wrap(
               spacing: 6,
               runSpacing: 6,
-              children: selectedStudents.map((name) {
+              children: selectedStudents.map((s) {
+                final name = s['nombre_completo'] ?? 'Sin Nombre';
                 return Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
@@ -903,7 +871,7 @@ class _GruposAdminState extends State<GruposAdmin> {
                         InkWell(
                           onTap: () {
                             setDlg(() {
-                              selectedStudents.remove(name);
+                              selectedStudents.removeWhere((item) => item['id_alumno'] == s['id_alumno']);
                             });
                           },
                           borderRadius: BorderRadius.circular(10),
@@ -975,12 +943,16 @@ class _GruposAdminState extends State<GruposAdmin> {
             child: Builder(
               builder: (context) {
                 final query = searchCtrl.text.toLowerCase();
-                final filtered = _allStudents.where((s) {
+                final filtered = _alumnos.where((s) {
+                  if (s['estado'] != 1 || s['id_grupo'] != null) return false;
+
+                  final name = (s['nombre_completo'] ?? '').toLowerCase();
+                  final curp = (s['curp'] ?? '').toLowerCase();
                   final matchesSearch =
                       query.isEmpty ||
-                      s.name.toLowerCase().contains(query) ||
-                      s.curp.toLowerCase().contains(query);
-                  final notSelected = !selectedStudents.contains(s.name);
+                      name.contains(query) ||
+                      curp.contains(query);
+                  final notSelected = !selectedStudents.any((selected) => selected['id_alumno'] == s['id_alumno']);
                   return matchesSearch && notSelected;
                 }).toList();
 
@@ -1007,10 +979,13 @@ class _GruposAdminState extends State<GruposAdmin> {
                       const Divider(height: 1, color: Color(0xFFF0F0F0)),
                   itemBuilder: (context, index) {
                     final student = filtered[index];
+                    final name = student['nombre_completo'] ?? 'Sin Nombre';
+                    final curp = student['curp'] ?? 'Sin CURP';
+                    final color = const Color(0xFF4CAF50);
                     return InkWell(
                       onTap: () {
                         setDlg(() {
-                          selectedStudents.add(student.name);
+                          selectedStudents.add(student);
                         });
                       },
                       child: Padding(
@@ -1022,13 +997,13 @@ class _GruposAdminState extends State<GruposAdmin> {
                           children: [
                             CircleAvatar(
                               radius: 16,
-                              backgroundColor: student.color.withOpacity(0.15),
+                              backgroundColor: color.withOpacity(0.15),
                               child: Text(
-                                _getInitials(student.name),
+                                _getInitials(name),
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
-                                  color: student.color,
+                                  color: color,
                                 ),
                               ),
                             ),
@@ -1038,7 +1013,7 @@ class _GruposAdminState extends State<GruposAdmin> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    student.name,
+                                    name,
                                     style: const TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500,
@@ -1046,7 +1021,7 @@ class _GruposAdminState extends State<GruposAdmin> {
                                     ),
                                   ),
                                   Text(
-                                    student.curp,
+                                    curp,
                                     style: const TextStyle(
                                       fontSize: 10,
                                       color: Color(0xFF999999),
@@ -1086,9 +1061,12 @@ class _GruposAdminState extends State<GruposAdmin> {
     final mobile = _isMobile(context);
     final nameCtrl = TextEditingController();
     final turnoCtrl = TextEditingController();
+    final aulaCtrl = TextEditingController();
+    final capCtrl = TextEditingController(text: '30');
     final studentSearchCtrl = TextEditingController();
-    final List<String> selectedStudents = [];
-    String selectedTeacher = '';
+    final List<dynamic> selectedStudents = [];
+    int? selectedTeacherId;
+    bool isSaving = false;
 
     showDialog(
       context: context,
@@ -1130,20 +1108,54 @@ class _GruposAdminState extends State<GruposAdmin> {
                           icon: Icons.group_outlined,
                         ),
                         const SizedBox(height: 16),
-                        _dialogLabel('TURNO'),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _dialogLabel('TURNO'),
+                                  const SizedBox(height: 6),
+                                  _dialogTextField(
+                                    controller: turnoCtrl,
+                                    hint: 'Ej. Matutino',
+                                    icon: Icons.schedule_outlined,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _dialogLabel('AULA'),
+                                  const SizedBox(height: 6),
+                                  _dialogTextField(
+                                    controller: aulaCtrl,
+                                    hint: 'Ej. 101',
+                                    icon: Icons.room_outlined,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _dialogLabel('CAPACIDAD MÁXIMA'),
                         const SizedBox(height: 6),
                         _dialogTextField(
-                          controller: turnoCtrl,
-                          hint: 'Ej. Matutino, Vespertino',
-                          icon: Icons.schedule_outlined,
+                          controller: capCtrl,
+                          hint: 'Ej. 30',
+                          icon: Icons.group_outlined,
                         ),
                         const SizedBox(height: 16),
                         _dialogLabel('MAESTRO ASIGNADO'),
                         const SizedBox(height: 6),
                         _buildTeacherDropdown(
-                          selectedTeacher: selectedTeacher,
+                          selectedTeacherId: selectedTeacherId,
                           onChanged: (val) =>
-                              setDlg(() => selectedTeacher = val),
+                              setDlg(() => selectedTeacherId = val),
                         ),
                         const SizedBox(height: 20),
                         const Divider(color: Color(0xFFE0E0E0)),
@@ -1179,37 +1191,46 @@ class _GruposAdminState extends State<GruposAdmin> {
                         ),
                         const SizedBox(width: 12),
                         ElevatedButton.icon(
-                          onPressed: () {
+                          onPressed: isSaving ? null : () async {
                             if (nameCtrl.text.trim().isNotEmpty) {
-                              final colors = [
-                                const Color(0xFF7E57C2),
-                                const Color(0xFF4CAF50),
-                                const Color(0xFF26A69A),
-                                const Color(0xFFE91E63),
-                                const Color(0xFF42A5F5),
-                                const Color(0xFFFFA726),
-                              ];
-                              setState(() {
-                                _groups.add(
-                                  _GroupData(
-                                    nameCtrl.text.trim(),
-                                    turnoCtrl.text.trim().isEmpty
-                                        ? 'Sin turno'
-                                        : turnoCtrl.text.trim(),
-                                    colors[_groups.length % colors.length],
-                                    List.from(selectedStudents),
-                                    selectedTeacher,
-                                  ),
-                                );
+                              setDlg(() => isSaving = true);
+                              final nuevoGrupoId = await GruposApiService().agregarGrupo({
+                                "nombre_grupo": nameCtrl.text.trim(),
+                                "turno": turnoCtrl.text.trim().isEmpty ? 'N/A' : turnoCtrl.text.trim(),
+                                "aula": aulaCtrl.text.trim().isEmpty ? 'N/A' : aulaCtrl.text.trim(),
+                                "capacidad_maxima": int.tryParse(capCtrl.text.trim()) ?? 30,
+                                "id_maestro": selectedTeacherId,
                               });
+
+                              if (nuevoGrupoId != null && selectedStudents.isNotEmpty) {
+                                await Future.wait(selectedStudents.map((s) {
+                                  final fechaNac = s['fecha_nacimiento'] != null 
+                                      ? s['fecha_nacimiento'].toString().split('T').first 
+                                      : '2000-01-01';
+                                  return ApiService().actualizarAlumno(
+                                    s['id_alumno'],
+                                    s['nombre_completo'] ?? 'Sin Nombre',
+                                    s['curp'] ?? '',
+                                    s['estado'] ?? 1,
+                                    fechaNac,
+                                    nuevoGrupoId
+                                  );
+                                }));
+                              }
+                              
+                              if (mounted) {
+                                Navigator.pop(ctx);
+                                _cargarDatos(); 
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Grupo creado correctamente.')),
+                                );
+                              }
                             }
-                            Navigator.pop(ctx);
                           },
-                          icon: const Icon(
-                            Icons.check_circle_outline,
-                            size: 18,
-                          ),
-                          label: const Text('Guardar Grupo'),
+                          icon: isSaving 
+                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                              : const Icon(Icons.check_circle_outline, size: 18),
+                          label: Text(isSaving ? 'Guardando...' : 'Guardar Grupo'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF4CAF50),
                             foregroundColor: Colors.white,
@@ -1239,9 +1260,11 @@ class _GruposAdminState extends State<GruposAdmin> {
     final mobile = _isMobile(context);
     final nameCtrl = TextEditingController(text: g.name);
     final turnoCtrl = TextEditingController(text: g.turno);
+    final aulaCtrl = TextEditingController(text: g.aula);
+    final capCtrl = TextEditingController(text: g.capacidadMaxima.toString());
     final studentSearchCtrl = TextEditingController();
-    final List<String> selectedStudents = List.from(g.students);
-    String selectedTeacher = g.teacher;
+    final List<dynamic> selectedStudents = List.from(g.students);
+    int? selectedTeacherId = g.idMaestro;
 
     showDialog(
       context: context,
@@ -1282,20 +1305,54 @@ class _GruposAdminState extends State<GruposAdmin> {
                           icon: Icons.group_outlined,
                         ),
                         const SizedBox(height: 16),
-                        _dialogLabel('TURNO'),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _dialogLabel('TURNO'),
+                                  const SizedBox(height: 6),
+                                  _dialogTextField(
+                                    controller: turnoCtrl,
+                                    hint: 'Ej. Matutino',
+                                    icon: Icons.schedule_outlined,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _dialogLabel('AULA'),
+                                  const SizedBox(height: 6),
+                                  _dialogTextField(
+                                    controller: aulaCtrl,
+                                    hint: 'Ej. 101',
+                                    icon: Icons.room_outlined,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _dialogLabel('CAPACIDAD MÁXIMA'),
                         const SizedBox(height: 6),
                         _dialogTextField(
-                          controller: turnoCtrl,
-                          hint: 'Ej. Matutino, Vespertino',
-                          icon: Icons.schedule_outlined,
+                          controller: capCtrl,
+                          hint: 'Ej. 30',
+                          icon: Icons.group_outlined,
                         ),
                         const SizedBox(height: 16),
                         _dialogLabel('MAESTRO ASIGNADO'),
                         const SizedBox(height: 6),
                         _buildTeacherDropdown(
-                          selectedTeacher: selectedTeacher,
+                          selectedTeacherId: selectedTeacherId,
                           onChanged: (val) =>
-                              setDlg(() => selectedTeacher = val),
+                              setDlg(() => selectedTeacherId = val),
                         ),
                         const SizedBox(height: 20),
                         const Divider(color: Color(0xFFE0E0E0)),
@@ -1331,22 +1388,10 @@ class _GruposAdminState extends State<GruposAdmin> {
                         const SizedBox(width: 12),
                         ElevatedButton.icon(
                           onPressed: () {
-                            if (nameCtrl.text.trim().isNotEmpty) {
-                              setState(() {
-                                final index = _groups.indexOf(g);
-                                if (index != -1) {
-                                  _groups[index] = _GroupData(
-                                    nameCtrl.text.trim(),
-                                    turnoCtrl.text.trim().isEmpty
-                                        ? 'Sin turno'
-                                        : turnoCtrl.text.trim(),
-                                    g.accentColor,
-                                    List.from(selectedStudents),
-                                    selectedTeacher,
-                                  );
-                                }
-                              });
-                            }
+                            // TODO: Add backend group updating when required
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Por hacer: actualizar grupo (API en progreso).')),
+                            );
                             Navigator.pop(ctx);
                           },
                           icon: const Icon(
@@ -1383,8 +1428,9 @@ class _GruposAdminState extends State<GruposAdmin> {
     final mobile = _isMobile(context);
     final nameCtrl = TextEditingController(text: g.name);
     final turnoCtrl = TextEditingController(text: g.turno);
+    final aulaCtrl = TextEditingController(text: g.aula);
     final teacherCtrl = TextEditingController(
-      text: g.teacher.isEmpty ? 'Sin maestro asignado' : g.teacher,
+      text: g.teacherName.isEmpty ? 'Sin maestro asignado' : g.teacherName,
     );
     final studentSearchCtrl = TextEditingController();
 
@@ -1428,13 +1474,40 @@ class _GruposAdminState extends State<GruposAdmin> {
                           readOnly: true,
                         ),
                         const SizedBox(height: 16),
-                        _dialogLabel('TURNO'),
-                        const SizedBox(height: 6),
-                        _dialogTextField(
-                          controller: turnoCtrl,
-                          hint: '',
-                          icon: Icons.schedule_outlined,
-                          readOnly: true,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _dialogLabel('TURNO'),
+                                  const SizedBox(height: 6),
+                                  _dialogTextField(
+                                    controller: turnoCtrl,
+                                    hint: '',
+                                    icon: Icons.schedule_outlined,
+                                    readOnly: true,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _dialogLabel('AULA'),
+                                  const SizedBox(height: 6),
+                                  _dialogTextField(
+                                    controller: aulaCtrl,
+                                    hint: '',
+                                    icon: Icons.room_outlined,
+                                    readOnly: true,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 16),
                         _dialogLabel('MAESTRO ASIGNADO'),
@@ -1581,18 +1654,26 @@ class _GruposAdminState extends State<GruposAdmin> {
 
 // ──────── DATA MODELS ────────
 class _GroupData {
+  final int idGrupo;
   final String name;
   final String turno;
+  final String aula;
+  final int capacidadMaxima;
   final Color accentColor;
-  final List<String> students;
-  final String teacher;
-  const _GroupData(
-    this.name,
-    this.turno,
-    this.accentColor,
-    this.students,
-    this.teacher,
-  );
+  final List<dynamic> students;
+  final String teacherName;
+  final int? idMaestro;
+  const _GroupData({
+    required this.idGrupo,
+    required this.name,
+    required this.turno,
+    required this.aula,
+    required this.capacidadMaxima,
+    required this.accentColor,
+    required this.students,
+    required this.teacherName,
+    this.idMaestro,
+  });
 }
 
 class _StudentOption {
