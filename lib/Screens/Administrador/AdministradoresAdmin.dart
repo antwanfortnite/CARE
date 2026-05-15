@@ -6,6 +6,8 @@ import 'MaestrosAdmin.dart';
 import 'AlumnosAdmin.dart';
 import 'GruposAdmin.dart';
 import 'EvidenciasAdmin.dart';
+import '../../BD/Administradores.dart';
+import 'package:intl/intl.dart';
 
 class AdministradoresAdmin extends StatefulWidget {
   const AdministradoresAdmin({super.key});
@@ -18,79 +20,27 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
   final int _totalPages = 2;
   final TextEditingController _searchController = TextEditingController();
 
-  // Datos falsos de administradores
-  final List<_AdminData> _admins = [
-    _AdminData(
-      idAdmin: 1,
-      name: 'Carlos Rodríguez López',
-      email: 'carlos.rodriguez@care.edu',
-      initials: 'CR',
-      avatarColor: const Color(0xFF4CAF50),
-      curp: 'ROLC850312HDFDRR08',
-      telefono: '+52 614 123 4567',
-      fechaNacimiento: '1985-03-12',
-      fechaContratacion: '2018-08-15',
-      edad: 41,
-      usuario: 'carlos.rodriguez',
-      contrasena: 'admin1234',
-    ),
-    _AdminData(
-      idAdmin: 2,
-      name: 'María Elena Fernández',
-      email: 'maria.fernandez@care.edu',
-      initials: 'MF',
-      avatarColor: const Color(0xFF7E57C2),
-      curp: 'FEMM900625MDFRRR02',
-      telefono: '+52 614 987 6543',
-      fechaNacimiento: '1990-06-25',
-      fechaContratacion: '2020-01-10',
-      edad: 35,
-      usuario: 'maria.fernandez',
-      contrasena: 'admin5678',
-    ),
-    _AdminData(
-      idAdmin: 3,
-      name: 'Roberto Sánchez Díaz',
-      email: 'roberto.sanchez@care.edu',
-      initials: 'RS',
-      avatarColor: const Color(0xFF42A5F5),
-      curp: 'SADR880914HDFNZB03',
-      telefono: '+52 614 456 7890',
-      fechaNacimiento: '1988-09-14',
-      fechaContratacion: '2019-05-20',
-      edad: 37,
-      usuario: 'roberto.sanchez',
-      contrasena: 'admin9012',
-    ),
-    _AdminData(
-      idAdmin: 4,
-      name: 'Ana Patricia Morales',
-      email: 'ana.morales@care.edu',
-      initials: 'AM',
-      avatarColor: const Color(0xFFEF5350),
-      curp: 'MOAA920130MDFRLP07',
-      telefono: '+52 614 321 0987',
-      fechaNacimiento: '1992-01-30',
-      fechaContratacion: '2021-09-01',
-      edad: 34,
-      usuario: 'ana.morales',
-      contrasena: 'admin3456',
-    ),
-    _AdminData(
-      idAdmin: 5,
-      name: 'Javier Hernández Ruiz',
-      email: 'javier.hernandez@care.edu',
-      initials: 'JH',
-      avatarColor: const Color(0xFFFFA726),
-      curp: 'HERJ870720HDFRNV05',
-      telefono: '+52 614 654 3210',
-      fechaNacimiento: '1987-07-20',
-      fechaContratacion: '2017-03-15',
-      edad: 38,
-      usuario: 'javier.hernandez',
-      contrasena: 'admin7890',
-    ),
-  ];
+  List<_AdminData> _admins = [];
+  bool _isLoading = true;
+  final AdministradoresApiService _apiService = AdministradoresApiService();
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarAdministradores();
+  }
+
+  Future<void> _cargarAdministradores() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    List<dynamic> data = await _apiService.getAdministradores();
+    setState(() {
+      _admins = data.map((item) => _AdminData.fromJson(item)).toList();
+      _isLoading = false;
+    });
+  }
 
   bool _isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 1050;
@@ -128,7 +78,10 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
         const SizedBox(height: 24),
         _buildFilterBar(),
         const SizedBox(height: 24),
-        isMobile ? _buildAdminCards() : _buildAdminTable(),
+        if (_isLoading)
+          const Center(child: CircularProgressIndicator(color: Color(0xFF4CAF50)))
+        else
+          isMobile ? _buildAdminCards() : _buildAdminTable(),
       ],
     );
   }
@@ -1494,8 +1447,31 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                         ),
                         const SizedBox(width: 12),
                         ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.pop(ctx);
+                          onPressed: () async {
+                            final data = {
+                              "nombre": n.text.trim(),
+                              "correo": e.text.trim(),
+                              "telefono": p.text.trim(),
+                              "curp": c.text.trim(),
+                              "fecha_contratacion": d.text.trim(),
+                              "fecha_nacimiento": bd.text.trim(),
+                              "usuario": usr.text.trim(),
+                              "password": pwd.text.trim(),
+                            };
+
+                            bool success = await _apiService.agregarAdministrador(data);
+
+                            if (success) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Administrador agregado exitosamente'), backgroundColor: Colors.green),
+                              );
+                              _cargarAdministradores();
+                              Navigator.pop(ctx);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Error al agregar el administrador'), backgroundColor: Colors.red),
+                              );
+                            }
                           },
                           icon: const Icon(
                             Icons.check_circle_outline,
@@ -1699,8 +1675,31 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                         ),
                         const SizedBox(width: 12),
                         ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.pop(ctx);
+                          onPressed: () async {
+                            final data = {
+                              "nombre": n.text.trim(),
+                              "correo": e.text.trim(),
+                              "telefono": p.text.trim(),
+                              "curp": c.text.trim(),
+                              "fecha_contratacion": d.text.trim(),
+                              "fecha_nacimiento": bd.text.trim(),
+                              "usuario": usr.text.trim(),
+                              "password": pwd.text.trim(),
+                            };
+
+                            bool success = await _apiService.actualizarAdministrador(a.idAdmin, data);
+
+                            if (success) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Administrador actualizado exitosamente'), backgroundColor: Colors.green),
+                              );
+                              _cargarAdministradores();
+                              Navigator.pop(ctx);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Error al actualizar el administrador'), backgroundColor: Colors.red),
+                              );
+                            }
                           },
                           icon: const Icon(Icons.save_outlined, size: 18),
                           label: const Text('Guardar Cambios'),
@@ -1751,8 +1750,19 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
+            onPressed: () async {
+              bool success = await _apiService.eliminarAdministrador(a.idAdmin);
+              if (success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Administrador eliminado exitosamente'), backgroundColor: Colors.green),
+                );
+                _cargarAdministradores();
+                Navigator.pop(ctx);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Error al eliminar el administrador'), backgroundColor: Colors.red),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF5350),
@@ -1794,6 +1804,53 @@ class _AdminData {
     required this.usuario,
     required this.contrasena,
   });
+
+  factory _AdminData.fromJson(Map<String, dynamic> json) {
+    String formatDate(dynamic date) {
+      if (date == null) return '';
+      if (date is String) {
+        if (date.length >= 10) return date.substring(0, 10);
+        return date;
+      }
+      return date.toString();
+    }
+
+    int calculateAge(String birthDateString) {
+      try {
+        DateTime birthDate = DateTime.parse(birthDateString);
+        DateTime today = DateTime.now();
+        int age = today.year - birthDate.year;
+        if (today.month < birthDate.month ||
+            (today.month == birthDate.month && today.day < birthDate.day)) {
+          age--;
+        }
+        return age;
+      } catch (e) {
+        return 0;
+      }
+    }
+
+    String name = json['nombre'] ?? 'Sin Nombre';
+    List<String> parts = name.trim().split(RegExp(r'\s+'));
+    String initials = '';
+    if (parts.isNotEmpty && parts[0].isNotEmpty) initials += parts[0][0];
+    if (parts.length > 1 && parts[1].isNotEmpty) initials += parts[1][0];
+
+    return _AdminData(
+      idAdmin: json['id_usuario'] ?? 0,
+      name: name,
+      email: json['correo'] ?? '',
+      initials: initials.toUpperCase(),
+      avatarColor: const Color(0xFF4CAF50), // Color fijo por ahora
+      curp: json['curp'] ?? '',
+      telefono: json['telefono'] ?? '',
+      fechaNacimiento: formatDate(json['fecha_nacimiento']),
+      fechaContratacion: formatDate(json['fecha_contratacion']),
+      edad: calculateAge(formatDate(json['fecha_nacimiento'])),
+      usuario: json['usuario'] ?? '',
+      contrasena: json['password'] ?? '',
+    );
+  }
 }
 
 /// Converts all typed text to uppercase.
