@@ -1717,7 +1717,14 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                               }
                             } catch (_) {}
 
+                            bool parentChanged = false;
                             if (s.idPadre != null) {
+                              if (pn.text != s.parentName || pe.text != s.parentEmail || pp.text != s.parentPhone || pwd.text.isNotEmpty) {
+                                parentChanged = true;
+                              }
+                            }
+
+                            if (parentChanged && s.idPadre != null) {
                               await _apiService.actualizarPadre(
                                 s.idPadre!,
                                 pn.text,
@@ -1734,6 +1741,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                               s.estado,
                               fechaNacimientoStr,
                               s.idGrupo,
+                              idPadre: s.idPadre,
                             );
 
                             if (success) {

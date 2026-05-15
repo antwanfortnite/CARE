@@ -133,19 +133,25 @@ class ApiService {
     String curp,
     int estado,
     String fechaNacimiento,
-    int? idGrupo,
-  ) async {
+    int? idGrupo, {
+    int? idPadre,
+  }) async {
     try {
+      final bodyData = <String, dynamic>{
+        "nombre_completo": nombre,
+        "curp": curp,
+        "estado": estado,
+        "fecha_nacimiento": fechaNacimiento,
+        "id_grupo": idGrupo,
+      };
+      if (idPadre != null) {
+        bodyData["id_padre"] = idPadre;
+      }
+      
       final response = await http.put(
         Uri.parse('$baseUrl/alumnos/$idAlumno'),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "nombre_completo": nombre,
-          "curp": curp,
-          "estado": estado,
-          "fecha_nacimiento": fechaNacimiento,
-          "id_grupo": idGrupo,
-        }),
+        body: jsonEncode(bodyData),
       );
 
       if (response.statusCode == 200) {

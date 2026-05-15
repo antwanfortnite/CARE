@@ -1213,7 +1213,8 @@ class _GruposAdminState extends State<GruposAdmin> {
                                     s['curp'] ?? '',
                                     s['estado'] ?? 1,
                                     fechaNac,
-                                    nuevoGrupoId
+                                    nuevoGrupoId,
+                                    idPadre: s['id_padre'],
                                   );
                                 }));
                               }
@@ -1265,6 +1266,7 @@ class _GruposAdminState extends State<GruposAdmin> {
     final studentSearchCtrl = TextEditingController();
     final List<dynamic> selectedStudents = List.from(g.students);
     int? selectedTeacherId = g.idMaestro;
+    bool isSaving = false;
 
     showDialog(
       context: context,
@@ -1387,18 +1389,83 @@ class _GruposAdminState extends State<GruposAdmin> {
                         ),
                         const SizedBox(width: 12),
                         ElevatedButton.icon(
-                          onPressed: () {
-                            // TODO: Add backend group updating when required
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Por hacer: actualizar grupo (API en progreso).')),
-                            );
-                            Navigator.pop(ctx);
+                          onPressed: isSaving ? null : () async {
+                            if (nameCtrl.text.trim().isNotEmpty) {
+                              setDlg(() => isSaving = true);
+                              
+                              final updated = await GruposApiService().actualizarGrupo(
+                                g.idGrupo,
+                                {
+                                  "id_grupo": g.idGrupo,
+                                  "nombre_grupo": nameCtrl.text.trim(),
+                                  "turno": turnoCtrl.text.trim().isEmpty ? 'N/A' : turnoCtrl.text.trim(),
+                                  "aula": aulaCtrl.text.trim().isEmpty ? 'N/A' : aulaCtrl.text.trim(),
+                                  "capacidad_maxima": int.tryParse(capCtrl.text.trim()) ?? 30,
+                                  "id_maestro": selectedTeacherId,
+                                }
+                              );
+
+                              if (updated) {
+                                // Find removed students
+                                final removedStudents = g.students.where((oldS) => !selectedStudents.any((newS) => newS['id_alumno'] == oldS['id_alumno'])).toList();
+                                // Find added students
+                                final addedStudents = selectedStudents.where((newS) => !g.students.any((oldS) => oldS['id_alumno'] == newS['id_alumno'])).toList();
+
+                                final futures = <Future>[];
+                                
+                                for (var s in removedStudents) {
+                                  final fechaNac = s['fecha_nacimiento'] != null 
+                                      ? s['fecha_nacimiento'].toString().split('T').first 
+                                      : '2000-01-01';
+                                  futures.add(ApiService().actualizarAlumno(
+                                    s['id_alumno'],
+                                    s['nombre_completo'] ?? 'Sin Nombre',
+                                    s['curp'] ?? '',
+                                    s['estado'] ?? 1,
+                                    fechaNac,
+                                    null, // set group to null
+                                    idPadre: s['id_padre'],
+                                  ));
+                                }
+
+                                for (var s in addedStudents) {
+                                  final fechaNac = s['fecha_nacimiento'] != null 
+                                      ? s['fecha_nacimiento'].toString().split('T').first 
+                                      : '2000-01-01';
+                                  futures.add(ApiService().actualizarAlumno(
+                                    s['id_alumno'],
+                                    s['nombre_completo'] ?? 'Sin Nombre',
+                                    s['curp'] ?? '',
+                                    s['estado'] ?? 1,
+                                    fechaNac,
+                                    g.idGrupo, // assign to group
+                                    idPadre: s['id_padre'],
+                                  ));
+                                }
+
+                                await Future.wait(futures);
+
+                                if (mounted) {
+                                  Navigator.pop(ctx);
+                                  _cargarDatos();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Grupo actualizado correctamente.')),
+                                  );
+                                }
+                              } else {
+                                setDlg(() => isSaving = false);
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Error al actualizar el grupo.')),
+                                  );
+                                }
+                              }
+                            }
                           },
-                          icon: const Icon(
-                            Icons.check_circle_outline,
-                            size: 18,
-                          ),
-                          label: const Text('Guardar Cambios'),
+                          icon: isSaving 
+                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                              : const Icon(Icons.check_circle_outline, size: 18),
+                          label: Text(isSaving ? 'Guardando...' : 'Guardar Cambios'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF4CAF50),
                             foregroundColor: Colors.white,

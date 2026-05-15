@@ -48,4 +48,26 @@ class GruposApiService {
       return null;
     }
   }
+
+  // Actualizar un grupo
+  Future<bool> actualizarGrupo(int idGrupo, Map<String, dynamic> data) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/grupos/$idGrupo'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(data),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Grupo actualizado exitosamente');
+        return true;
+      } else {
+        print('Error al actualizar grupo: ${response.statusCode} - ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Error de conexión (actualizarGrupo): $e');
+      return false;
+    }
+  }
 }
