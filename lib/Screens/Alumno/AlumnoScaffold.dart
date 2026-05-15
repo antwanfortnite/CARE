@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../InicioSesion.dart';
+import '../Paginaweb.dart';
 
 /// Data model for navigation items in the sidebar.
 class AlumnoNavItem {
@@ -15,15 +15,15 @@ class AlumnoNavItem {
 class AlumnoScaffold extends StatefulWidget {
   final Widget body;
   final int selectedIndex;
+  final ValueChanged<int>? onNavTap;
   final EdgeInsets? bodyPadding;
   final String? topBarTitle;
-  final Map<int, WidgetBuilder> destinations;
 
   const AlumnoScaffold({
     super.key,
     required this.body,
     required this.selectedIndex,
-    required this.destinations,
+    this.onNavTap,
     this.bodyPadding,
     this.topBarTitle,
   });
@@ -48,16 +48,8 @@ class _AlumnoScaffoldState extends State<AlumnoScaffold> {
       _scaffoldKey.currentState?.closeDrawer();
     }
     if (i == widget.selectedIndex) return;
-    final builder = widget.destinations[i];
-    if (builder != null) {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => builder(context),
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: Duration.zero,
-        ),
-      );
+    if (widget.onNavTap != null) {
+      widget.onNavTap!(i);
     }
   }
 
@@ -236,35 +228,6 @@ class _AlumnoScaffoldState extends State<AlumnoScaffold> {
           ),
         ),
 
-        // Cerrar sesión
-        Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const InicioSesion()),
-                );
-              },
-              borderRadius: BorderRadius.circular(28),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                child: Row(
-                  children: [
-                    Icon(Icons.logout, size: 20, color: Color(0xFFE53935)),
-                    SizedBox(width: 12),
-                    Text(
-                      'Cerrar Sesión',
-                      style: TextStyle(fontSize: 14, color: Color(0xFFE53935)),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }

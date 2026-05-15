@@ -1,34 +1,161 @@
 import 'package:flutter/material.dart';
 import 'AlumnoScaffold.dart';
 import 'EvidenciasAlumno.dart';
+import '../../BD/Alumnos.dart';
+import '../../BD/Grupos.dart';
+import '../../BD/Evidencias.dart';
 
-class DashboardAlumno extends StatelessWidget {
-  const DashboardAlumno({super.key});
+class DashboardAlumno extends StatefulWidget {
+  final Map<String, dynamic>? user;
+  const DashboardAlumno({super.key, this.user});
+
+  @override
+  State<DashboardAlumno> createState() => _DashboardAlumnoState();
+}
+
+class _DashboardAlumnoState extends State<DashboardAlumno> {
+  int _selectedIndex = 0;
+  bool _isLoading = true;
+
+  List<dynamic> _hijos = [];
+  List<dynamic> _grupos = [];
+  List<dynamic> _evidencias = [];
 
   bool _isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 700;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarDatos();
+  }
+
+  Future<void> _cargarDatos() async {
+    setState(() => _isLoading = true);
+    try {
+      final idPadre = widget.user?['id_padre'];
+      final alumnos = await ApiService().getAlumnos();
+      final grupos = await GruposApiService().getGrupos();
+      final evidencias = await EvidenciasApiService().getEvidencias();
+
+      if (mounted) {
+        setState(() {
+          _hijos = idPadre != null
+              ? alumnos.where((a) => a['id_padre'] == idPadre).toList()
+              : [];
+          _grupos = grupos;
+          _evidencias = evidencias;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error cargando datos del padre: $e');
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  // Obtener el grupo de un alumno
+  Map<String, dynamic>? _getGrupoForAlumno(dynamic alumno) {
+    final idGrupo = alumno['id_grupo'];
+    if (idGrupo == null) return null;
+    try {
+      return _grupos.firstWhere((g) => g['id_grupo'] == idGrupo);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Obtener las evidencias de un alumno
+  List<dynamic> _getEvidenciasForAlumno(dynamic alumno) {
+    final idAlumno = alumno['id_alumno'];
+    return _evidencias.where((e) => e['id_alumno'] == idAlumno).toList();
+  }
+
+  String _formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return 'N/A';
+    try {
+      final dt = DateTime.parse(dateStr);
+      final months = [
+        '', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+        'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
+      ];
+      return '${dt.day.toString().padLeft(2, '0')} ${months[dt.month]} ${dt.year}';
+    } catch (_) {
+      return dateStr;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final mobile = _isMobile(context);
 
     return AlumnoScaffold(
-      selectedIndex: 0,
-      destinations: {
-        1: (_) => const EvidenciasAlumno(),
+      selectedIndex: _selectedIndex,
+      onNavTap: (i) {
+        setState(() {
+          _selectedIndex = i;
+        });
       },
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: _selectedIndex == 0
+          ? _isLoading
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFF4CAF50)))
+              : Padding(
+                  padding: EdgeInsets.all(mobile ? 16 : 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildWelcomeBanner(mobile),
+                      const SizedBox(height: 24),
+                      if (_hijos.isEmpty)
+                        _buildEmptyState()
+                      else ...[
+                        ..._hijos.map((hijo) => Column(
+                          children: [
+                            _buildStudentInfoCard(mobile, hijo),
+                            const SizedBox(height: 16),
+                          ],
+                        )),
+                        const SizedBox(height: 8),
+                        _buildStatCards(mobile),
+                        const SizedBox(height: 24),
+                        _buildRecentEvidences(mobile),
+                        const SizedBox(height: 24),
+                        _buildHelpSection(mobile),
+                      ],
+                    ],
+                  ),
+                )
+          : EvidenciasAlumno(
+              hijos: _hijos,
+              grupos: _grupos,
+              evidencias: _evidencias,
+            ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(40),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
+      ),
+      child: const Column(
         children: [
-          _buildWelcomeBanner(mobile),
-          const SizedBox(height: 24),
-          _buildStudentInfoCard(mobile),
-          const SizedBox(height: 24),
-          _buildStatCards(mobile),
-          const SizedBox(height: 24),
-          _buildRecentEvidences(mobile),
-          const SizedBox(height: 24),
-          _buildHelpSection(mobile),
+          Icon(Icons.person_search_outlined, size: 48, color: Color(0xFFCCCCCC)),
+          SizedBox(height: 16),
+          Text(
+            'No se encontraron alumnos registrados',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF888888)),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'No tiene hijos registrados en el sistema. Contacte al administrador.',
+            style: TextStyle(fontSize: 13, color: Color(0xFF999999)),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -36,6 +163,7 @@ class DashboardAlumno extends StatelessWidget {
 
   // ──────── BANNER DE BIENVENIDA ────────
   Widget _buildWelcomeBanner(bool isMobile) {
+    final nombrePadre = widget.user?['nombre_padre'] ?? 'Padre de Familia';
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 20 : 28),
@@ -52,7 +180,7 @@ class DashboardAlumno extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '¡Buen día, Padre de Familia!',
+                  '¡Buen día, $nombrePadre!',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: isMobile ? 18 : 24,
@@ -62,8 +190,8 @@ class DashboardAlumno extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   isMobile
-                      ? 'Aquí podrá consultar las evidencias de trabajo de su hijo(a).'
-                      : 'Bienvenido al sistema CARE. Aquí podrá consultar las evidencias\nde trabajo y actividades de su hijo(a).',
+                      ? 'Aquí podrá consultar las evidencias de trabajo de su${_hijos.length > 1 ? 's' : ''} hijo${_hijos.length > 1 ? 's' : ''}.'
+                      : 'Bienvenido al sistema CARE. Aquí podrá consultar las evidencias\nde trabajo y actividades de su${_hijos.length > 1 ? 's' : ''} hijo${_hijos.length > 1 ? 's' : ''}.',
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 13,
@@ -72,7 +200,9 @@ class DashboardAlumno extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    setState(() => _selectedIndex = 1);
+                  },
                   icon: const Icon(Icons.folder_shared_outlined, size: 18),
                   label: const Text('Ver Evidencias'),
                   style: ElevatedButton.styleFrom(
@@ -109,7 +239,12 @@ class DashboardAlumno extends StatelessWidget {
   }
 
   // ──────── INFORMACIÓN DEL ALUMNO ────────
-  Widget _buildStudentInfoCard(bool isMobile) {
+  Widget _buildStudentInfoCard(bool isMobile, dynamic hijo) {
+    final grupo = _getGrupoForAlumno(hijo);
+    final nombreGrupo = grupo?['nombre_grupo'] ?? 'Sin grupo';
+    final turno = grupo?['turno'] ?? 'N/A';
+    final evidCount = _getEvidenciasForAlumno(hijo).length;
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 16 : 22),
@@ -121,20 +256,38 @@ class DashboardAlumno extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.school_outlined,
                 size: 20,
                 color: Color(0xFF4CAF50),
               ),
-              SizedBox(width: 8),
-              Text(
-                'Información del Alumno',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF333333),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  hijo['nombre_completo'] ?? 'Alumno',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF333333),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$evidCount ${evidCount == 1 ? 'evidencia' : 'evidencias'}',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF4CAF50),
+                  ),
                 ),
               ),
             ],
@@ -143,13 +296,13 @@ class DashboardAlumno extends StatelessWidget {
           if (isMobile)
             Column(
               children: [
-                _infoRow(Icons.person_outline, 'Alumno', 'Carlos Méndez López'),
+                _infoRow(Icons.person_outline, 'Alumno', hijo['nombre_completo'] ?? 'N/A'),
                 const SizedBox(height: 10),
-                _infoRow(Icons.group_outlined, 'Grupo', 'Grupo 3A'),
+                _infoRow(Icons.group_outlined, 'Grupo', nombreGrupo),
                 const SizedBox(height: 10),
-                _infoRow(Icons.schedule, 'Turno', 'Matutino'),
+                _infoRow(Icons.schedule, 'Turno', turno),
                 const SizedBox(height: 10),
-                _infoRow(Icons.person_outline, 'Maestro Asignado', 'Prof. Julián Sánchez'),
+                _infoRow(Icons.badge_outlined, 'CURP', hijo['curp'] ?? 'N/A'),
               ],
             )
           else
@@ -158,9 +311,9 @@ class DashboardAlumno extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      _infoRow(Icons.person_outline, 'Alumno', 'Carlos Méndez López'),
+                      _infoRow(Icons.person_outline, 'Alumno', hijo['nombre_completo'] ?? 'N/A'),
                       const SizedBox(height: 10),
-                      _infoRow(Icons.group_outlined, 'Grupo', 'Grupo 3A'),
+                      _infoRow(Icons.group_outlined, 'Grupo', nombreGrupo),
                     ],
                   ),
                 ),
@@ -168,9 +321,9 @@ class DashboardAlumno extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      _infoRow(Icons.schedule, 'Turno', 'Matutino'),
+                      _infoRow(Icons.schedule, 'Turno', turno),
                       const SizedBox(height: 10),
-                      _infoRow(Icons.person_outline, 'Maestro Asignado', 'Prof. Julián Sánchez'),
+                      _infoRow(Icons.badge_outlined, 'CURP', hijo['curp'] ?? 'N/A'),
                     ],
                   ),
                 ),
@@ -222,26 +375,48 @@ class DashboardAlumno extends StatelessWidget {
 
   // ──────── TARJETAS DE ESTADÍSTICAS ────────
   Widget _buildStatCards(bool isMobile) {
+    final totalEvidencias = _hijos.fold<int>(
+      0, (sum, h) => sum + _getEvidenciasForAlumno(h).length);
+
+    // Última evidencia global
+    String ultimaEvidencia = 'N/A';
+    DateTime? lastDate;
+    for (final hijo in _hijos) {
+      for (final ev in _getEvidenciasForAlumno(hijo)) {
+        try {
+          final dt = DateTime.parse(ev['fecha_subida']);
+          if (lastDate == null || dt.isAfter(lastDate)) {
+            lastDate = dt;
+          }
+        } catch (_) {}
+      }
+    }
+    if (lastDate != null) {
+      final months = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+        'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      ultimaEvidencia = '${lastDate.day.toString().padLeft(2,'0')}/${months[lastDate.month]}';
+    }
+
     final stats = [
       _StatData(
         Icons.folder_shared_outlined,
         'Total de Evidencias',
-        '3',
+        '$totalEvidencias',
         'Registradas',
         const Color(0xFF4CAF50),
       ),
       _StatData(
         Icons.calendar_today_outlined,
         'Última Evidencia',
-        '01/Abr',
-        '2026',
+        ultimaEvidencia,
+        lastDate != null ? '${lastDate.year}' : '',
         const Color(0xFF7E57C2),
       ),
       _StatData(
-        Icons.group_outlined,
-        'Grupo Actual',
-        '3A',
-        'Matutino',
+        Icons.people_outline,
+        _hijos.length == 1 ? 'Hijo Registrado' : 'Hijos Registrados',
+        '${_hijos.length}',
+        'En el sistema',
         const Color(0xFF42A5F5),
       ),
     ];
@@ -335,6 +510,34 @@ class DashboardAlumno extends StatelessWidget {
 
   // ──────── EVIDENCIAS RECIENTES ────────
   Widget _buildRecentEvidences(bool isMobile) {
+    // Recopilar todas las evidencias de todos los hijos
+    final allEvids = <Map<String, dynamic>>[];
+    for (final hijo in _hijos) {
+      for (final ev in _getEvidenciasForAlumno(hijo)) {
+        allEvids.add({
+          ...ev,
+          '_hijo_nombre': hijo['nombre_completo'] ?? 'Alumno',
+        });
+      }
+    }
+    // Ordenar por fecha descendente
+    allEvids.sort((a, b) {
+      try {
+        final da = DateTime.parse(a['fecha_subida'] ?? '');
+        final db = DateTime.parse(b['fecha_subida'] ?? '');
+        return db.compareTo(da);
+      } catch (_) {
+        return 0;
+      }
+    });
+    final recents = allEvids.take(3).toList();
+
+    final colors = [
+      const Color(0xFF4CAF50),
+      const Color(0xFF7E57C2),
+      const Color(0xFF42A5F5),
+    ];
+
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 22),
       decoration: BoxDecoration(
@@ -368,25 +571,38 @@ class DashboardAlumno extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           const Text(
-            'Aquí puede ver las evidencias más recientes de su hijo(a)',
+            'Aquí puede ver las evidencias más recientes de su(s) hijo(s)',
             style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
           ),
           const SizedBox(height: 16),
-          _recentEvidenceTile(
-            'Evaluación diagnóstica - resultado aprobatorio.',
-            '01 Abr 2026',
-            const Color(0xFF4CAF50),
-          ),
-          _recentEvidenceTile(
-            'Trabajo práctico: maqueta del sistema solar.',
-            '22 Mar 2026',
-            const Color(0xFF7E57C2),
-          ),
-          _recentEvidenceTile(
-            'Participación en clase de ciencias.',
-            '15 Mar 2026',
-            const Color(0xFF42A5F5),
-          ),
+          if (recents.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFAFAFA),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Column(
+                children: [
+                  Icon(Icons.photo_library_outlined, size: 32, color: Color(0xFFCCCCCC)),
+                  SizedBox(height: 8),
+                  Text(
+                    'Sin evidencias registradas',
+                    style: TextStyle(fontSize: 13, color: Color(0xFF999999)),
+                  ),
+                ],
+              ),
+            )
+          else
+            ...recents.asMap().entries.map((entry) {
+              final ev = entry.value;
+              final color = colors[entry.key % colors.length];
+              final desc = ev['descripcion'] ?? 'Sin descripción';
+              final fecha = _formatDate(ev['fecha_subida']?.toString());
+              final hijoNombre = _hijos.length > 1 ? ' — ${ev['_hijo_nombre']}' : '';
+              return _recentEvidenceTile('$desc$hijoNombre', fecha, color);
+            }),
         ],
       ),
     );

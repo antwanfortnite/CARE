@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../InicioSesion.dart';
+import '../Paginaweb.dart';
 
 /// Data model for navigation items in the sidebar.
 class ProfesorNavItem {
@@ -16,15 +16,19 @@ class ProfesorNavItem {
 class ProfesorScaffold extends StatefulWidget {
   final Widget body;
   final int selectedIndex;
+  final Map<int, WidgetBuilder> destinations;
+  final Map<String, dynamic>? user;
+  final VoidCallback? onLogout;
   final EdgeInsets? bodyPadding;
   final String? topBarTitle;
-  final Map<int, WidgetBuilder> destinations;
 
   const ProfesorScaffold({
     super.key,
     required this.body,
     required this.selectedIndex,
     required this.destinations,
+    this.user,
+    this.onLogout,
     this.bodyPadding,
     this.topBarTitle,
   });
@@ -238,35 +242,6 @@ class _ProfesorScaffoldState extends State<ProfesorScaffold> {
           ),
         ),
 
-        // Cerrar sesión
-        Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const InicioSesion()),
-                );
-              },
-              borderRadius: BorderRadius.circular(28),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                child: Row(
-                  children: [
-                    Icon(Icons.logout, size: 20, color: Color(0xFFE53935)),
-                    SizedBox(width: 12),
-                    Text(
-                      'Cerrar Sesión',
-                      style: TextStyle(fontSize: 14, color: Color(0xFFE53935)),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -318,12 +293,12 @@ class _ProfesorScaffoldState extends State<ProfesorScaffold> {
                 color: const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Prof. Julián Sánchez',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    'Prof. ${widget.user?['nombre_completo']?.split(' ')[0] ?? 'Maestro'}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                   SizedBox(width: 4),
                   Text(
@@ -348,6 +323,18 @@ class _ProfesorScaffoldState extends State<ProfesorScaffold> {
               child: Icon(Icons.person, size: 18, color: Colors.white),
             ),
           ],
+          const SizedBox(width: 8),
+          IconButton(
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const PaginaWeb()),
+                (route) => false,
+              );
+            },
+            icon: const Icon(Icons.logout, color: Color(0xFFE53935)),
+            tooltip: 'Cerrar Sesión',
+          ),
         ],
       ),
     );
@@ -386,17 +373,18 @@ class _ProfesorScaffoldState extends State<ProfesorScaffold> {
                       colors: [Color(0xFF2E7D32), Color(0xFF388E3C)],
                     ),
                   ),
-                  child: const Column(
+                  child: Column(
                     children: [
-                      CircleAvatar(
+                      const CircleAvatar(
                         radius: 36,
                         backgroundColor: Colors.white24,
                         child: Icon(Icons.person, size: 40, color: Colors.white),
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Text(
-                        'Julián Sánchez Romero',
-                        style: TextStyle(
+                        widget.user?['nombre_completo'] ?? 'Maestro',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -413,17 +401,34 @@ class _ProfesorScaffoldState extends State<ProfesorScaffold> {
                     children: [
                       _profileLabel('NOMBRE COMPLETO'),
                       const SizedBox(height: 6),
-                      _profileReadOnlyField('Julián Sánchez Romero', Icons.person_outline),
+                      _profileReadOnlyField(widget.user?['nombre_completo'] ?? 'Maestro', Icons.person_outline),
                       const SizedBox(height: 16),
                       if (mobile) ...[
                         _profileLabel('CORREO ELECTRÓNICO'),
                         const SizedBox(height: 6),
-                        _profileReadOnlyField('julian.sanchez@care.edu.mx', Icons.alternate_email),
+                        _profileReadOnlyField(widget.user?['correo_electronico'] ?? 'No disponible', Icons.alternate_email),
                         const SizedBox(height: 16),
                         _profileLabel('TELÉFONO'),
                         const SizedBox(height: 6),
-                        _profileReadOnlyField('+52 614 987 6543', Icons.phone_outlined),
+                        _profileReadOnlyField(widget.user?['telefono'] ?? 'No disponible', Icons.phone_outlined),
+                        const SizedBox(height: 16),
+                        _profileLabel('CURP'),
+                        const SizedBox(height: 6),
+                        _profileReadOnlyField(widget.user?['curp'] ?? 'No disponible', Icons.badge_outlined),
+                        const SizedBox(height: 16),
+                        _profileLabel('FECHA NACIMIENTO'),
+                        const SizedBox(height: 6),
+                        _profileReadOnlyField(widget.user?['fecha_nacimiento'] ?? 'No disponible', Icons.calendar_today_outlined),
+                        const SizedBox(height: 16),
+                        _profileLabel('EDAD'),
+                        const SizedBox(height: 6),
+                        _profileReadOnlyField('${widget.user?['edad'] ?? '??'} años', Icons.cake_outlined),
+                        const SizedBox(height: 16),
+                        _profileLabel('FECHA DE CONTRATACIÓN'),
+                        const SizedBox(height: 6),
+                        _profileReadOnlyField(widget.user?['fecha_contratacion'] ?? 'No disponible', Icons.work_history_outlined),
                       ] else ...[
+                        // Desktop/Web Grid
                         Row(
                           children: [
                             Expanded(
@@ -432,7 +437,7 @@ class _ProfesorScaffoldState extends State<ProfesorScaffold> {
                                 children: [
                                   _profileLabel('CORREO ELECTRÓNICO'),
                                   const SizedBox(height: 6),
-                                  _profileReadOnlyField('julian.sanchez@care.edu.mx', Icons.alternate_email),
+                                  _profileReadOnlyField(widget.user?['correo_electronico'] ?? 'No disponible', Icons.alternate_email),
                                 ],
                               ),
                             ),
@@ -443,27 +448,13 @@ class _ProfesorScaffoldState extends State<ProfesorScaffold> {
                                 children: [
                                   _profileLabel('TELÉFONO'),
                                   const SizedBox(height: 6),
-                                  _profileReadOnlyField('+52 614 987 6543', Icons.phone_outlined),
+                                  _profileReadOnlyField(widget.user?['telefono'] ?? 'No disponible', Icons.phone_outlined),
                                 ],
                               ),
                             ),
                           ],
                         ),
-                      ],
-                      const SizedBox(height: 16),
-                      if (mobile) ...[
-                        _profileLabel('CURP'),
-                        const SizedBox(height: 6),
-                        _profileReadOnlyField('SARJ880215HDFNCL04', Icons.badge_outlined),
                         const SizedBox(height: 16),
-                        _profileLabel('FECHA DE NACIMIENTO'),
-                        const SizedBox(height: 6),
-                        _profileReadOnlyField('1988-02-15', Icons.cake_outlined),
-                        const SizedBox(height: 16),
-                        _profileLabel('EDAD'),
-                        const SizedBox(height: 6),
-                        _profileReadOnlyField('38', Icons.hourglass_bottom),
-                      ] else ...[
                         Row(
                           children: [
                             Expanded(
@@ -472,7 +463,7 @@ class _ProfesorScaffoldState extends State<ProfesorScaffold> {
                                 children: [
                                   _profileLabel('CURP'),
                                   const SizedBox(height: 6),
-                                  _profileReadOnlyField('SARJ880215HDFNCL04', Icons.badge_outlined),
+                                  _profileReadOnlyField(widget.user?['curp'] ?? 'No disponible', Icons.badge_outlined),
                                 ],
                               ),
                             ),
@@ -481,9 +472,9 @@ class _ProfesorScaffoldState extends State<ProfesorScaffold> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _profileLabel('FECHA DE NACIMIENTO'),
+                                  _profileLabel('FECHA NACIMIENTO'),
                                   const SizedBox(height: 6),
-                                  _profileReadOnlyField('1988-02-15', Icons.cake_outlined),
+                                  _profileReadOnlyField(widget.user?['fecha_nacimiento'] ?? 'No disponible', Icons.calendar_today_outlined),
                                 ],
                               ),
                             ),
@@ -498,7 +489,7 @@ class _ProfesorScaffoldState extends State<ProfesorScaffold> {
                                 children: [
                                   _profileLabel('EDAD'),
                                   const SizedBox(height: 6),
-                                  _profileReadOnlyField('38', Icons.hourglass_bottom),
+                                  _profileReadOnlyField('${widget.user?['edad'] ?? '??'} años', Icons.cake_outlined),
                                 ],
                               ),
                             ),
@@ -509,18 +500,12 @@ class _ProfesorScaffoldState extends State<ProfesorScaffold> {
                                 children: [
                                   _profileLabel('FECHA DE CONTRATACIÓN'),
                                   const SizedBox(height: 6),
-                                  _profileReadOnlyField('2015-08-20', Icons.calendar_today_outlined),
+                                  _profileReadOnlyField(widget.user?['fecha_contratacion'] ?? 'No disponible', Icons.work_history_outlined),
                                 ],
                               ),
                             ),
                           ],
                         ),
-                      ],
-                      if (mobile) ...[
-                        const SizedBox(height: 16),
-                        _profileLabel('FECHA DE CONTRATACIÓN'),
-                        const SizedBox(height: 6),
-                        _profileReadOnlyField('2015-08-20', Icons.calendar_today_outlined),
                       ],
                     ],
                   ),

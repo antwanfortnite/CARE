@@ -3,46 +3,64 @@ import 'AlumnoScaffold.dart';
 import 'DashboardAlumno.dart';
 
 /// Pantalla de Evidencias para el Padre de Familia.
-/// Solo puede VER las evidencias de su hijo(a), no puede agregar ni eliminar.
+/// Recibe los hijos, grupos y evidencias ya cargados desde DashboardAlumno.
 class EvidenciasAlumno extends StatefulWidget {
-  const EvidenciasAlumno({super.key});
+  final List<dynamic> hijos;
+  final List<dynamic> grupos;
+  final List<dynamic> evidencias;
+
+  const EvidenciasAlumno({
+    super.key,
+    this.hijos = const [],
+    this.grupos = const [],
+    this.evidencias = const [],
+  });
+
   @override
   State<EvidenciasAlumno> createState() => _EvidenciasAlumnoState();
 }
 
 class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
   final TextEditingController _searchController = TextEditingController();
+  int _selectedHijoIndex = 0;
 
-  // Nombre del alumno (hijo del padre)
-  final String _studentName = 'Carlos Méndez López';
-  final String _studentCurp = 'MECC080515HDHNRL01';
-  final String _groupName = 'Grupo 3A';
-  final String _groupTurno = 'Matutino';
+  dynamic get _selectedHijo =>
+      widget.hijos.isNotEmpty ? widget.hijos[_selectedHijoIndex] : null;
 
-  // ──────── EVIDENCIAS MOCK DEL ALUMNO ────────
-  final List<_EvidenciaData> _evidencias = [
-    _EvidenciaData(
-      1,
-      'https://ejemplo.com/fotos/carlos_act1.jpg',
-      'Participación en clase de ciencias. El alumno demostró excelente comprensión del tema.',
-      '2026-03-15',
-      'Prof. Julián Sánchez',
-    ),
-    _EvidenciaData(
-      2,
-      'https://ejemplo.com/fotos/carlos_act2.jpg',
-      'Trabajo práctico: maqueta del sistema solar completada satisfactoriamente.',
-      '2026-03-22',
-      'Prof. Julián Sánchez',
-    ),
-    _EvidenciaData(
-      3,
-      'https://ejemplo.com/fotos/carlos_act3.jpg',
-      'Evaluación diagnóstica - resultado aprobatorio.',
-      '2026-04-01',
-      'Prof. Julián Sánchez',
-    ),
-  ];
+  String get _studentName =>
+      _selectedHijo?['nombre_completo'] ?? 'Sin alumno';
+
+  String get _studentCurp => _selectedHijo?['curp'] ?? 'N/A';
+
+  String get _groupName {
+    final idGrupo = _selectedHijo?['id_grupo'];
+    if (idGrupo == null) return 'Sin grupo';
+    try {
+      final g = widget.grupos.firstWhere((g) => g['id_grupo'] == idGrupo);
+      return g['nombre_grupo'] ?? 'Sin grupo';
+    } catch (_) {
+      return 'Sin grupo';
+    }
+  }
+
+  String get _groupTurno {
+    final idGrupo = _selectedHijo?['id_grupo'];
+    if (idGrupo == null) return 'N/A';
+    try {
+      final g = widget.grupos.firstWhere((g) => g['id_grupo'] == idGrupo);
+      return g['turno'] ?? 'N/A';
+    } catch (_) {
+      return 'N/A';
+    }
+  }
+
+  List<dynamic> get _evidenciasDelHijo {
+    if (_selectedHijo == null) return [];
+    final idAlumno = _selectedHijo['id_alumno'];
+    return widget.evidencias
+        .where((e) => e['id_alumno'] == idAlumno)
+        .toList();
+  }
 
   bool _isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 1050;
@@ -53,21 +71,31 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
     super.dispose();
   }
 
+  List<dynamic> _filteredEvidencias() {
+    final query = _searchController.text.trim().toLowerCase();
+    final evids = _evidenciasDelHijo;
+    if (query.isEmpty) return evids;
+    return evids
+        .where((e) =>
+            (e['descripcion'] ?? '').toString().toLowerCase().contains(query) ||
+            (e['fecha_subida'] ?? '').toString().contains(query))
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final mobile = _isMobile(context);
-
-    return AlumnoScaffold(
-      selectedIndex: 1,
-      destinations: {
-        0: (_) => const DashboardAlumno(),
-      },
-      bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
-      body: _buildBody(mobile),
+    return Padding(
+      padding: EdgeInsets.all(mobile ? 16 : 28),
+      child: _buildBody(mobile),
     );
   }
 
   Widget _buildBody(bool isMobile) {
+    if (widget.hijos.isEmpty) {
+      return _buildEmptyState();
+    }
+    final filtered = _filteredEvidencias();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -77,25 +105,12 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
         const SizedBox(height: 20),
         _buildFilterBar(isMobile),
         const SizedBox(height: 20),
-        if (_evidencias.isEmpty)
+        if (filtered.isEmpty)
           _buildEmptyState()
         else
-          ..._filteredEvidencias().map(
-            (e) => _buildEvidenciaCard(e, isMobile),
-          ),
+          ...filtered.map((e) => _buildEvidenciaCard(e, isMobile)),
       ],
     );
-  }
-
-  List<_EvidenciaData> _filteredEvidencias() {
-    final query = _searchController.text.trim().toLowerCase();
-    if (query.isEmpty) return _evidencias;
-    return _evidencias
-        .where((e) =>
-            e.descripcion.toLowerCase().contains(query) ||
-            e.fechaSubida.contains(query) ||
-            e.maestro.toLowerCase().contains(query))
-        .toList();
   }
 
   // ──────── HEADER ────────
@@ -120,8 +135,11 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
     );
   }
 
-  // ──────── BANNER INFORMACIÓN DEL ALUMNO ────────
+  // ──────── BANNER CON DROPDOWN SI HAY MÚLTIPLES HIJOS ────────
   Widget _buildStudentBanner(bool isMobile) {
+    final hasMultiple = widget.hijos.length > 1;
+    final evidCount = _evidenciasDelHijo.length;
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 16 : 22),
@@ -136,25 +154,55 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
           CircleAvatar(
             radius: isMobile ? 24 : 28,
             backgroundColor: Colors.white.withOpacity(0.2),
-            child: const Icon(
-              Icons.school,
-              size: 28,
-              color: Colors.white,
-            ),
+            child: const Icon(Icons.school, size: 28, color: Colors.white),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _studentName,
-                  style: TextStyle(
-                    fontSize: isMobile ? 18 : 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                if (hasMultiple)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<int>(
+                        value: _selectedHijoIndex,
+                        dropdownColor: const Color(0xFF2E7D32),
+                        iconEnabledColor: Colors.white,
+                        isExpanded: true,
+                        style: TextStyle(
+                          fontSize: isMobile ? 16 : 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        items: widget.hijos.asMap().entries.map((entry) {
+                          return DropdownMenuItem<int>(
+                            value: entry.key,
+                            child: Text(
+                              entry.value['nombre_completo'] ?? 'Alumno',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (v) {
+                          if (v != null) setState(() => _selectedHijoIndex = v);
+                        },
+                      ),
+                    ),
+                  )
+                else
+                  Text(
+                    _studentName,
+                    style: TextStyle(
+                      fontSize: isMobile ? 18 : 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 12,
@@ -165,7 +213,7 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
                     _bannerChip(Icons.badge_outlined, _studentCurp),
                     _bannerChip(
                       Icons.folder_outlined,
-                      '${_evidencias.length} ${_evidencias.length == 1 ? 'evidencia' : 'evidencias'}',
+                      '$evidCount ${evidCount == 1 ? 'evidencia' : 'evidencias'}',
                     ),
                   ],
                 ),
@@ -210,15 +258,9 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
               controller: _searchController,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: Color(0xFF999999),
-                ),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF999999)),
                 hintText: 'Buscar evidencia por descripción o fecha...',
-                hintStyle: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF999999),
-                ),
+                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF999999)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: const BorderSide(color: Color(0xFFE8E8E8)),
@@ -231,10 +273,7 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
                   borderRadius: BorderRadius.circular(10),
                   borderSide: const BorderSide(color: Color(0xFF4CAF50)),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
           ),
@@ -269,29 +308,17 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
       ),
       child: const Column(
         children: [
-          Icon(
-            Icons.photo_library_outlined,
-            size: 48,
-            color: Color(0xFFCCCCCC),
-          ),
+          Icon(Icons.photo_library_outlined, size: 48, color: Color(0xFFCCCCCC)),
           SizedBox(height: 16),
           Text(
             'Sin evidencias registradas',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF888888),
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF888888)),
           ),
           SizedBox(height: 8),
           Text(
             'Aún no se han subido evidencias para su hijo(a).\nRevise más adelante.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 13,
-              color: Color(0xFF999999),
-              height: 1.4,
-            ),
+            style: TextStyle(fontSize: 13, color: Color(0xFF999999), height: 1.4),
           ),
         ],
       ),
@@ -299,49 +326,32 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
   }
 
   // ──────── TARJETA DE EVIDENCIA ────────
-  Widget _buildEvidenciaCard(_EvidenciaData e, bool isMobile) {
-    // Format date for header label
-    String dateHeader = '';
+  Widget _buildEvidenciaCard(dynamic e, bool isMobile) {
+    final fechaRaw = (e['fecha_subida'] ?? '').toString();
+    String dateHeader = fechaRaw;
     try {
-      final parts = e.fechaSubida.split('-');
-      final months = [
-        '',
-        'ENERO',
-        'FEBRERO',
-        'MARZO',
-        'ABRIL',
-        'MAYO',
-        'JUNIO',
-        'JULIO',
-        'AGOSTO',
-        'SEPTIEMBRE',
-        'OCTUBRE',
-        'NOVIEMBRE',
-        'DICIEMBRE',
-      ];
-      dateHeader =
-          '${parts[2]} DE ${months[int.parse(parts[1])]}, ${parts[0]}';
-    } catch (_) {
-      dateHeader = e.fechaSubida;
-    }
+      final dt = DateTime.parse(fechaRaw);
+      final months = ['','ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO',
+        'JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+      dateHeader = '${dt.day.toString().padLeft(2,'0')} DE ${months[dt.month]}, ${dt.year}';
+    } catch (_) {}
+
+    final desc = e['descripcion'] ?? 'Sin descripción';
+    final urlFoto = e['url_foto'] ?? '';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Date header above the card
         Padding(
           padding: const EdgeInsets.only(bottom: 6, top: 4),
           child: Text(
             dateHeader,
             style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF4CAF50),
-              letterSpacing: 0.5,
+              fontSize: 11, fontWeight: FontWeight.w600,
+              color: Color(0xFF4CAF50), letterSpacing: 0.5,
             ),
           ),
         ),
-        // Evidence card
         Container(
           width: double.infinity,
           margin: const EdgeInsets.only(bottom: 12),
@@ -351,59 +361,45 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: const Color(0xFFE8E8E8)),
           ),
-          child: isMobile ? _buildCardContentMobile(e) : _buildCardContentDesktop(e),
+          child: isMobile
+              ? _buildCardContentMobile(e, desc, urlFoto)
+              : _buildCardContentDesktop(e, desc, urlFoto),
         ),
       ],
     );
   }
 
-  Widget _buildCardContentMobile(_EvidenciaData e) {
+  Widget _buildCardContentMobile(dynamic e, String desc, String urlFoto) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 48, height: 48,
               decoration: BoxDecoration(
                 color: const Color(0xFFF5F0EC),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
-                Icons.camera_alt_outlined,
-                size: 22,
-                color: Color(0xFFCBBEB5),
-              ),
+              child: urlFoto.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(urlFoto, fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.camera_alt_outlined, size: 22, color: Color(0xFFCBBEB5)),
+                      ),
+                    )
+                  : const Icon(Icons.camera_alt_outlined, size: 22, color: Color(0xFFCBBEB5)),
             ),
             const SizedBox(width: 14),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    e.descripcion,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF333333),
-                      height: 1.4,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      const Icon(Icons.person_outline, size: 12, color: Color(0xFF999999)),
-                      const SizedBox(width: 4),
-                      Text(
-                        e.maestro,
-                        style: const TextStyle(fontSize: 11, color: Color(0xFF999999)),
-                      ),
-                    ],
-                  ),
-                ],
+              child: Text(
+                desc,
+                style: const TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w500,
+                  color: Color(0xFF333333), height: 1.4,
+                ),
+                maxLines: 2, overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -420,9 +416,7 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
               foregroundColor: const Color(0xFF4CAF50),
               elevation: 0,
               padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
         ),
@@ -430,52 +424,44 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
     );
   }
 
-  Widget _buildCardContentDesktop(_EvidenciaData e) {
+  Widget _buildCardContentDesktop(dynamic e, String desc, String urlFoto) {
+    final fechaRaw = (e['fecha_subida'] ?? '').toString();
     return Row(
       children: [
         Container(
-          width: 56,
-          height: 56,
+          width: 56, height: 56,
           decoration: BoxDecoration(
             color: const Color(0xFFF5F0EC),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(
-            Icons.camera_alt_outlined,
-            size: 26,
-            color: Color(0xFFCBBEB5),
-          ),
+          child: urlFoto.isNotEmpty
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(urlFoto, fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      Icons.camera_alt_outlined, size: 26, color: Color(0xFFCBBEB5)),
+                  ),
+                )
+              : const Icon(Icons.camera_alt_outlined, size: 26, color: Color(0xFFCBBEB5)),
         ),
         const SizedBox(width: 18),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                e.descripcion,
+              Text(desc,
                 style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF333333),
-                  height: 1.4,
+                  fontSize: 14, fontWeight: FontWeight.w500,
+                  color: Color(0xFF333333), height: 1.4,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+                maxLines: 2, overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 6),
               Row(
                 children: [
-                  const Icon(Icons.person_outline, size: 13, color: Color(0xFF999999)),
-                  const SizedBox(width: 4),
-                  Text(
-                    e.maestro,
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
-                  ),
-                  const SizedBox(width: 16),
                   const Icon(Icons.calendar_today_outlined, size: 13, color: Color(0xFF999999)),
                   const SizedBox(width: 4),
-                  Text(
-                    _formatDate(e.fechaSubida),
+                  Text(_formatDate(fechaRaw),
                     style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
                   ),
                 ],
@@ -494,26 +480,15 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
               decoration: BoxDecoration(
                 color: const Color(0xFF4CAF50).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: const Color(0xFF4CAF50).withOpacity(0.2),
-                ),
+                border: Border.all(color: const Color(0xFF4CAF50).withOpacity(0.2)),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.visibility_outlined,
-                    size: 16,
-                    color: Color(0xFF4CAF50),
-                  ),
+                  Icon(Icons.visibility_outlined, size: 16, color: Color(0xFF4CAF50)),
                   SizedBox(width: 6),
-                  Text(
-                    'Ver Detalle',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF4CAF50),
-                    ),
+                  Text('Ver Detalle',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF4CAF50)),
                   ),
                 ],
               ),
@@ -524,34 +499,28 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
     );
   }
 
-  // ──────── VER EVIDENCIA (read-only dialog) ────────
-  void _showViewEvidenciaDialog(_EvidenciaData e) {
+  // ──────── VER EVIDENCIA DIALOG ────────
+  void _showViewEvidenciaDialog(dynamic e) {
     final mobile = _isMobile(context);
-
-    String formattedDate = '';
+    final fechaRaw = (e['fecha_subida'] ?? '').toString();
+    String formattedDate = fechaRaw;
     try {
-      final parts = e.fechaSubida.split('-');
-      formattedDate = '${parts[2]}/${parts[1]}/${parts[0]}';
-    } catch (_) {
-      formattedDate = e.fechaSubida;
-    }
+      final dt = DateTime.parse(fechaRaw);
+      formattedDate = '${dt.day.toString().padLeft(2,'0')}/${dt.month.toString().padLeft(2,'0')}/${dt.year}';
+    } catch (_) {}
+
+    final desc = e['descripcion'] ?? 'Sin descripción';
+    final urlFoto = e['url_foto'] ?? '';
 
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        insetPadding: EdgeInsets.symmetric(
-          horizontal: mobile ? 16 : 40,
-          vertical: 24,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        insetPadding: EdgeInsets.symmetric(horizontal: mobile ? 16 : 40, vertical: 24),
         child: Container(
           width: mobile ? double.infinity : 520,
           clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -561,70 +530,45 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF2E7D32), Color(0xFF388E3C)],
-                    ),
+                    gradient: LinearGradient(colors: [Color(0xFF2E7D32), Color(0xFF388E3C)]),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          const Icon(
-                            Icons.photo_library_outlined,
-                            size: 16,
-                            color: Colors.white70,
-                          ),
+                          const Icon(Icons.photo_library_outlined, size: 16, color: Colors.white70),
                           const SizedBox(width: 6),
-                          Text(
-                            'DETALLE DE EVIDENCIA',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.white.withOpacity(0.8),
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 1,
-                            ),
+                          Text('DETALLE DE EVIDENCIA',
+                            style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.8),
+                              fontWeight: FontWeight.w600, letterSpacing: 1),
                           ),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Información de Evidencia',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                      const Text('Información de Evidencia',
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                       const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(
-                          'Alumno: $_studentName',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white.withOpacity(0.9),
-                          ),
+                        child: Text('Alumno: $_studentName',
+                          style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.9)),
                         ),
                       ),
                     ],
                   ),
                 ),
-
-                // Form (read-only)
+                // Content
                 Padding(
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Group & Teacher info
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
@@ -634,63 +578,24 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
                         ),
                         child: Column(
                           children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.group_outlined,
-                                  size: 16,
-                                  color: Color(0xFF888888),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    '$_groupName  •  $_groupTurno',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF666666),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.person_outline,
-                                  size: 16,
-                                  color: Color(0xFF888888),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    'Registrada por: ${e.maestro}',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF666666),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                            Row(children: [
+                              const Icon(Icons.group_outlined, size: 16, color: Color(0xFF888888)),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text('$_groupName  •  $_groupTurno',
+                                style: const TextStyle(fontSize: 12, color: Color(0xFF666666)))),
+                            ]),
                           ],
                         ),
                       ),
                       const SizedBox(height: 20),
-
-                      // FECHA
                       _readOnlyLabel('FECHA DE LA EVIDENCIA'),
                       const SizedBox(height: 6),
                       _readOnlyField(formattedDate, Icons.calendar_month_rounded),
                       const SizedBox(height: 16),
-
-                      // FOTO
                       _readOnlyLabel('FOTO ADJUNTADA'),
                       const SizedBox(height: 6),
-                      _readOnlyField(e.urlFoto, Icons.link),
+                      _readOnlyField(urlFoto.isNotEmpty ? urlFoto : 'Sin foto', Icons.link),
                       const SizedBox(height: 16),
-
-                      // DESCRIPCIÓN
                       _readOnlyLabel('DESCRIPCIÓN'),
                       const SizedBox(height: 6),
                       Container(
@@ -701,26 +606,15 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(color: const Color(0xFFE0E0E0)),
                         ),
-                        child: Text(
-                          e.descripcion,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF555555),
-                            height: 1.5,
-                          ),
-                        ),
+                        child: Text(desc,
+                          style: const TextStyle(fontSize: 13, color: Color(0xFF555555), height: 1.5)),
                       ),
                     ],
                   ),
                 ),
-
-                // Close button
+                // Close
                 Padding(
-                  padding: const EdgeInsets.only(
-                    left: 24,
-                    right: 24,
-                    bottom: 24,
-                  ),
+                  padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -729,13 +623,8 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4CAF50),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 14,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                         ),
                         child: const Text('Cerrar'),
                       ),
@@ -751,15 +640,9 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
   }
 
   Widget _readOnlyLabel(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w600,
-        color: Color(0xFF555555),
-        letterSpacing: 0.5,
-      ),
-    );
+    return Text(text,
+      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
+        color: Color(0xFF555555), letterSpacing: 0.5));
   }
 
   Widget _readOnlyField(String value, IconData icon) {
@@ -773,62 +656,21 @@ class _EvidenciasAlumnoState extends State<EvidenciasAlumno> {
       ),
       child: Row(
         children: [
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Color(0xFF555555),
-              ),
-            ),
-          ),
+          Expanded(child: Text(value,
+            style: const TextStyle(fontSize: 13, color: Color(0xFF555555)))),
           Icon(icon, size: 18, color: const Color(0xFF999999)),
         ],
       ),
     );
   }
 
-  // ──────── UTILIDADES ────────
   String _formatDate(String dateStr) {
     try {
-      final parts = dateStr.split('-');
-      final months = [
-        '',
-        'Ene',
-        'Feb',
-        'Mar',
-        'Abr',
-        'May',
-        'Jun',
-        'Jul',
-        'Ago',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dic',
-      ];
-      return '${parts[2]} ${months[int.parse(parts[1])]} ${parts[0]}';
+      final dt = DateTime.parse(dateStr);
+      final months = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      return '${dt.day.toString().padLeft(2,'0')} ${months[dt.month]} ${dt.year}';
     } catch (_) {
       return dateStr;
     }
   }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// DATA MODELS
-// ═══════════════════════════════════════════════════════════════
-
-class _EvidenciaData {
-  final int idEvidencia;
-  final String urlFoto;
-  final String descripcion;
-  final String fechaSubida;
-  final String maestro;
-  const _EvidenciaData(
-    this.idEvidencia,
-    this.urlFoto,
-    this.descripcion,
-    this.fechaSubida,
-    this.maestro,
-  );
 }

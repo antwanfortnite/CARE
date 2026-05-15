@@ -4,7 +4,8 @@ import 'GruposProfesor.dart';
 import 'EvidenciasProfesor.dart';
 
 class DashboardProfesor extends StatelessWidget {
-  const DashboardProfesor({super.key});
+  final Map<String, dynamic>? user;
+  const DashboardProfesor({super.key, this.user});
 
   bool _isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 700;
@@ -14,10 +15,11 @@ class DashboardProfesor extends StatelessWidget {
     final mobile = _isMobile(context);
 
     return ProfesorScaffold(
+      user: user,
       selectedIndex: 0,
       destinations: {
-        1: (_) => const GruposProfesor(),
-        2: (_) => const EvidenciasProfesor(),
+        1: (_) => GruposProfesor(user: user),
+        2: (_) => EvidenciasProfesor(user: user),
       },
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,7 +51,7 @@ class DashboardProfesor extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '¡Buen día, Profesor!',
+            '¡Buen día, ${user?['nombre_completo'] ?? 'Profesor'}!',
             style: TextStyle(
               color: Colors.white,
               fontSize: isMobile ? 18 : 24,

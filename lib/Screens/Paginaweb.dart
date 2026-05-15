@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'InicioSesion.dart';
+import '../BD/Alumnos.dart';
+import '../BD/Maestros.dart';
+import '../BD/Administradores.dart';
+import 'Administrador/DashboardAdmin.dart';
+import 'Profesor/DashboardProfesor.dart';
+import 'Alumno/DashboardAlumno.dart';
 
 // ══════════════════════════════════════════════════════
 //  Paleta de colores CARE
@@ -18,7 +23,7 @@ const _kWhite = Colors.white;
 // ══════════════════════════════════════════════════════
 //  Secciones de la página
 // ══════════════════════════════════════════════════════
-enum _Section { inicio, conocenos, encuentranos, planes }
+enum _Section { inicio, conocenos, encuentranos, planes, padre }
 
 // ══════════════════════════════════════════════════════
 //  PaginaWeb — root widget
@@ -32,16 +37,51 @@ class PaginaWeb extends StatefulWidget {
 
 class _PaginaWebState extends State<PaginaWeb> {
   _Section _current = _Section.inicio;
+  int? _loggedInRole; // 0 = Padre, 1 = Maestro, 2 = Administrador
+  Map<String, dynamic>? _loggedInUser;
 
   void _navigate(_Section s) => setState(() => _current = s);
 
   // Abre el modal de Inicio de Sesión
-  void _showLogin() {
-    showDialog(
+  Future<void> _showLogin() async {
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
       barrierColor: Colors.black54,
       builder: (_) => const _LoginDialog(),
     );
+    if (result != null) {
+      setState(() {
+        _loggedInRole = result['role'];
+        _loggedInUser = result['user'];
+        if (_loggedInRole == 0) {
+          _current = _Section.padre;
+        }
+      });
+    }
+  }
+
+  void _logout() {
+    setState(() {
+      _loggedInRole = null;
+      _loggedInUser = null;
+      if (_current == _Section.padre) {
+        _current = _Section.inicio;
+      }
+    });
+  }
+
+  void _goToDashboard() {
+    if (_loggedInRole == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const DashboardAdmin()),
+      );
+    } else if (_loggedInRole == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => DashboardProfesor(user: _loggedInUser)),
+      );
+    }
   }
 
   @override
@@ -54,10 +94,11 @@ class _PaginaWebState extends State<PaginaWeb> {
             current: _current,
             onNavigate: _navigate,
             onLogin: _showLogin,
+            loggedInRole: _loggedInRole,
+            onLogout: _logout,
+            onGoToDashboard: _goToDashboard,
           ),
-          Expanded(
-            child: _buildBody(),
-          ),
+          Expanded(child: _buildBody()),
         ],
       ),
     );
@@ -72,11 +113,22 @@ class _PaginaWebState extends State<PaginaWeb> {
           onEmpiezaYa: _showLogin,
         );
       case _Section.conocenos:
-        return _PlaceholderSection(titulo: 'Conócenos', icon: Icons.people_alt_outlined);
+        return _PlaceholderSection(
+          titulo: 'Conócenos',
+          icon: Icons.people_alt_outlined,
+        );
       case _Section.encuentranos:
-        return _PlaceholderSection(titulo: 'Encuéntranos', icon: Icons.location_on_outlined);
+        return _PlaceholderSection(
+          titulo: 'Encuéntranos',
+          icon: Icons.location_on_outlined,
+        );
       case _Section.planes:
-        return _PlaceholderSection(titulo: 'Planes', icon: Icons.workspace_premium_outlined);
+        return _PlaceholderSection(
+          titulo: 'Planes',
+          icon: Icons.workspace_premium_outlined,
+        );
+      case _Section.padre:
+        return DashboardAlumno(user: _loggedInUser);
     }
   }
 }
@@ -89,11 +141,17 @@ class _NavBar extends StatelessWidget {
     required this.current,
     required this.onNavigate,
     required this.onLogin,
+    this.loggedInRole,
+    this.onLogout,
+    this.onGoToDashboard,
   });
 
   final _Section current;
   final void Function(_Section) onNavigate;
   final VoidCallback onLogin;
+  final int? loggedInRole;
+  final VoidCallback? onLogout;
+  final VoidCallback? onGoToDashboard;
 
   @override
   Widget build(BuildContext context) {
@@ -135,26 +193,57 @@ class _NavBar extends StatelessWidget {
           _NavTab('Conócenos', _Section.conocenos, current, onNavigate),
           _NavTab('Encuéntranos', _Section.encuentranos, current, onNavigate),
           _NavTab('Planes', _Section.planes, current, onNavigate),
+          if (loggedInRole == 0)
+            _NavTab('Padre', _Section.padre, current, onNavigate),
 
           const Spacer(),
 
-          // Botón Iniciar sesión
-          ElevatedButton(
-            onPressed: onLogin,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _kGreen,
-              foregroundColor: _kWhite,
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
+          // Botón Iniciar sesión / Perfil
+          if (loggedInRole == null)
+            ElevatedButton(
+              onPressed: onLogin,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _kGreen,
+                foregroundColor: _kWhite,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 22,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                elevation: 0,
               ),
-              elevation: 0,
+              child: const Text(
+                'Iniciar sesión',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              ),
+            )
+          else if (loggedInRole == 0)
+            ElevatedButton(
+              onPressed: onLogout,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade400,
+                foregroundColor: _kWhite,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 22,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                elevation: 0,
+              ),
+              child: const Text(
+                'Cerrar sesión',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              ),
+            )
+          else
+            IconButton(
+              onPressed: onGoToDashboard,
+              icon: const Icon(Icons.person, color: _kGreen, size: 28),
             ),
-            child: const Text(
-              'Iniciar sesión',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-            ),
-          ),
         ],
       ),
     );
@@ -180,9 +269,7 @@ class _NavTab extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 4),
         decoration: active
             ? const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: _kGreen, width: 2.5),
-                ),
+                border: Border(bottom: BorderSide(color: _kGreen, width: 2.5)),
               )
             : null,
         child: Text(
@@ -246,7 +333,13 @@ class _HeroPanel extends StatelessWidget {
               ? Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(flex: 5, child: _HeroText(onIniciar: onIniciar, onMasInfo: onMasInfo)),
+                    Expanded(
+                      flex: 5,
+                      child: _HeroText(
+                        onIniciar: onIniciar,
+                        onMasInfo: onMasInfo,
+                      ),
+                    ),
                     const SizedBox(width: 48),
                     Expanded(flex: 5, child: _HeroImages()),
                   ],
@@ -315,10 +408,7 @@ class _HeroText extends StatelessWidget {
               TextSpan(text: 'La plataforma\n'),
               TextSpan(
                 text: 'definitiva',
-                style: TextStyle(
-                  color: _kGreen,
-                  fontStyle: FontStyle.italic,
-                ),
+                style: TextStyle(color: _kGreen, fontStyle: FontStyle.italic),
               ),
               TextSpan(text: ' para la\ngestión de\nrefuerzo escolar'),
             ],
@@ -331,11 +421,7 @@ class _HeroText extends StatelessWidget {
           'Potencia el aprendizaje y simplifica la administración.\n'
           'CARE ofrece herramientas inteligentes para que docentes\n'
           'y alumnos alcancen su máximo potencial académico.',
-          style: TextStyle(
-            fontSize: 14,
-            color: _kTextMuted,
-            height: 1.6,
-          ),
+          style: TextStyle(fontSize: 14, color: _kTextMuted, height: 1.6),
         ),
         const SizedBox(height: 32),
 
@@ -347,26 +433,38 @@ class _HeroText extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: _kGreen,
                 foregroundColor: _kWhite,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 16,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28),
                 ),
                 elevation: 2,
               ),
-              child: const Text('Iniciar', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+              child: const Text(
+                'Iniciar',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+              ),
             ),
             const SizedBox(width: 16),
             OutlinedButton(
               onPressed: onMasInfo,
               style: OutlinedButton.styleFrom(
                 foregroundColor: _kText,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 16,
+                ),
                 side: const BorderSide(color: Color(0xFFBDBDBD), width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28),
                 ),
               ),
-              child: const Text('Más información', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+              child: const Text(
+                'Más información',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+              ),
             ),
           ],
         ),
@@ -450,33 +548,35 @@ class _StatsBar extends StatelessWidget {
       width: double.infinity,
       color: _kWhite,
       padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 48),
-      child: LayoutBuilder(builder: (_, c) {
-        final bool wide = c.maxWidth > 500;
-        return wide
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: const [
-                  _StatItem('1,284', 'ESTUDIANTES', _kGreen),
-                  _StatDivider(),
-                  _StatItem('86', 'MAESTROS', _kTeal),
-                  _StatDivider(),
-                  _StatItem('15+', 'CENTROS', _kPink),
-                  _StatDivider(),
-                  _StatItem('98%', 'ÉXITO', _kGreenLight),
-                ],
-              )
-            : Wrap(
-                alignment: WrapAlignment.spaceEvenly,
-                spacing: 24,
-                runSpacing: 24,
-                children: const [
-                  _StatItem('1,284', 'ESTUDIANTES', _kGreen),
-                  _StatItem('86', 'MAESTROS', _kTeal),
-                  _StatItem('15+', 'CENTROS', _kPink),
-                  _StatItem('98%', 'ÉXITO', _kGreenLight),
-                ],
-              );
-      }),
+      child: LayoutBuilder(
+        builder: (_, c) {
+          final bool wide = c.maxWidth > 500;
+          return wide
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: const [
+                    _StatItem('1,284', 'ESTUDIANTES', _kGreen),
+                    _StatDivider(),
+                    _StatItem('86', 'MAESTROS', _kTeal),
+                    _StatDivider(),
+                    _StatItem('15+', 'CENTROS', _kPink),
+                    _StatDivider(),
+                    _StatItem('98%', 'ÉXITO', _kGreenLight),
+                  ],
+                )
+              : Wrap(
+                  alignment: WrapAlignment.spaceEvenly,
+                  spacing: 24,
+                  runSpacing: 24,
+                  children: const [
+                    _StatItem('1,284', 'ESTUDIANTES', _kGreen),
+                    _StatItem('86', 'MAESTROS', _kTeal),
+                    _StatItem('15+', 'CENTROS', _kPink),
+                    _StatItem('98%', 'ÉXITO', _kGreenLight),
+                  ],
+                );
+        },
+      ),
     );
   }
 }
@@ -520,11 +620,7 @@ class _StatDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      height: 48,
-      color: const Color(0xFFE0E0E0),
-    );
+    return Container(width: 1, height: 48, color: const Color(0xFFE0E0E0));
   }
 }
 
@@ -559,98 +655,100 @@ class _FeaturesPanel extends StatelessWidget {
           const SizedBox(height: 36),
 
           // Grid de tarjetas
-          LayoutBuilder(builder: (_, c) {
-            final bool wide = c.maxWidth > 700;
-            if (wide) {
-              return Column(
-                children: [
-                  // Fila superior
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _FeatureCard(
-                          icon: Icons.bar_chart,
-                          iconColor: _kGreen,
-                          iconBg: _kGreenPale,
-                          title: 'Digital Grades',
-                          description:
-                              'Sistema avanzado de gestión de calificaciones con reportes automáticos y analítica predictiva del rendimiento escolar.',
+          LayoutBuilder(
+            builder: (_, c) {
+              final bool wide = c.maxWidth > 700;
+              if (wide) {
+                return Column(
+                  children: [
+                    // Fila superior
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _FeatureCard(
+                            icon: Icons.bar_chart,
+                            iconColor: _kGreen,
+                            iconBg: _kGreenPale,
+                            title: 'Digital Grades',
+                            description:
+                                'Sistema avanzado de gestión de calificaciones con reportes automáticos y analítica predictiva del rendimiento escolar.',
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _GradesMockCard(),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _FeatureCard(
-                          icon: Icons.people,
-                          iconColor: _kTeal,
-                          iconBg: const Color(0xFFE0F2F1),
-                          title: 'Teacher Management',
-                          description:
-                              'Centraliza la planificación, asistencia y comunicación de tu equipo docente en un solo lugar.',
+                        const SizedBox(width: 16),
+                        Expanded(child: _GradesMockCard()),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _FeatureCard(
+                            icon: Icons.people,
+                            iconColor: _kTeal,
+                            iconBg: const Color(0xFFE0F2F1),
+                            title: 'Teacher Management',
+                            description:
+                                'Centraliza la planificación, asistencia y comunicación de tu equipo docente en un solo lugar.',
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Fila inferior
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _FeatureCard(
-                          icon: Icons.person_add_alt_1,
-                          iconColor: Colors.pink,
-                          iconBg: const Color(0xFFFCE4EC),
-                          title: 'Clases a tu medida',
-                          description:
-                              'Seguimiento personalizado de cada alumno, identificando áreas de mejora y celebrando sus logros.',
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    // Fila inferior
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _FeatureCard(
+                            icon: Icons.person_add_alt_1,
+                            iconColor: Colors.pink,
+                            iconBg: const Color(0xFFFCE4EC),
+                            title: 'Clases a tu medida',
+                            description:
+                                'Seguimiento personalizado de cada alumno, identificando áreas de mejora y celebrando sus logros.',
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        flex: 2,
-                        child: _CTACard(onEmpiezaYa: onEmpiezaYa),
-                      ),
-                    ],
-                  ),
-                ],
-              );
-            } else {
-              return Column(
-                children: [
-                  _FeatureCard(
-                    icon: Icons.bar_chart,
-                    iconColor: _kGreen,
-                    iconBg: _kGreenPale,
-                    title: 'Digital Grades',
-                    description: 'Sistema avanzado de gestión de calificaciones con reportes automáticos.',
-                  ),
-                  const SizedBox(height: 16),
-                  _FeatureCard(
-                    icon: Icons.people,
-                    iconColor: _kTeal,
-                    iconBg: const Color(0xFFE0F2F1),
-                    title: 'Teacher Management',
-                    description: 'Centraliza la planificación, asistencia y comunicación del equipo docente.',
-                  ),
-                  const SizedBox(height: 16),
-                  _FeatureCard(
-                    icon: Icons.person_add_alt_1,
-                    iconColor: Colors.pink,
-                    iconBg: const Color(0xFFFCE4EC),
-                    title: 'Clases a tu medida',
-                    description: 'Seguimiento personalizado de cada alumno.',
-                  ),
-                  const SizedBox(height: 16),
-                  _CTACard(onEmpiezaYa: onEmpiezaYa),
-                ],
-              );
-            }
-          }),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          flex: 2,
+                          child: _CTACard(onEmpiezaYa: onEmpiezaYa),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              } else {
+                return Column(
+                  children: [
+                    _FeatureCard(
+                      icon: Icons.bar_chart,
+                      iconColor: _kGreen,
+                      iconBg: _kGreenPale,
+                      title: 'Digital Grades',
+                      description:
+                          'Sistema avanzado de gestión de calificaciones con reportes automáticos.',
+                    ),
+                    const SizedBox(height: 16),
+                    _FeatureCard(
+                      icon: Icons.people,
+                      iconColor: _kTeal,
+                      iconBg: const Color(0xFFE0F2F1),
+                      title: 'Teacher Management',
+                      description:
+                          'Centraliza la planificación, asistencia y comunicación del equipo docente.',
+                    ),
+                    const SizedBox(height: 16),
+                    _FeatureCard(
+                      icon: Icons.person_add_alt_1,
+                      iconColor: Colors.pink,
+                      iconBg: const Color(0xFFFCE4EC),
+                      title: 'Clases a tu medida',
+                      description: 'Seguimiento personalizado de cada alumno.',
+                    ),
+                    const SizedBox(height: 16),
+                    _CTACard(onEmpiezaYa: onEmpiezaYa),
+                  ],
+                );
+              }
+            },
+          ),
         ],
       ),
     );
@@ -811,12 +909,20 @@ class _CTACard extends StatelessWidget {
           Positioned(
             right: 16,
             top: 8,
-            child: Icon(Icons.auto_awesome, color: _kWhite.withValues(alpha: 0.18), size: 64),
+            child: Icon(
+              Icons.auto_awesome,
+              color: _kWhite.withValues(alpha: 0.18),
+              size: 64,
+            ),
           ),
           Positioned(
             right: 70,
             bottom: 16,
-            child: Icon(Icons.auto_awesome, color: _kWhite.withValues(alpha: 0.12), size: 40),
+            child: Icon(
+              Icons.auto_awesome,
+              color: _kWhite.withValues(alpha: 0.12),
+              size: 40,
+            ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -845,7 +951,10 @@ class _CTACard extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: _kText,
                   backgroundColor: _kWhite,
-                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 14,
+                  ),
                   side: BorderSide.none,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
@@ -922,9 +1031,17 @@ class _LoginDialogState extends State<_LoginDialog> {
   final _userCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _obscure = true;
+  bool _isLoading = false;
 
-  final List<String> _roles = ['Alumno', 'Profesor', 'Administrativo'];
-  String get _fieldLabel => _selectedRole == 0 ? 'CURP' : 'Usuario';
+  final List<String> _roles = ['Padre', 'Maestro', 'Administrador'];
+
+  String get _fieldLabel {
+    if (_selectedRole == 0) return 'Correo o Teléfono';
+    if (_selectedRole == 1) return 'Correo Electrónico';
+    return 'Usuario';
+  }
+
+  String get _passLabel => _selectedRole == 2 ? 'Contraseña' : 'PIN de acceso';
 
   @override
   void dispose() {
@@ -933,11 +1050,82 @@ class _LoginDialogState extends State<_LoginDialog> {
     super.dispose();
   }
 
-  void _onLogin() {
-    Navigator.of(context).pop();
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const InicioSesion()),
-    );
+  Future<void> _onLogin() async {
+    final identifier = _userCtrl.text.trim();
+    final password = _passCtrl.text.trim();
+
+    if (identifier.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor completa todos los campos')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      if (_selectedRole == 0) {
+        // Padre
+        final api = ApiService();
+        final padres = await api.getPadres();
+        final parent = padres.firstWhere(
+          (p) =>
+              (p['email'] == identifier || p['contacto'] == identifier) &&
+              p['pin_acceso'] == password,
+          orElse: () => <String, dynamic>{},
+        );
+        if (parent.isNotEmpty) {
+          Navigator.of(context).pop({'role': 0, 'user': parent});
+          return;
+        }
+      } else if (_selectedRole == 1) {
+        // Maestro
+        final api = MaestrosApiService();
+        final maestros = await api.getMaestros();
+        final maestro = maestros.firstWhere(
+          (m) =>
+              m['correo_electronico'] == identifier &&
+              m['pin_acceso'] == password,
+          orElse: () => <String, dynamic>{},
+        );
+        if (maestro.isNotEmpty) {
+          Navigator.of(context).pop({'role': 1, 'user': maestro});
+          return;
+        }
+      } else if (_selectedRole == 2) {
+        // Admin
+        final api = AdministradoresApiService();
+        final admins = await api.getAdministradores();
+        final admin = admins.firstWhere(
+          (a) => a['usuario'] == identifier && a['password'] == password,
+          orElse: () => <String, dynamic>{},
+        );
+        if (admin.isNotEmpty) {
+          Navigator.of(context).pop({'role': 2, 'user': admin});
+          return;
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Credenciales incorrectas. Verifique e intente nuevamente.',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error de conexión: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -965,7 +1153,10 @@ class _LoginDialogState extends State<_LoginDialog> {
               // Header verde
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 32),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 32,
+                  horizontal: 32,
+                ),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -1029,7 +1220,9 @@ class _LoginDialogState extends State<_LoginDialog> {
                               }),
                               child: AnimatedContainer(
                                 duration: const Duration(milliseconds: 200),
-                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
                                 decoration: BoxDecoration(
                                   color: sel ? _kGreen : Colors.transparent,
                                   borderRadius: BorderRadius.circular(8),
@@ -1039,7 +1232,9 @@ class _LoginDialogState extends State<_LoginDialog> {
                                   _roles[i],
                                   style: TextStyle(
                                     color: sel ? _kWhite : _kTextMuted,
-                                    fontWeight: sel ? FontWeight.w600 : FontWeight.w400,
+                                    fontWeight: sel
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
                                     fontSize: 13,
                                   ),
                                 ),
@@ -1060,12 +1255,14 @@ class _LoginDialogState extends State<_LoginDialog> {
 
                     _buildField(
                       controller: _passCtrl,
-                      label: 'Contraseña',
+                      label: _passLabel,
                       icon: Icons.lock_outline,
                       obscure: _obscure,
                       suffix: IconButton(
                         icon: Icon(
-                          _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          _obscure
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
                           size: 20,
                           color: _kTextMuted,
                         ),
@@ -1077,7 +1274,7 @@ class _LoginDialogState extends State<_LoginDialog> {
                     SizedBox(
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: _onLogin,
+                        onPressed: _isLoading ? null : _onLogin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _kGreen,
                           foregroundColor: _kWhite,
@@ -1086,10 +1283,22 @@ class _LoginDialogState extends State<_LoginDialog> {
                           ),
                           elevation: 2,
                         ),
-                        child: const Text(
-                          'Iniciar sesión',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Iniciar sesión',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                       ),
                     ),
 
@@ -1131,7 +1340,10 @@ class _LoginDialogState extends State<_LoginDialog> {
         suffixIcon: suffix,
         filled: true,
         fillColor: const Color(0xFFF9F9F9),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFFE0E0E0)),

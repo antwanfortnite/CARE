@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../InicioSesion.dart';
+import '../Paginaweb.dart';
 
 /// Data model for navigation items in the sidebar.
 class AdminNavItem {
@@ -260,35 +260,6 @@ class _AdminScaffoldState extends State<AdminScaffold> {
           ),
         ),
 
-        // Cerrar sesión
-        Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const InicioSesion()),
-                );
-              },
-              borderRadius: BorderRadius.circular(28),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                child: Row(
-                  children: [
-                    Icon(Icons.logout, size: 20, color: Color(0xFFE53935)),
-                    SizedBox(width: 12),
-                    Text(
-                      'Cerrar Sesión',
-                      style: TextStyle(fontSize: 14, color: Color(0xFFE53935)),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -370,6 +341,18 @@ class _AdminScaffoldState extends State<AdminScaffold> {
               child: Icon(Icons.person, size: 18, color: Colors.white),
             ),
           ],
+          const SizedBox(width: 8),
+          IconButton(
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const PaginaWeb()),
+                (route) => false,
+              );
+            },
+            icon: const Icon(Icons.logout, color: Color(0xFFE53935)),
+            tooltip: 'Cerrar Sesión',
+          ),
         ],
       ),
     );

@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'ProfesorScaffold.dart';
 import 'DashboardProfesor.dart';
 import 'GruposProfesor.dart';
+import '../../BD/Alumnos.dart';
+import '../../BD/Grupos.dart';
+import '../../BD/Evidencias.dart';
 
 class EvidenciasProfesor extends StatefulWidget {
-  const EvidenciasProfesor({super.key});
+  final Map<String, dynamic>? user;
+  const EvidenciasProfesor({super.key, this.user});
   @override
   State<EvidenciasProfesor> createState() => _EvidenciasProfesorState();
 }
@@ -12,162 +16,70 @@ class EvidenciasProfesor extends StatefulWidget {
 class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
   final TextEditingController _searchController = TextEditingController();
 
-  // ──────── NIVEL DE NAVEGACIÓN ────────
-  // 0 = lista de grupos, 1 = alumnos del grupo con evidencias
   int _currentLevel = 0;
-  _GroupInfo? _selectedGroup;
+  Map<String, dynamic>? _selectedGroup;
+  List<dynamic> _selectedGroupStudents = [];
 
-  // ──────── DATOS MOCK DE GRUPOS DEL PROFESOR ────────
-  final List<_GroupInfo> _groups = [
-    _GroupInfo('Grupo 3A', 'Matutino', const Color(0xFF7E57C2), [
-      _StudentInfo(
-        'Carlos Méndez',
-        'MECC080515HDHNRL01',
-        const Color(0xFF7E57C2),
-      ),
-      _StudentInfo(
-        'Ana Sofía Rivera',
-        'RIAA090320MDFVNN02',
-        const Color(0xFF4CAF50),
-      ),
-      _StudentInfo(
-        'Diego Hernández',
-        'HEAD071205HDFRGL03',
-        const Color(0xFF26A69A),
-      ),
-    ]),
-    _GroupInfo('Grupo 3B', 'Vespertino', const Color(0xFF42A5F5), [
-      _StudentInfo(
-        'Diego Hernández',
-        'HEAD071205HDFRGL03',
-        const Color(0xFF26A69A),
-      ),
-      _StudentInfo(
-        'Miguel Ángel Ruiz',
-        'RUIM060714HDFRGL05',
-        const Color(0xFFFFA726),
-      ),
-      _StudentInfo(
-        'Andrés Martínez',
-        'MARA080730HDFNRD09',
-        const Color(0xFF29B6F6),
-      ),
-    ]),
-    _GroupInfo('Grupo 2A', 'Matutino', const Color(0xFF26A69A), [
-      _StudentInfo(
-        'Sofía Ramírez',
-        'RAMS100215MDFMFR08',
-        const Color(0xFFAB47BC),
-      ),
-      _StudentInfo(
-        'Andrés Martínez',
-        'MARA080730HDFNRD09',
-        const Color(0xFF29B6F6),
-      ),
-    ]),
-    _GroupInfo('Grupo 1A', 'Matutino', const Color(0xFFE91E63), [
-      _StudentInfo(
-        'Camila Delgado',
-        'DELC090412MDFMLC10',
-        const Color(0xFFEF5350),
-      ),
-      _StudentInfo(
-        'Carlos Méndez',
-        'MECC080515HDHNRL01',
-        const Color(0xFF7E57C2),
-      ),
-      _StudentInfo(
-        'Ana Sofía Rivera',
-        'RIAA090320MDFVNN02',
-        const Color(0xFF4CAF50),
-      ),
-      _StudentInfo(
-        'Valentina Torres',
-        'TORV100810MDFRLR04',
-        const Color(0xFFE91E63),
-      ),
-      _StudentInfo(
-        'Emilio Castro',
-        'CASE091130HDFSML07',
-        const Color(0xFF66BB6A),
-      ),
-    ]),
+  bool _isLoading = true;
+  List<dynamic> _groups = [];
+  List<dynamic> _allAlumnos = [];
+  List<dynamic> _allEvidencias = [];
+
+  static const List<Color> _accentColors = [
+    Color(0xFF7E57C2), Color(0xFF42A5F5), Color(0xFF26A69A),
+    Color(0xFFE91E63), Color(0xFFFFA726), Color(0xFF66BB6A),
   ];
 
-  // ──────── EVIDENCIAS MOCK ────────
-  final Map<String, List<_EvidenciaData>> _evidencias = {
-    // key: "grupo|alumno"
-    'Grupo 3A|Carlos Méndez': [
-      _EvidenciaData(
-        1,
-        'https://ejemplo.com/fotos/carlos_act1.jpg',
-        'Participación en clase de ciencias. El alumno demostró excelente comprensión del tema.',
-        '2026-03-15',
-      ),
-      _EvidenciaData(
-        2,
-        'https://ejemplo.com/fotos/carlos_act2.jpg',
-        'Trabajo práctico: maqueta del sistema solar completada satisfactoriamente.',
-        '2026-03-22',
-      ),
-      _EvidenciaData(
-        3,
-        'https://ejemplo.com/fotos/carlos_act3.jpg',
-        'Evaluación diagnóstica - resultado aprobatorio.',
-        '2026-04-01',
-      ),
-    ],
-    'Grupo 3A|Ana Sofía Rivera': [
-      _EvidenciaData(
-        4,
-        'https://ejemplo.com/fotos/ana_act1.jpg',
-        'Exposición oral sobre ecosistemas. Excelente presentación visual.',
-        '2026-03-18',
-      ),
-      _EvidenciaData(
-        5,
-        'https://ejemplo.com/fotos/ana_act2.jpg',
-        'Trabajo en equipo: proyecto de reciclaje escolar.',
-        '2026-04-05',
-      ),
-    ],
-    'Grupo 3A|Diego Hernández': [
-      _EvidenciaData(
-        6,
-        'https://ejemplo.com/fotos/diego_act1.jpg',
-        'Actividad de laboratorio: mezclas homogéneas y heterogéneas.',
-        '2026-03-20',
-      ),
-    ],
-    'Grupo 1A|Camila Delgado': [
-      _EvidenciaData(
-        10,
-        'https://ejemplo.com/fotos/camila_act1.jpg',
-        'Resolución de problemas matemáticos: fracciones y decimales.',
-        '2026-03-10',
-      ),
-      _EvidenciaData(
-        11,
-        'https://ejemplo.com/fotos/camila_act2.jpg',
-        'Proyecto integrador: poster informativo sobre alimentación saludable.',
-        '2026-03-25',
-      ),
-      _EvidenciaData(
-        12,
-        'https://ejemplo.com/fotos/camila_act3.jpg',
-        'Trabajo de investigación sobre la historia de México.',
-        '2026-04-08',
-      ),
-    ],
-    'Grupo 1A|Emilio Castro': [
-      _EvidenciaData(
-        9,
-        'https://ejemplo.com/fotos/emilio_act1.jpg',
-        'Ejercicio de escritura creativa - cuento corto original.',
-        '2026-04-02',
-      ),
-    ],
-  };
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    try {
+      final idMaestro = widget.user?['id_maestro'];
+      final allGrupos = await GruposApiService().getGrupos();
+      final alumnos = await ApiService().getAlumnos();
+      final evidencias = await EvidenciasApiService().getEvidencias();
+
+      if (mounted) {
+        setState(() {
+          _groups = idMaestro != null
+              ? allGrupos.where((g) => g['id_maestro'] == idMaestro).toList()
+              : allGrupos;
+          _allAlumnos = alumnos;
+          _allEvidencias = evidencias;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error cargando evidencias del maestro: $e');
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  List<dynamic> _getStudentsForGroup(dynamic grupo) {
+    final idGrupo = grupo['id_grupo'];
+    return _allAlumnos.where((a) => a['id_grupo'] == idGrupo).toList();
+  }
+
+  List<dynamic> _getEvidenciasForStudent(dynamic student) {
+    final idAlumno = student['id_alumno'];
+    return _allEvidencias.where((e) => e['id_alumno'] == idAlumno).toList();
+  }
+
+  int _countEvidenciasForGroup(dynamic grupo) {
+    final students = _getStudentsForGroup(grupo);
+    int count = 0;
+    for (final s in students) {
+      count += _getEvidenciasForStudent(s).length;
+    }
+    return count;
+  }
+
+  Color _getAccentColor(int index) => _accentColors[index % _accentColors.length];
 
   bool _isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 1050;
@@ -183,13 +95,16 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
     final mobile = _isMobile(context);
 
     return ProfesorScaffold(
+      user: widget.user,
       selectedIndex: 2,
       destinations: {
-        0: (_) => const DashboardProfesor(),
-        1: (_) => const GruposProfesor(),
+        0: (_) => DashboardProfesor(user: widget.user),
+        1: (_) => GruposProfesor(user: widget.user),
       },
       bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
-      body: _buildBody(mobile),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0)))
+          : _buildBody(mobile),
     );
   }
 
@@ -274,7 +189,8 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
   Widget _buildGroupCardsList(bool isMobile) {
     if (isMobile) {
       return Column(
-        children: _groups.map((g) => _buildGroupCard(g)).toList(),
+        children: _groups.asMap().entries.map((entry) =>
+            _buildGroupCard(entry.value, _getAccentColor(entry.key))).toList(),
       );
     }
 
@@ -287,7 +203,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
       for (int j = 0; j < crossAxisCount; j++) {
         if (i + j < _groups.length) {
           rowChildren.add(
-            Expanded(child: _buildGroupCard(_groups[i + j])),
+            Expanded(child: _buildGroupCard(_groups[i + j], _getAccentColor(i + j))),
           );
         } else {
           rowChildren.add(const Expanded(child: SizedBox()));
@@ -296,27 +212,26 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
           rowChildren.add(const SizedBox(width: 16));
         }
       }
-      rows.add(
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: rowChildren,
-        ),
-      );
+      rows.add(Row(crossAxisAlignment: CrossAxisAlignment.start, children: rowChildren));
     }
 
     return Column(children: rows);
   }
 
-  Widget _buildGroupCard(_GroupInfo g) {
-    final evidCount = _countEvidenciasForGroup(g.name);
-    final initials = g.name.length >= 2
-        ? g.name.substring(0, 2).toUpperCase()
-        : g.name.toUpperCase();
+  Widget _buildGroupCard(dynamic g, Color accentColor) {
+    final name = g['nombre_grupo']?.toString() ?? 'Grupo';
+    final turno = g['turno']?.toString() ?? 'N/A';
+    final students = _getStudentsForGroup(g);
+    final evidCount = _countEvidenciasForGroup(g);
+    final initials = name.length >= 2
+        ? name.substring(0, 2).toUpperCase()
+        : name.toUpperCase();
 
     return GestureDetector(
       onTap: () {
         setState(() {
           _selectedGroup = g;
+          _selectedGroupStudents = students;
           _currentLevel = 1;
         });
       },
@@ -333,7 +248,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
             Container(
               height: 6,
               decoration: BoxDecoration(
-                color: g.accentColor,
+                color: accentColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(14),
                   topRight: Radius.circular(14),
@@ -351,14 +266,14 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                         width: 52,
                         height: 52,
                         decoration: BoxDecoration(
-                          color: g.accentColor.withOpacity(0.12),
+                          color: accentColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Center(
                           child: Text(
                             initials,
                             style: TextStyle(
-                              color: g.accentColor,
+                              color: accentColor,
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
                             ),
@@ -371,7 +286,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              g.name,
+                              name,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
@@ -388,15 +303,15 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                                     vertical: 3,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: g.accentColor.withOpacity(0.08),
+                                    color: accentColor.withValues(alpha: 0.08),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    '${g.students.length} ${g.students.length == 1 ? 'alumno' : 'alumnos'}',
+                                    '${students.length} ${students.length == 1 ? 'alumno' : 'alumnos'}',
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
-                                      color: g.accentColor,
+                                      color: accentColor,
                                     ),
                                   ),
                                 ),
@@ -408,13 +323,13 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: g.accentColor.withOpacity(0.08),
+                          color: accentColor.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
                           Icons.arrow_forward_ios,
                           size: 14,
-                          color: g.accentColor,
+                          color: accentColor,
                         ),
                       ),
                     ],
@@ -424,7 +339,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                     children: [
                       _statChip(
                         Icons.schedule,
-                        g.turno,
+                        turno,
                         const Color(0xFF42A5F5),
                       ),
                       const SizedBox(width: 8),
@@ -436,7 +351,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  // ── Student avatars preview ──
+                  // Avatar preview
                   Row(
                     children: [
                       const Icon(
@@ -451,16 +366,16 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                           child: Stack(
                             children: [
                               ...List.generate(
-                                g.students.length > 5 ? 5 : g.students.length,
+                                students.length > 5 ? 5 : students.length,
                                 (i) {
+                                  final sColor = _getAccentColor(i);
                                   return Positioned(
                                     left: i * 22.0,
                                     child: Container(
                                       width: 32,
                                       height: 32,
                                       decoration: BoxDecoration(
-                                        color: g.students[i].color
-                                            .withOpacity(0.15),
+                                        color: sColor.withValues(alpha: 0.15),
                                         shape: BoxShape.circle,
                                         border: Border.all(
                                           color: Colors.white,
@@ -469,11 +384,11 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                                       ),
                                       child: Center(
                                         child: Text(
-                                          _getInitials(g.students[i].name),
+                                          _getInitials(students[i]['nombre_completo'] ?? ''),
                                           style: TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.bold,
-                                            color: g.students[i].color,
+                                            color: sColor,
                                           ),
                                         ),
                                       ),
@@ -481,7 +396,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                                   );
                                 },
                               ),
-                              if (g.students.length > 5)
+                              if (students.length > 5)
                                 Positioned(
                                   left: 5 * 22.0,
                                   child: Container(
@@ -497,7 +412,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                                     ),
                                     child: Center(
                                       child: Text(
-                                        '+${g.students.length - 5}',
+                                        '+${students.length - 5}',
                                         style: const TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.bold,
@@ -520,6 +435,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                     onTap: () {
                       setState(() {
                         _selectedGroup = g;
+                        _selectedGroupStudents = students;
                         _currentLevel = 1;
                       });
                     },
@@ -530,7 +446,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4CAF50).withOpacity(0.08),
+                        color: const Color(0xFF4CAF50).withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Row(
@@ -569,28 +485,35 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
 
   Widget _buildStudentsLevel(bool isMobile) {
     final group = _selectedGroup!;
+    final name = group['nombre_grupo'] ?? 'Grupo';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildBreadcrumb(isMobile, [group.name]),
+        _buildBreadcrumb(isMobile, [name]),
         const SizedBox(height: 20),
         _buildStudentsHeader(isMobile, group),
         const SizedBox(height: 24),
-        ...group.students.map(
-          (s) => _buildStudentEvidenceCard(s, group, isMobile),
+        ..._selectedGroupStudents.asMap().entries.map(
+          (entry) => _buildStudentEvidenceCard(entry.value, group, isMobile, _getAccentColor(entry.key)),
         ),
       ],
     );
   }
 
-  Widget _buildStudentsHeader(bool isMobile, _GroupInfo group) {
+  Widget _buildStudentsHeader(bool isMobile, dynamic group) {
+    final name = group['nombre_grupo']?.toString() ?? 'Grupo';
+    final turno = group['turno']?.toString() ?? 'N/A';
+    final students = _getStudentsForGroup(group);
+    final evidCount = _countEvidenciasForGroup(group);
+    final accentColor = _getAccentColor(0); // Default for header
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 16 : 22),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [group.accentColor.withOpacity(0.9), group.accentColor],
+          colors: [accentColor.withValues(alpha: 0.9), accentColor],
         ),
         borderRadius: BorderRadius.circular(14),
       ),
@@ -598,7 +521,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            group.name,
+            name,
             style: TextStyle(
               fontSize: isMobile ? 20 : 24,
               fontWeight: FontWeight.bold,
@@ -611,42 +534,42 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
               Icon(
                 Icons.schedule,
                 size: 14,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
               ),
               const SizedBox(width: 4),
               Text(
-                group.turno,
+                turno,
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.white.withOpacity(0.85),
+                  color: Colors.white.withValues(alpha: 0.85),
                 ),
               ),
               const SizedBox(width: 16),
               Icon(
                 Icons.people_outline,
                 size: 14,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
               ),
               const SizedBox(width: 4),
               Text(
-                '${group.students.length} alumnos',
+                '${students.length} alumnos',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.white.withOpacity(0.85),
+                  color: Colors.white.withValues(alpha: 0.85),
                 ),
               ),
               const SizedBox(width: 16),
               Icon(
                 Icons.folder_outlined,
                 size: 14,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
               ),
               const SizedBox(width: 4),
               Text(
-                '${_countEvidenciasForGroup(group.name)} evidencias',
+                '$evidCount evidencias',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.white.withOpacity(0.85),
+                  color: Colors.white.withValues(alpha: 0.85),
                 ),
               ),
             ],
@@ -657,12 +580,14 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
   }
 
   Widget _buildStudentEvidenceCard(
-    _StudentInfo student,
-    _GroupInfo group,
+    dynamic student,
+    dynamic group,
     bool isMobile,
+    Color accentColor,
   ) {
-    final key = '${group.name}|${student.name}';
-    final evids = _evidencias[key] ?? [];
+    final evids = _getEvidenciasForStudent(student);
+    final name = student['nombre_completo']?.toString() ?? 'Alumno';
+    final curp = student['curp']?.toString() ?? 'N/A';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -682,18 +607,18 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
           ),
           leading: CircleAvatar(
             radius: 22,
-            backgroundColor: student.color.withOpacity(0.15),
+            backgroundColor: accentColor.withValues(alpha: 0.15),
             child: Text(
-              _getInitials(student.name),
+              _getInitials(name),
               style: TextStyle(
-                color: student.color,
+                color: accentColor,
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
               ),
             ),
           ),
           title: Text(
-            student.name,
+            name,
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -703,7 +628,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
           subtitle: Row(
             children: [
               Text(
-                student.curp,
+                curp,
                 style: const TextStyle(fontSize: 11, color: Color(0xFF999999)),
               ),
               const SizedBox(width: 10),
@@ -711,8 +636,8 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: evids.isEmpty
-                      ? const Color(0xFFEF5350).withOpacity(0.1)
-                      : const Color(0xFF4CAF50).withOpacity(0.1),
+                      ? const Color(0xFFEF5350).withValues(alpha: 0.1)
+                      : const Color(0xFF4CAF50).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -753,7 +678,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50).withOpacity(0.1),
+                      color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Row(
@@ -816,15 +741,18 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
   }
 
   Widget _buildEvidenciaItem(
-    _EvidenciaData e,
+    dynamic e,
     bool isMobile,
-    _GroupInfo group,
-    _StudentInfo student,
+    dynamic group,
+    dynamic student,
   ) {
+    final fecha = e['fecha_evidencia'] ?? '2024-01-01';
+    final descripcion = e['descripcion'] ?? '';
+
     // Format date for header label
     String dateHeader = '';
     try {
-      final parts = e.fechaSubida.split('-');
+      final parts = fecha.split('T')[0].split('-');
       final months = [
         '',
         'ENERO',
@@ -843,7 +771,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
       dateHeader =
           '${parts[2]} DE ${months[int.parse(parts[1])]}, ${parts[0]}';
     } catch (_) {
-      dateHeader = e.fechaSubida;
+      dateHeader = fecha;
     }
 
     return Column(
@@ -892,7 +820,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
               // Description
               Expanded(
                 child: Text(
-                  e.descripcion,
+                  descripcion,
                   style: const TextStyle(
                     fontSize: 12,
                     color: Color(0xFF444444),
@@ -926,18 +854,23 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
 
   // ──────── VER EVIDENCIA (read-only) ────────
   void _showViewEvidenciaDialog(
-    _EvidenciaData e,
-    _GroupInfo group,
-    _StudentInfo student,
+    dynamic e,
+    dynamic group,
+    dynamic student,
   ) {
     final mobile = _isMobile(context);
+    final fecha = e['fecha_evidencia'] ?? '2024-01-01';
+    final desc = e['descripcion'] ?? '';
+    final urlFoto = e['url_foto'] ?? '';
+    final studentName = student['nombre_completo'] ?? 'Alumno';
+    final groupName = group['nombre_grupo'] ?? 'Grupo';
 
     String formattedDate = '';
     try {
-      final parts = e.fechaSubida.split('-');
+      final parts = fecha.split('T')[0].split('-');
       formattedDate = '${parts[2]}/${parts[1]}/${parts[0]}';
     } catch (_) {
-      formattedDate = e.fechaSubida;
+      formattedDate = fecha;
     }
 
     showDialog(
@@ -984,7 +917,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                             'DETALLE DE EVIDENCIA',
                             style: TextStyle(
                               fontSize: 11,
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                               fontWeight: FontWeight.w600,
                               letterSpacing: 1,
                             ),
@@ -1007,14 +940,14 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'Alumno: ${student.name}',
+                          'Alumno: $studentName',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                           ),
                         ),
                       ),
@@ -1046,7 +979,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                group.name,
+                                groupName,
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Color(0xFF666666),
@@ -1113,7 +1046,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                       ),
                       const SizedBox(height: 6),
                       TextField(
-                        controller: TextEditingController(text: e.urlFoto),
+                        controller: TextEditingController(text: urlFoto),
                         readOnly: true,
                         enabled: false,
                         style: const TextStyle(
@@ -1159,7 +1092,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                       const SizedBox(height: 6),
                       TextField(
                         controller:
-                            TextEditingController(text: e.descripcion),
+                            TextEditingController(text: desc),
                         readOnly: true,
                         enabled: false,
                         maxLines: 4,
@@ -1228,10 +1161,13 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
 
   // ──────── ELIMINAR EVIDENCIA ────────
   void _showDeleteEvidenciaDialog(
-    _EvidenciaData e,
-    _GroupInfo group,
-    _StudentInfo student,
+    dynamic e,
+    dynamic group,
+    dynamic student,
   ) {
+    final desc = e['descripcion'] ?? '';
+    final fecha = e['fecha_evidencia'] ?? '';
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1261,7 +1197,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    e.descripcion,
+                    desc,
                     style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFF444444),
@@ -1279,7 +1215,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        _formatDate(e.fechaSubida),
+                        _formatDate(fecha),
                         style: const TextStyle(
                           fontSize: 11,
                           color: Color(0xFF999999),
@@ -1310,13 +1246,19 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
-              final key = '${group.name}|${student.name}';
-              setState(() {
-                _evidencias[key]?.removeWhere(
-                  (ev) => ev.idEvidencia == e.idEvidencia,
-                );
-              });
+            onPressed: () async {
+              final idEvid = e['id_evidencia'];
+              if (idEvid != null) {
+                final success = await EvidenciasApiService().eliminarEvidencia(idEvid);
+                if (success) {
+                  _loadData();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Evidencia eliminada')),
+                    );
+                  }
+                }
+              }
               Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(
@@ -1335,8 +1277,8 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
 
   // ──────── AGREGAR EVIDENCIA ────────
   void _showAddEvidenciaDialog(
-    _GroupInfo group,
-    _StudentInfo student,
+    dynamic group,
+    dynamic student,
   ) {
     final mobile = _isMobile(context);
     final urlCtrl = TextEditingController();
@@ -1393,7 +1335,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                                 'NUEVA EVIDENCIA',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 1,
                                 ),
@@ -1416,14 +1358,14 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                               vertical: 5,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
+                              color: Colors.white.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              'Alumno: ${student.name}',
+                              'Para: ${student['nombre_completo'] ?? 'Alumno'}',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                               ),
                             ),
                           ),
@@ -1455,7 +1397,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    group.name,
+                                    group['nombre_grupo'] ?? 'Grupo',
                                     style: const TextStyle(
                                       fontSize: 12,
                                       color: Color(0xFF666666),
@@ -1538,7 +1480,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                                       padding: const EdgeInsets.all(6),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFF4CAF50)
-                                            .withOpacity(0.1),
+                                            .withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: const Icon(
@@ -1687,36 +1629,29 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                           ),
                           const SizedBox(width: 12),
                           ElevatedButton.icon(
-                            onPressed: () {
+                            onPressed: () async {
                               if (descCtrl.text.trim().isNotEmpty) {
-                                final key =
-                                    '${group.name}|${student.name}';
-                                final nextId =
-                                    _evidencias.values.fold<int>(
-                                      0,
-                                      (max, list) => list.fold<int>(
-                                        max,
-                                        (m, e) => e.idEvidencia > m
-                                            ? e.idEvidencia
-                                            : m,
-                                      ),
-                                    ) +
-                                    1;
                                 final dateStr =
                                     '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}';
-                                setState(() {
-                                  _evidencias.putIfAbsent(key, () => []);
-                                  _evidencias[key]!.add(
-                                    _EvidenciaData(
-                                      nextId,
-                                      urlCtrl.text.trim().isEmpty
-                                          ? 'https://ejemplo.com/fotos/evidencia_$nextId.jpg'
-                                          : urlCtrl.text.trim(),
-                                      descCtrl.text.trim(),
-                                      dateStr,
-                                    ),
-                                  );
-                                });
+                                final data = {
+                                  'id_alumno': student['id_alumno'],
+                                  'id_maestro': widget.user?['id_maestro'],
+                                  'fecha_evidencia': dateStr,
+                                  'url_foto': urlCtrl.text.trim().isEmpty
+                                      ? 'https://ejemplo.com/fotos/evidencia.jpg'
+                                      : urlCtrl.text.trim(),
+                                  'descripcion': descCtrl.text.trim(),
+                                };
+
+                                final success = await EvidenciasApiService().agregarEvidencia(data);
+                                if (success) {
+                                  _loadData();
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Evidencia agregada exitosamente')),
+                                    );
+                                  }
+                                }
                               }
                               Navigator.pop(ctx);
                             },
@@ -1763,7 +1698,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
         border: Border.all(color: const Color(0xFFE8E8E8)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1781,8 +1716,8 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                 });
               },
               borderRadius: BorderRadius.circular(12),
-              splashColor: const Color(0xFF4CAF50).withOpacity(0.15),
-              highlightColor: const Color(0xFF4CAF50).withOpacity(0.08),
+              splashColor: const Color(0xFF4CAF50).withValues(alpha: 0.15),
+              highlightColor: const Color(0xFF4CAF50).withValues(alpha: 0.08),
               child: Tooltip(
                 message: 'Regresar a la vista anterior',
                 child: AnimatedContainer(
@@ -1794,13 +1729,13 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        const Color(0xFF4CAF50).withOpacity(0.10),
-                        const Color(0xFF388E3C).withOpacity(0.06),
+                        const Color(0xFF4CAF50).withValues(alpha: 0.10),
+                        const Color(0xFF388E3C).withValues(alpha: 0.06),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFF4CAF50).withOpacity(0.2),
+                      color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
                     ),
                   ),
                   child: const Row(
@@ -1856,7 +1791,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                               Icons.folder_outlined,
                               size: 15,
                               color:
-                                  const Color(0xFF4CAF50).withOpacity(0.7),
+                                  const Color(0xFF4CAF50).withValues(alpha: 0.7),
                             ),
                             const SizedBox(width: 4),
                             const Text(
@@ -1895,7 +1830,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                           decoration: isLast
                               ? BoxDecoration(
                                   color: const Color(0xFF333333)
-                                      .withOpacity(0.06),
+                                      .withValues(alpha: 0.06),
                                   borderRadius: BorderRadius.circular(6),
                                 )
                               : null,
@@ -1985,7 +1920,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
@@ -2023,7 +1958,7 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.08),
+            color: color.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, size: 18, color: color),
@@ -2037,22 +1972,16 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
   // ═══════════════════════════════════════════════════════════════
 
   String _getInitials(String name) {
-    final parts = name.trim().split(' ');
+    final clean = name.trim();
+    if (clean.isEmpty) return '??';
+    final parts = clean.split(' ');
     if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
-    return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
+    return clean.substring(0, clean.length >= 2 ? 2 : 1).toUpperCase();
   }
 
-  int _countEvidenciasForGroup(String groupName) {
-    int count = 0;
-    _evidencias.forEach((key, list) {
-      if (key.startsWith('$groupName|')) {
-        count += list.length;
-      }
-    });
-    return count;
-  }
+
 
   String _formatDate(String dateStr) {
     try {
@@ -2079,34 +2008,3 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// DATA MODELS
-// ═══════════════════════════════════════════════════════════════
-
-class _GroupInfo {
-  final String name;
-  final String turno;
-  final Color accentColor;
-  final List<_StudentInfo> students;
-  const _GroupInfo(this.name, this.turno, this.accentColor, this.students);
-}
-
-class _StudentInfo {
-  final String name;
-  final String curp;
-  final Color color;
-  const _StudentInfo(this.name, this.curp, this.color);
-}
-
-class _EvidenciaData {
-  final int idEvidencia;
-  final String urlFoto;
-  final String descripcion;
-  final String fechaSubida;
-  const _EvidenciaData(
-    this.idEvidencia,
-    this.urlFoto,
-    this.descripcion,
-    this.fechaSubida,
-  );
-}
