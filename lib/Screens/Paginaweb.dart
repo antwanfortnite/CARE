@@ -1,4 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:image_picker/image_picker.dart';
+
 import '../BD/Alumnos.dart';
 import '../BD/Maestros.dart';
 import '../BD/Administradores.dart';
@@ -12,18 +17,15 @@ import 'Alumno/DashboardAlumno.dart';
 const _kGreen = Color(0xFF2E7D32);
 const _kGreenLight = Color(0xFF4CAF50);
 const _kGreenPale = Color(0xFFE8F5E9);
-const _kGreenCard = Color(0xFFD7EED9);
 const _kBg = Color(0xFFF0F4F0);
 const _kText = Color(0xFF1B1B1B);
 const _kTextMuted = Color(0xFF5C5C5C);
-const _kTeal = Color(0xFF009688);
-const _kPink = Color(0xFFE91E8C);
 const _kWhite = Colors.white;
 
 // ══════════════════════════════════════════════════════
 //  Secciones de la página
 // ══════════════════════════════════════════════════════
-enum _Section { inicio, conocenos, encuentranos, planes, padre }
+enum _Section { inicio, conocenos, planes, padre }
 
 // ══════════════════════════════════════════════════════
 //  PaginaWeb — root widget
@@ -37,22 +39,62 @@ class PaginaWeb extends StatefulWidget {
 
 class _PaginaWebState extends State<PaginaWeb> {
   _Section _current = _Section.inicio;
+
   int? _loggedInRole; // 0 = Padre, 1 = Maestro, 2 = Administrador
   Map<String, dynamic>? _loggedInUser;
 
-  void _navigate(_Section s) => setState(() => _current = s);
+  final ImagePicker _picker = ImagePicker();
 
-  // Abre el modal de Inicio de Sesión
+  int _currentCarouselIndex = 0;
+
+  String _direccionLinea1 = 'Blvd. Academia del Saber # 452, Col. Valle Verde,';
+  String _direccionLinea2 = 'C.P. 83000, Hermosillo, Sonora.';
+  String _correoCentro = 'atencion@care-refuerzo.edu.mx';
+  String _telefonoCentro = '(662) 214-5566';
+  String _cctCentro = '26PJN0415W';
+
+  final List<_CarouselItem> _carouselItems = [
+    _CarouselItem(
+      imagen:
+          'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1400',
+      texto:
+          '"El aprendizaje es un tesoro que\nsigue a su propietario durante toda la\nvida"',
+    ),
+    _CarouselItem(
+      imagen:
+          'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1400',
+      texto: '"Leer abre puertas que ninguna llave\npuede cerrar"',
+    ),
+    _CarouselItem(
+      imagen:
+          'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=1400',
+      texto: '"Cada día es una nueva oportunidad\npara aprender algo valioso"',
+    ),
+    _CarouselItem(
+      imagen:
+          'https://images.unsplash.com/photo-1519682337058-a94d519337bc?q=80&w=1400',
+      texto: '"La educación transforma el presente\ny construye el futuro"',
+    ),
+  ];
+
+  void _navigate(_Section s) {
+    setState(() {
+      _current = s;
+    });
+  }
+
   Future<void> _showLogin() async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       barrierColor: Colors.black54,
       builder: (_) => const _LoginDialog(),
     );
+
     if (result != null) {
       setState(() {
         _loggedInRole = result['role'];
         _loggedInUser = result['user'];
+
         if (_loggedInRole == 0) {
           _current = _Section.padre;
         }
@@ -64,6 +106,7 @@ class _PaginaWebState extends State<PaginaWeb> {
     setState(() {
       _loggedInRole = null;
       _loggedInUser = null;
+
       if (_current == _Section.padre) {
         _current = _Section.inicio;
       }
@@ -79,9 +122,82 @@ class _PaginaWebState extends State<PaginaWeb> {
     } else if (_loggedInRole == 1) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => DashboardProfesor(user: _loggedInUser)),
+        MaterialPageRoute(
+          builder: (_) => DashboardProfesor(user: _loggedInUser),
+        ),
       );
     }
+  }
+
+  Future<void> _seleccionarImagenCarrusel() async {
+    final XFile? imagenSeleccionada = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
+
+    if (imagenSeleccionada != null) {
+      final Uint8List imageBytes = await imagenSeleccionada.readAsBytes();
+
+      setState(() {
+        _carouselItems.add(
+          _CarouselItem(
+            imagen: imageBytes,
+            texto: '"Nuevo mensaje del carrusel"',
+          ),
+        );
+
+        _currentCarouselIndex = _carouselItems.length - 1;
+      });
+    }
+  }
+
+  void _eliminarImagenCarrusel(int index) {
+    if (_carouselItems.length <= 1) return;
+
+    setState(() {
+      _carouselItems.removeAt(index);
+
+      if (_currentCarouselIndex >= _carouselItems.length) {
+        _currentCarouselIndex = _carouselItems.length - 1;
+      }
+
+      if (_currentCarouselIndex < 0) {
+        _currentCarouselIndex = 0;
+      }
+    });
+  }
+
+  void _editarTextoCarrusel(int index, String newText) {
+    setState(() {
+      _carouselItems[index].texto = newText.trim().isEmpty
+          ? '"Nuevo mensaje del carrusel"'
+          : newText;
+    });
+  }
+
+  void _editarDatosGenerales({
+    required String direccionLinea1,
+    required String direccionLinea2,
+    required String correo,
+    required String telefono,
+    required String cct,
+  }) {
+    setState(() {
+      _direccionLinea1 = direccionLinea1.trim().isEmpty
+          ? 'Sin dirección'
+          : direccionLinea1.trim();
+
+      _direccionLinea2 = direccionLinea2.trim();
+
+      _correoCentro = correo.trim().isEmpty
+          ? 'Sin correo electrónico'
+          : correo.trim();
+
+      _telefonoCentro = telefono.trim().isEmpty
+          ? 'Sin teléfono'
+          : telefono.trim();
+
+      _cctCentro = cct.trim().isEmpty ? 'Sin CCT' : cct.trim();
+    });
   }
 
   @override
@@ -107,30 +223,51 @@ class _PaginaWebState extends State<PaginaWeb> {
   Widget _buildBody() {
     switch (_current) {
       case _Section.inicio:
-        return _InicioSection(
-          onIniciar: _showLogin,
-          onMasInfo: () => _navigate(_Section.planes),
-          onEmpiezaYa: _showLogin,
+        return _InicioRedisenadoSection(
+          direccionLinea1: _direccionLinea1,
+          direccionLinea2: _direccionLinea2,
+          correo: _correoCentro,
+          telefono: _telefonoCentro,
+          cct: _cctCentro,
+          carouselItems: _carouselItems,
+          currentIndex: _currentCarouselIndex,
+          onCarouselPageChanged: (index) {
+            setState(() {
+              _currentCarouselIndex = index;
+            });
+          },
+          onAddCarouselImage: _seleccionarImagenCarrusel,
+          onDeleteCarouselImage: _eliminarImagenCarrusel,
+          onEditCarouselText: _editarTextoCarrusel,
+          onEditDatosGenerales: _editarDatosGenerales,
         );
+
       case _Section.conocenos:
         return _PlaceholderSection(
           titulo: 'Conócenos',
           icon: Icons.people_alt_outlined,
         );
-      case _Section.encuentranos:
-        return _PlaceholderSection(
-          titulo: 'Encuéntranos',
-          icon: Icons.location_on_outlined,
-        );
+
       case _Section.planes:
         return _PlaceholderSection(
           titulo: 'Planes',
           icon: Icons.workspace_premium_outlined,
         );
+
       case _Section.padre:
         return DashboardAlumno(user: _loggedInUser);
     }
   }
+}
+
+// ══════════════════════════════════════════════════════
+//  Modelo para carrusel
+// ══════════════════════════════════════════════════════
+class _CarouselItem {
+  dynamic imagen;
+  String texto;
+
+  _CarouselItem({required this.imagen, required this.texto});
 }
 
 // ══════════════════════════════════════════════════════
@@ -155,68 +292,84 @@ class _NavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop = MediaQuery.of(context).size.width >= 820;
+
     return Container(
-      height: 64,
+      height: 78,
       color: _kWhite,
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: EdgeInsets.symmetric(horizontal: isDesktop ? 30 : 18),
       child: Row(
         children: [
-          // Logo
           Row(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+              ClipOval(
                 child: Image.asset(
                   'assets/images/logoCARE.png',
-                  width: 36,
-                  height: 36,
+                  width: 52,
+                  height: 52,
                   fit: BoxFit.cover,
                 ),
               ),
-              const SizedBox(width: 8),
-              const Text(
-                'CARE',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: _kText,
-                  letterSpacing: 0.5,
-                ),
+              const SizedBox(width: 12),
+              const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'CARE',
+                    style: TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                      color: _kGreenLight,
+                      letterSpacing: 1.4,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'SANCTUARI ACADÉMICO',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF8D96A3),
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
 
           const Spacer(),
 
-          // Tabs
-          _NavTab('Inicio', _Section.inicio, current, onNavigate),
-          _NavTab('Conócenos', _Section.conocenos, current, onNavigate),
-          _NavTab('Encuéntranos', _Section.encuentranos, current, onNavigate),
-          _NavTab('Planes', _Section.planes, current, onNavigate),
-          if (loggedInRole == 0)
-            _NavTab('Padre', _Section.padre, current, onNavigate),
+          if (isDesktop) ...[
+            _NavTab('Inicio', _Section.inicio, current, onNavigate),
+            _NavTab('Conócenos', _Section.conocenos, current, onNavigate),
+            _NavTab('Planes', _Section.planes, current, onNavigate),
+            if (loggedInRole == 0)
+              _NavTab('Padre', _Section.padre, current, onNavigate),
+          ],
 
           const Spacer(),
 
-          // Botón Iniciar sesión / Perfil
           if (loggedInRole == null)
             ElevatedButton(
               onPressed: onLogin,
               style: ElevatedButton.styleFrom(
-                backgroundColor: _kGreen,
+                backgroundColor: _kGreenLight,
                 foregroundColor: _kWhite,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 22,
-                  vertical: 12,
+                  horizontal: 26,
+                  vertical: 15,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(26),
                 ),
-                elevation: 0,
+                elevation: 5,
+                shadowColor: _kGreenLight.withOpacity(0.35),
               ),
               child: const Text(
                 'Iniciar sesión',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
               ),
             )
           else if (loggedInRole == 0)
@@ -261,23 +414,27 @@ class _NavTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool active = current == section;
+
     return GestureDetector(
       onTap: () => onTap(section),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.symmetric(horizontal: 12),
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        margin: const EdgeInsets.symmetric(horizontal: 13),
+        padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: active
             ? const BoxDecoration(
-                border: Border(bottom: BorderSide(color: _kGreen, width: 2.5)),
+                border: Border(
+                  bottom: BorderSide(color: _kGreenLight, width: 2.5),
+                ),
               )
             : null,
         child: Text(
-          label,
+          label.toUpperCase(),
           style: TextStyle(
-            color: active ? _kGreen : _kTextMuted,
-            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-            fontSize: 14,
+            color: active ? _kGreenLight : const Color(0xFF4F5562),
+            fontWeight: active ? FontWeight.w800 : FontWeight.w700,
+            fontSize: 13,
+            letterSpacing: 0.45,
           ),
         ),
       ),
@@ -286,184 +443,643 @@ class _NavTab extends StatelessWidget {
 }
 
 // ══════════════════════════════════════════════════════
-//  SECCIÓN INICIO
+//  NUEVO INICIO REDISEÑADO
 // ══════════════════════════════════════════════════════
-class _InicioSection extends StatelessWidget {
-  const _InicioSection({
-    required this.onIniciar,
-    required this.onMasInfo,
-    required this.onEmpiezaYa,
-  });
+class _InicioRedisenadoSection extends StatelessWidget {
+  final String direccionLinea1;
+  final String direccionLinea2;
+  final String correo;
+  final String telefono;
+  final String cct;
 
-  final VoidCallback onIniciar;
-  final VoidCallback onMasInfo;
-  final VoidCallback onEmpiezaYa;
+  final List<_CarouselItem> carouselItems;
+  final int currentIndex;
+
+  final ValueChanged<int> onCarouselPageChanged;
+  final VoidCallback onAddCarouselImage;
+  final void Function(int index) onDeleteCarouselImage;
+  final void Function(int index, String newText) onEditCarouselText;
+
+  final void Function({
+    required String direccionLinea1,
+    required String direccionLinea2,
+    required String correo,
+    required String telefono,
+    required String cct,
+  })
+  onEditDatosGenerales;
+
+  const _InicioRedisenadoSection({
+    required this.direccionLinea1,
+    required this.direccionLinea2,
+    required this.correo,
+    required this.telefono,
+    required this.cct,
+    required this.carouselItems,
+    required this.currentIndex,
+    required this.onCarouselPageChanged,
+    required this.onAddCarouselImage,
+    required this.onDeleteCarouselImage,
+    required this.onEditCarouselText,
+    required this.onEditDatosGenerales,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    final bool isDesktop = MediaQuery.of(context).size.width >= 950;
+
+    return Stack(
+      children: [
+        Positioned(
+          top: 120,
+          left: -90,
+          child: Container(
+            width: 240,
+            height: 240,
+            decoration: BoxDecoration(
+              color: _kGreenLight.withOpacity(0.06),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 80,
+          right: -100,
+          child: Container(
+            width: 280,
+            height: 280,
+            decoration: BoxDecoration(
+              color: _kGreen.withOpacity(0.055),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+        Positioned(
+          top: 260,
+          right: 160,
+          child: Container(
+            width: 90,
+            height: 90,
+            decoration: BoxDecoration(
+              color: _kGreenLight.withOpacity(0.035),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+        SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 34),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: isDesktop ? 26 : 18),
+                child: Column(
+                  children: [
+                    const Text(
+                      'CARE- Centro de Apoyo y Refuerzo Escolar',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 38,
+                        fontWeight: FontWeight.w900,
+                        color: _kGreen,
+                        letterSpacing: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 96,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: _kGreenLight,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    const SizedBox(height: 44),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1280),
+                      child: isDesktop
+                          ? Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 38,
+                                  child: _DatosGeneralesCard(
+                                    direccionLinea1: direccionLinea1,
+                                    direccionLinea2: direccionLinea2,
+                                    correo: correo,
+                                    telefono: telefono,
+                                    cct: cct,
+                                    onEdit: onEditDatosGenerales,
+                                  ),
+                                ),
+                                const SizedBox(width: 38),
+                                Expanded(
+                                  flex: 62,
+                                  child: _CarouselSection(
+                                    imagenes: carouselItems,
+                                    currentIndex: currentIndex,
+                                    onPageChanged: onCarouselPageChanged,
+                                    onAddImage: onAddCarouselImage,
+                                    onDeleteImage: onDeleteCarouselImage,
+                                    onEditText: onEditCarouselText,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              children: [
+                                _DatosGeneralesCard(
+                                  direccionLinea1: direccionLinea1,
+                                  direccionLinea2: direccionLinea2,
+                                  correo: correo,
+                                  telefono: telefono,
+                                  cct: cct,
+                                  onEdit: onEditDatosGenerales,
+                                ),
+                                const SizedBox(height: 28),
+                                _CarouselSection(
+                                  imagenes: carouselItems,
+                                  currentIndex: currentIndex,
+                                  onPageChanged: onCarouselPageChanged,
+                                  onAddImage: onAddCarouselImage,
+                                  onDeleteImage: onDeleteCarouselImage,
+                                  onEditText: onEditCarouselText,
+                                ),
+                              ],
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 90),
+              const _Footer(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  Tarjeta de datos generales editable
+// ══════════════════════════════════════════════════════
+class _DatosGeneralesCard extends StatelessWidget {
+  final String direccionLinea1;
+  final String direccionLinea2;
+  final String correo;
+  final String telefono;
+  final String cct;
+
+  final void Function({
+    required String direccionLinea1,
+    required String direccionLinea2,
+    required String correo,
+    required String telefono,
+    required String cct,
+  })
+  onEdit;
+
+  const _DatosGeneralesCard({
+    required this.direccionLinea1,
+    required this.direccionLinea2,
+    required this.correo,
+    required this.telefono,
+    required this.cct,
+    required this.onEdit,
+  });
+
+  void _abrirMenuEditarDatos(BuildContext context) {
+    final TextEditingController direccion1Controller = TextEditingController(
+      text: direccionLinea1,
+    );
+
+    final TextEditingController direccion2Controller = TextEditingController(
+      text: direccionLinea2,
+    );
+
+    final TextEditingController correoController = TextEditingController(
+      text: correo,
+    );
+
+    final TextEditingController telefonoController = TextEditingController(
+      text: telefono,
+    );
+
+    final TextEditingController cctController = TextEditingController(
+      text: cct,
+    );
+
+    final bool isDesktop = MediaQuery.of(context).size.width >= 850;
+
+    if (isDesktop) {
+      showDialog(
+        context: context,
+        barrierColor: Colors.black.withOpacity(0.55),
+        builder: (context) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 80,
+              vertical: 40,
+            ),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 820),
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x44000000),
+                    blurRadius: 40,
+                    offset: Offset(0, 20),
+                  ),
+                ],
+              ),
+              child: _EditarDatosContent(
+                direccion1Controller: direccion1Controller,
+                direccion2Controller: direccion2Controller,
+                correoController: correoController,
+                telefonoController: telefonoController,
+                cctController: cctController,
+                onCancel: () => Navigator.pop(context),
+                onSave: () {
+                  onEdit(
+                    direccionLinea1: direccion1Controller.text,
+                    direccionLinea2: direccion2Controller.text,
+                    correo: correoController.text,
+                    telefono: telefonoController.text,
+                    cct: cctController.text,
+                  );
+
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        builder: (context) {
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 22),
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: 24,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x33000000),
+                  blurRadius: 25,
+                  offset: Offset(0, 10),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                child: _EditarDatosContent(
+                  direccion1Controller: direccion1Controller,
+                  direccion2Controller: direccion2Controller,
+                  correoController: correoController,
+                  telefonoController: telefonoController,
+                  cctController: cctController,
+                  onCancel: () => Navigator.pop(context),
+                  onSave: () {
+                    onEdit(
+                      direccionLinea1: direccion1Controller.text,
+                      direccionLinea2: direccion2Controller.text,
+                      correo: correoController.text,
+                      telefono: telefonoController.text,
+                      cct: cctController.text,
+                    );
+
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isSmall = MediaQuery.of(context).size.width < 700;
+
+    return Container(
+      height: isSmall ? null : 565,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE8EFE8)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x18000000),
+            blurRadius: 28,
+            offset: Offset(0, 14),
+          ),
+        ],
+      ),
       child: Column(
         children: [
-          _HeroPanel(onIniciar: onIniciar, onMasInfo: onMasInfo),
-          _StatsBar(),
-          _FeaturesPanel(onEmpiezaYa: onEmpiezaYa),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(32, 34, 32, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Datos Generales',
+                        style: TextStyle(
+                          color: _kGreen,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 24,
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () => _abrirMenuEditarDatos(context),
+                      borderRadius: BorderRadius.circular(50),
+                      child: Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: _kGreenPale,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFD9ECD9)),
+                        ),
+                        child: const Icon(
+                          Icons.edit_rounded,
+                          color: _kGreenLight,
+                          size: 21,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 22),
+                Container(
+                  height: 2,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: const Color(0xFFE3F0E2),
+                      width: 1,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 34),
+                _InfoRow(
+                  icon: Icons.location_on_outlined,
+                  title: 'Dirección:',
+                  lines: [
+                    direccionLinea1,
+                    if (direccionLinea2.trim().isNotEmpty) direccionLinea2,
+                  ],
+                ),
+                const SizedBox(height: 34),
+                _InfoRow(
+                  icon: Icons.mail_outline,
+                  title: 'Correo electrónico:',
+                  lines: [correo],
+                  highlight: true,
+                ),
+                const SizedBox(height: 34),
+                _InfoRow(
+                  icon: Icons.phone_outlined,
+                  title: 'Teléfono:',
+                  lines: [telefono],
+                ),
+                const SizedBox(height: 34),
+                _InfoRow(
+                  icon: Icons.business_outlined,
+                  title: 'Clave del Centro de Trabajo (CCT):',
+                  lines: [cct],
+                ),
+              ],
+            ),
+          ),
+          if (!isSmall) const Spacer(),
+          Container(
+            height: 74,
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: _kGreenLight,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(18),
+                bottomRight: Radius.circular(18),
+              ),
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.facebook, color: Colors.white, size: 28),
+                SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    'Sigue a tu centro en Facebook',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 17,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-// ══ Hero ══
-class _HeroPanel extends StatelessWidget {
-  const _HeroPanel({required this.onIniciar, required this.onMasInfo});
+class _EditarDatosContent extends StatelessWidget {
+  final TextEditingController direccion1Controller;
+  final TextEditingController direccion2Controller;
+  final TextEditingController correoController;
+  final TextEditingController telefonoController;
+  final TextEditingController cctController;
+  final VoidCallback onCancel;
+  final VoidCallback onSave;
 
-  final VoidCallback onIniciar;
-  final VoidCallback onMasInfo;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      color: _kBg,
-      padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 56),
-      child: LayoutBuilder(
-        builder: (_, constraints) {
-          final bool wide = constraints.maxWidth > 700;
-          return wide
-              ? Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      flex: 5,
-                      child: _HeroText(
-                        onIniciar: onIniciar,
-                        onMasInfo: onMasInfo,
-                      ),
-                    ),
-                    const SizedBox(width: 48),
-                    Expanded(flex: 5, child: _HeroImages()),
-                  ],
-                )
-              : Column(
-                  children: [
-                    _HeroText(onIniciar: onIniciar, onMasInfo: onMasInfo),
-                    const SizedBox(height: 32),
-                    _HeroImages(),
-                  ],
-                );
-        },
-      ),
-    );
-  }
-}
-
-class _HeroText extends StatelessWidget {
-  const _HeroText({required this.onIniciar, required this.onMasInfo});
-
-  final VoidCallback onIniciar;
-  final VoidCallback onMasInfo;
+  const _EditarDatosContent({
+    required this.direccion1Controller,
+    required this.direccion2Controller,
+    required this.correoController,
+    required this.telefonoController,
+    required this.cctController,
+    required this.onCancel,
+    required this.onSave,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop = MediaQuery.of(context).size.width >= 850;
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // Chip
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-          decoration: BoxDecoration(
-            color: _kGreenPale,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: _kGreenLight.withOpacity(0.4)),
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.school, color: _kGreen, size: 15),
-              SizedBox(width: 6),
-              Text(
-                'INNOVACIÓN EDUCATIVA',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: _kGreen,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.1,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-
-        // Título
-        RichText(
-          text: const TextSpan(
-            style: TextStyle(
-              fontSize: 42,
-              fontWeight: FontWeight.w900,
-              color: _kText,
-              height: 1.15,
+        if (!isDesktop) ...[
+          Container(
+            width: 54,
+            height: 5,
+            decoration: BoxDecoration(
+              color: const Color(0xFFDDE3DD),
+              borderRadius: BorderRadius.circular(30),
             ),
-            children: [
-              TextSpan(text: 'La plataforma\n'),
-              TextSpan(
-                text: 'definitiva',
-                style: TextStyle(color: _kGreen, fontStyle: FontStyle.italic),
-              ),
-              TextSpan(text: ' para la\ngestión de\nrefuerzo escolar'),
-            ],
           ),
-        ),
-        const SizedBox(height: 20),
-
-        // Descripción
-        const Text(
-          'Potencia el aprendizaje y simplifica la administración.\n'
-          'CARE ofrece herramientas inteligentes para que docentes\n'
-          'y alumnos alcancen su máximo potencial académico.',
-          style: TextStyle(fontSize: 14, color: _kTextMuted, height: 1.6),
-        ),
-        const SizedBox(height: 32),
-
-        // Botones
+          const SizedBox(height: 22),
+        ],
         Row(
           children: [
-            ElevatedButton(
-              onPressed: onIniciar,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _kGreen,
-                foregroundColor: _kWhite,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
-                  vertical: 16,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(28),
-                ),
-                elevation: 2,
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: _kGreenPale,
+                borderRadius: BorderRadius.circular(18),
               ),
-              child: const Text(
-                'Iniciar',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+              child: const Icon(
+                Icons.edit_location_alt_rounded,
+                color: _kGreenLight,
+                size: 31,
               ),
             ),
             const SizedBox(width: 16),
-            OutlinedButton(
-              onPressed: onMasInfo,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: _kText,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
-                  vertical: 16,
-                ),
-                side: const BorderSide(color: Color(0xFFBDBDBD), width: 1.5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(28),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Editar datos generales',
+                    style: TextStyle(
+                      color: _kGreen,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 24,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Actualiza la información visible en la tarjeta.',
+                    style: TextStyle(
+                      color: Color(0xFF7A808A),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 28),
+        if (isDesktop)
+          Row(
+            children: [
+              Expanded(
+                child: _CampoEditor(
+                  controller: direccion1Controller,
+                  label: 'Dirección línea 1',
+                  icon: Icons.location_on_outlined,
                 ),
               ),
-              child: const Text(
-                'Más información',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _CampoEditor(
+                  controller: direccion2Controller,
+                  label: 'Dirección línea 2',
+                  icon: Icons.map_outlined,
+                ),
+              ),
+            ],
+          )
+        else ...[
+          _CampoEditor(
+            controller: direccion1Controller,
+            label: 'Dirección línea 1',
+            icon: Icons.location_on_outlined,
+          ),
+          const SizedBox(height: 16),
+          _CampoEditor(
+            controller: direccion2Controller,
+            label: 'Dirección línea 2',
+            icon: Icons.map_outlined,
+          ),
+        ],
+        const SizedBox(height: 16),
+        if (isDesktop)
+          Row(
+            children: [
+              Expanded(
+                child: _CampoEditor(
+                  controller: correoController,
+                  label: 'Correo electrónico',
+                  icon: Icons.mail_outline,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _CampoEditor(
+                  controller: telefonoController,
+                  label: 'Teléfono',
+                  icon: Icons.phone_outlined,
+                ),
+              ),
+            ],
+          )
+        else ...[
+          _CampoEditor(
+            controller: correoController,
+            label: 'Correo electrónico',
+            icon: Icons.mail_outline,
+          ),
+          const SizedBox(height: 16),
+          _CampoEditor(
+            controller: telefonoController,
+            label: 'Teléfono',
+            icon: Icons.phone_outlined,
+          ),
+        ],
+        const SizedBox(height: 16),
+        _CampoEditor(
+          controller: cctController,
+          label: 'Clave del Centro de Trabajo (CCT)',
+          icon: Icons.business_outlined,
+        ),
+        const SizedBox(height: 28),
+        Row(
+          children: [
+            Expanded(
+              child: _BotonEditorDatos(
+                icon: Icons.close_rounded,
+                text: 'Cancelar',
+                background: const Color(0xFFF1F3F1),
+                foreground: const Color(0xFF4A4E5A),
+                onTap: onCancel,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: _BotonEditorDatos(
+                icon: Icons.save_rounded,
+                text: 'Guardar cambios',
+                background: _kGreenLight,
+                foreground: Colors.white,
+                onTap: onSave,
               ),
             ),
           ],
@@ -473,141 +1089,151 @@ class _HeroText extends StatelessWidget {
   }
 }
 
-class _HeroImages extends StatelessWidget {
+class _CampoEditor extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final IconData icon;
+
+  const _CampoEditor({
+    required this.controller,
+    required this.label,
+    required this.icon,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 380,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // Imagen principal (teacher)
-          Positioned(
-            top: 0,
-            right: 0,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.asset(
-                'assets/images/hero_teacher.png',
-                width: 300,
-                height: 260,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          // Imagen secundaria (student)
-          Positioned(
-            bottom: 0,
-            left: 20,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.asset(
-                  'assets/images/hero_student.png',
-                  width: 190,
-                  height: 200,
-                  fit: BoxFit.cover,
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: _kGreenLight),
+        filled: true,
+        fillColor: const Color(0xFFF8FAF8),
+        labelStyle: const TextStyle(
+          color: _kGreenLight,
+          fontWeight: FontWeight.w700,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Color(0xFFE0EAE0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: _kGreenLight, width: 2),
+        ),
+      ),
+    );
+  }
+}
+
+class _BotonEditorDatos extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final Color background;
+  final Color foreground;
+  final VoidCallback onTap;
+
+  const _BotonEditorDatos({
+    required this.icon,
+    required this.text,
+    required this.background,
+    required this.foreground,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        height: 58,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: foreground.withOpacity(0.12)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: foreground, size: 22),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                text,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: foreground,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
                 ),
               ),
             ),
-          ),
-          // Efecto decorativo rosa/salmón
-          Positioned(
-            top: 30,
-            left: 80,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.pinkAccent.withOpacity(0.12),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ══ Stats Bar ══
-class _StatsBar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      color: _kWhite,
-      padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 48),
-      child: LayoutBuilder(
-        builder: (_, c) {
-          final bool wide = c.maxWidth > 500;
-          return wide
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: const [
-                    _StatItem('1,284', 'ESTUDIANTES', _kGreen),
-                    _StatDivider(),
-                    _StatItem('86', 'MAESTROS', _kTeal),
-                    _StatDivider(),
-                    _StatItem('15+', 'CENTROS', _kPink),
-                    _StatDivider(),
-                    _StatItem('98%', 'ÉXITO', _kGreenLight),
-                  ],
-                )
-              : Wrap(
-                  alignment: WrapAlignment.spaceEvenly,
-                  spacing: 24,
-                  runSpacing: 24,
-                  children: const [
-                    _StatItem('1,284', 'ESTUDIANTES', _kGreen),
-                    _StatItem('86', 'MAESTROS', _kTeal),
-                    _StatItem('15+', 'CENTROS', _kPink),
-                    _StatItem('98%', 'ÉXITO', _kGreenLight),
-                  ],
-                );
-        },
-      ),
-    );
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  const _StatItem(this.value, this.label, this.color);
-
-  final String value;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 40,
-            fontWeight: FontWeight.w900,
-            color: color,
-          ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: _kTextMuted,
-            letterSpacing: 1.5,
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final List<String> lines;
+  final bool highlight;
+
+  const _InfoRow({
+    required this.icon,
+    required this.title,
+    required this.lines,
+    this.highlight = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 39,
+          height: 39,
+          decoration: BoxDecoration(
+            color: _kGreenPale,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: const Color(0xFF64BE69), size: 23),
+        ),
+        const SizedBox(width: 18),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Color(0xFF4A4E5A),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  height: 1.3,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...lines.map(
+                (line) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    line,
+                    style: TextStyle(
+                      color: highlight ? _kGreenLight : const Color(0xFF7A808A),
+                      fontWeight: highlight ? FontWeight.w800 : FontWeight.w600,
+                      fontSize: 15,
+                      height: 1.25,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -615,359 +1241,739 @@ class _StatItem extends StatelessWidget {
   }
 }
 
-class _StatDivider extends StatelessWidget {
-  const _StatDivider();
+// ══════════════════════════════════════════════════════
+//  Carrusel editable
+// ══════════════════════════════════════════════════════
+class _CarouselSection extends StatelessWidget {
+  final List<_CarouselItem> imagenes;
+  final int currentIndex;
+  final ValueChanged<int> onPageChanged;
+  final VoidCallback onAddImage;
+  final void Function(int index) onDeleteImage;
+  final void Function(int index, String newText) onEditText;
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(width: 1, height: 48, color: const Color(0xFFE0E0E0));
-  }
-}
-
-// ══ Features Panel ══
-class _FeaturesPanel extends StatelessWidget {
-  const _FeaturesPanel({required this.onEmpiezaYa});
-
-  final VoidCallback onEmpiezaYa;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      color: _kBg,
-      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 56),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Potencia tu Institución',
-            style: TextStyle(
-              fontSize: 34,
-              fontWeight: FontWeight.w900,
-              color: _kText,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Diseñado para la excelencia académica con un enfoque en la simplicidad\ny el análisis de datos.',
-            style: TextStyle(fontSize: 14, color: _kTextMuted, height: 1.6),
-          ),
-          const SizedBox(height: 36),
-
-          // Grid de tarjetas
-          LayoutBuilder(
-            builder: (_, c) {
-              final bool wide = c.maxWidth > 700;
-              if (wide) {
-                return Column(
-                  children: [
-                    // Fila superior
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _FeatureCard(
-                            icon: Icons.bar_chart,
-                            iconColor: _kGreen,
-                            iconBg: _kGreenPale,
-                            title: 'Digital Grades',
-                            description:
-                                'Sistema avanzado de gestión de calificaciones con reportes automáticos y analítica predictiva del rendimiento escolar.',
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(child: _GradesMockCard()),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _FeatureCard(
-                            icon: Icons.people,
-                            iconColor: _kTeal,
-                            iconBg: const Color(0xFFE0F2F1),
-                            title: 'Teacher Management',
-                            description:
-                                'Centraliza la planificación, asistencia y comunicación de tu equipo docente en un solo lugar.',
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // Fila inferior
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _FeatureCard(
-                            icon: Icons.person_add_alt_1,
-                            iconColor: Colors.pink,
-                            iconBg: const Color(0xFFFCE4EC),
-                            title: 'Clases a tu medida',
-                            description:
-                                'Seguimiento personalizado de cada alumno, identificando áreas de mejora y celebrando sus logros.',
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          flex: 2,
-                          child: _CTACard(onEmpiezaYa: onEmpiezaYa),
-                        ),
-                      ],
-                    ),
-                  ],
-                );
-              } else {
-                return Column(
-                  children: [
-                    _FeatureCard(
-                      icon: Icons.bar_chart,
-                      iconColor: _kGreen,
-                      iconBg: _kGreenPale,
-                      title: 'Digital Grades',
-                      description:
-                          'Sistema avanzado de gestión de calificaciones con reportes automáticos.',
-                    ),
-                    const SizedBox(height: 16),
-                    _FeatureCard(
-                      icon: Icons.people,
-                      iconColor: _kTeal,
-                      iconBg: const Color(0xFFE0F2F1),
-                      title: 'Teacher Management',
-                      description:
-                          'Centraliza la planificación, asistencia y comunicación del equipo docente.',
-                    ),
-                    const SizedBox(height: 16),
-                    _FeatureCard(
-                      icon: Icons.person_add_alt_1,
-                      iconColor: Colors.pink,
-                      iconBg: const Color(0xFFFCE4EC),
-                      title: 'Clases a tu medida',
-                      description: 'Seguimiento personalizado de cada alumno.',
-                    ),
-                    const SizedBox(height: 16),
-                    _CTACard(onEmpiezaYa: onEmpiezaYa),
-                  ],
-                );
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FeatureCard extends StatelessWidget {
-  const _FeatureCard({
-    required this.icon,
-    required this.iconColor,
-    required this.iconBg,
-    required this.title,
-    required this.description,
+  const _CarouselSection({
+    required this.imagenes,
+    required this.currentIndex,
+    required this.onPageChanged,
+    required this.onAddImage,
+    required this.onDeleteImage,
+    required this.onEditText,
   });
 
-  final IconData icon;
-  final Color iconColor;
-  final Color iconBg;
-  final String title;
-  final String description;
+  void _abrirMenuGestion(BuildContext context) {
+    final bool isDesktop = MediaQuery.of(context).size.width >= 850;
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: _kWhite,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+    if (isDesktop) {
+      _abrirDialogGestionPc(context);
+    } else {
+      _abrirBottomSheetGestion(context);
+    }
+  }
+
+  void _abrirDialogGestionPc(BuildContext context) {
+    final TextEditingController textoController = TextEditingController(
+      text: imagenes[currentIndex].texto.replaceAll('\n', ' '),
+    );
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.55),
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 70,
+            vertical: 40,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 980, minHeight: 520),
             decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(10),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x44000000),
+                  blurRadius: 40,
+                  offset: Offset(0, 20),
+                ),
+              ],
             ),
-            child: Icon(icon, color: iconColor, size: 22),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: _kText,
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 55,
+                  child: Padding(
+                    padding: const EdgeInsets.all(28),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(22),
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: _buildImagen(imagenes[currentIndex].imagen),
+                          ),
+                          Positioned.fill(
+                            child: Container(
+                              color: Colors.black.withOpacity(0.12),
+                            ),
+                          ),
+                          Positioned(
+                            left: 24,
+                            right: 24,
+                            bottom: 24,
+                            child: Container(
+                              padding: const EdgeInsets.all(22),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.94),
+                                borderRadius: BorderRadius.circular(18),
+                                border: const Border(
+                                  left: BorderSide(
+                                    color: _kGreenLight,
+                                    width: 7,
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                imagenes[currentIndex].texto,
+                                style: const TextStyle(
+                                  color: _kGreen,
+                                  fontWeight: FontWeight.w800,
+                                  fontStyle: FontStyle.italic,
+                                  fontSize: 17,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 45,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 34, 34, 34),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 58,
+                              height: 58,
+                              decoration: BoxDecoration(
+                                color: _kGreenPale,
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: const Icon(
+                                Icons.view_carousel_rounded,
+                                color: _kGreenLight,
+                                size: 32,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Gestión del carrusel',
+                                    style: TextStyle(
+                                      color: _kGreen,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 25,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'Administra la imagen y el mensaje actual.',
+                                    style: TextStyle(
+                                      color: Color(0xFF7A808A),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 28),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF4F8F4),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFE2ECE2)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.image_outlined,
+                                color: _kGreenLight,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Imagen ${currentIndex + 1} de ${imagenes.length}',
+                                style: const TextStyle(
+                                  color: Color(0xFF4A4E5A),
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        TextField(
+                          controller: textoController,
+                          maxLines: 5,
+                          decoration: InputDecoration(
+                            labelText: 'Texto del card',
+                            alignLabelWithHint: true,
+                            prefixIcon: const Padding(
+                              padding: EdgeInsets.only(bottom: 82),
+                              child: Icon(
+                                Icons.format_quote_rounded,
+                                color: _kGreenLight,
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAF8),
+                            labelStyle: const TextStyle(
+                              color: _kGreenLight,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(18),
+                              borderSide: const BorderSide(
+                                color: Color(0xFFE0EAE0),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(18),
+                              borderSide: const BorderSide(
+                                color: _kGreenLight,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _MenuActionButton(
+                                icon: Icons.add_photo_alternate_rounded,
+                                text: 'Agregar',
+                                background: _kGreenPale,
+                                foreground: _kGreen,
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  onAddImage();
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _MenuActionButton(
+                                icon: Icons.save_rounded,
+                                text: 'Guardar',
+                                background: _kGreenLight,
+                                foreground: Colors.white,
+                                onTap: () {
+                                  onEditText(
+                                    currentIndex,
+                                    textoController.text.trim(),
+                                  );
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _MenuActionButton(
+                                icon: Icons.delete_outline_rounded,
+                                text: 'Quitar',
+                                background: const Color(0xFFFFECEC),
+                                foreground: const Color(0xFFD32F2F),
+                                onTap: imagenes.length <= 1
+                                    ? null
+                                    : () {
+                                        Navigator.pop(context);
+                                        onDeleteImage(currentIndex);
+                                      },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _MenuActionButton(
+                                icon: Icons.close_rounded,
+                                text: 'Cerrar',
+                                background: const Color(0xFFF1F3F1),
+                                foreground: const Color(0xFF4A4E5A),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (imagenes.length <= 1) ...[
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Debe quedar al menos una imagen en el carrusel.',
+                            style: TextStyle(
+                              color: Color(0xFFD32F2F),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            description,
-            style: const TextStyle(
-              fontSize: 13,
-              color: _kTextMuted,
-              height: 1.55,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
-}
 
-// Tarjeta mock de calificaciones (la del centro en las imágenes)
-class _GradesMockCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: _kWhite,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+  void _abrirBottomSheetGestion(BuildContext context) {
+    final TextEditingController textoController = TextEditingController(
+      text: imagenes[currentIndex].texto.replaceAll('\n', ' '),
+    );
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 22),
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Barra simulada de encabezado
-          Container(
-            height: 10,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: const Color(0xFFDDDDDD),
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Grid de bloques
-          Row(
-            children: [
-              _MockBlock(_kGreenCard, 40),
-              const SizedBox(width: 8),
-              _MockBlock(_kGreenLight.withOpacity(0.5), 50),
-              const SizedBox(width: 8),
-              _MockBlock(const Color(0xFF80CBC4), 45),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x33000000),
+                blurRadius: 25,
+                offset: Offset(0, 10),
+              ),
             ],
           ),
-        ],
-      ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 54,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDDE3DD),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  Row(
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: _kGreenPale,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Icon(
+                          Icons.view_carousel_rounded,
+                          color: _kGreenLight,
+                          size: 30,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Gestión del carrusel',
+                              style: TextStyle(
+                                color: _kGreen,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 22,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Agrega, elimina o edita el texto.',
+                              style: TextStyle(
+                                color: Color(0xFF7A808A),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: SizedBox(
+                      height: 150,
+                      width: double.infinity,
+                      child: _buildImagen(imagenes[currentIndex].imagen),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  TextField(
+                    controller: textoController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      labelText: 'Texto del card',
+                      prefixIcon: const Icon(
+                        Icons.format_quote_rounded,
+                        color: _kGreenLight,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF5F8F5),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(18),
+                        borderSide: const BorderSide(color: Color(0xFFE0EAE0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(18),
+                        borderSide: const BorderSide(
+                          color: _kGreenLight,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MenuActionButton(
+                          icon: Icons.add_photo_alternate_rounded,
+                          text: 'Agregar',
+                          background: _kGreenPale,
+                          foreground: _kGreen,
+                          onTap: () {
+                            Navigator.pop(context);
+                            onAddImage();
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _MenuActionButton(
+                          icon: Icons.save_rounded,
+                          text: 'Guardar',
+                          background: _kGreenLight,
+                          foreground: Colors.white,
+                          onTap: () {
+                            onEditText(
+                              currentIndex,
+                              textoController.text.trim(),
+                            );
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MenuActionButton(
+                          icon: Icons.delete_outline_rounded,
+                          text: 'Quitar',
+                          background: const Color(0xFFFFECEC),
+                          foreground: const Color(0xFFD32F2F),
+                          onTap: imagenes.length <= 1
+                              ? null
+                              : () {
+                                  Navigator.pop(context);
+                                  onDeleteImage(currentIndex);
+                                },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _MenuActionButton(
+                          icon: Icons.close_rounded,
+                          text: 'Cerrar',
+                          background: const Color(0xFFF1F3F1),
+                          foreground: const Color(0xFF4A4E5A),
+                          onTap: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  static Widget _buildImagen(dynamic item) {
+    if (item is Uint8List) {
+      return Image.memory(item, fit: BoxFit.cover);
+    }
+
+    return Image.network(item as String, fit: BoxFit.cover);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isSmall = MediaQuery.of(context).size.width < 700;
+
+    return Column(
+      children: [
+        Stack(
+          children: [
+            CarouselSlider(
+              options: CarouselOptions(
+                height: isSmall ? 300 : 430,
+                viewportFraction: 1,
+                enlargeCenterPage: false,
+                enableInfiniteScroll: true,
+                autoPlay: false,
+                initialPage: currentIndex,
+                onPageChanged: (index, reason) {
+                  onPageChanged(index);
+                },
+              ),
+              items: imagenes.map((item) {
+                return Builder(
+                  builder: (BuildContext context) {
+                    return Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.symmetric(horizontal: 0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x24000000),
+                            blurRadius: 30,
+                            offset: Offset(0, 16),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Stack(
+                          children: [
+                            Positioned.fill(child: _buildImagen(item.imagen)),
+                            Positioned.fill(
+                              child: Container(
+                                color: Colors.black.withOpacity(0.12),
+                              ),
+                            ),
+                            Positioned(
+                              right: isSmall ? 20 : 28,
+                              bottom: isSmall ? 28 : 34,
+                              child: Container(
+                                width: isSmall ? 260 : 390,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isSmall ? 18 : 28,
+                                  vertical: isSmall ? 18 : 24,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.96),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: const Border(
+                                    left: BorderSide(
+                                      color: _kGreenLight,
+                                      width: 8,
+                                    ),
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x18000000),
+                                      blurRadius: 12,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  item.texto,
+                                  style: const TextStyle(
+                                    color: _kGreen,
+                                    fontStyle: FontStyle.italic,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 17,
+                                    height: 1.55,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }).toList(),
+            ),
+            Positioned(
+              top: 18,
+              right: 18,
+              child: InkWell(
+                onTap: () => _abrirMenuGestion(context),
+                borderRadius: BorderRadius.circular(50),
+                child: Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.94),
+                    shape: BoxShape.circle,
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x25000000),
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Text(
+                      '＋',
+                      style: TextStyle(
+                        color: _kGreenLight,
+                        fontSize: 36,
+                        fontWeight: FontWeight.w800,
+                        height: 1,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: imagenes.asMap().entries.map((entry) {
+            final bool active = currentIndex == entry.key;
+
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              width: active ? 31 : 13,
+              height: 13,
+              margin: const EdgeInsets.symmetric(horizontal: 7),
+              decoration: BoxDecoration(
+                color: active ? _kGreenLight : const Color(0xFFD8DDE1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }
 
-class _MockBlock extends StatelessWidget {
-  const _MockBlock(this.color, this.height);
+class _MenuActionButton extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final Color background;
+  final Color foreground;
+  final VoidCallback? onTap;
 
-  final Color color;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        height: height,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-    );
-  }
-}
-
-// Tarjeta CTA verde
-class _CTACard extends StatelessWidget {
-  const _CTACard({required this.onEmpiezaYa});
-
-  final VoidCallback onEmpiezaYa;
+  const _MenuActionButton({
+    required this.icon,
+    required this.text,
+    required this.background,
+    required this.foreground,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF2E7D32), Color(0xFF388E3C)],
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Stack(
-        children: [
-          // Estrellas decorativas
-          Positioned(
-            right: 16,
-            top: 8,
-            child: Icon(
-              Icons.auto_awesome,
-              color: _kWhite.withValues(alpha: 0.18),
-              size: 64,
-            ),
+    final bool disabled = onTap == null;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Opacity(
+        opacity: disabled ? 0.45 : 1,
+        child: Container(
+          height: 58,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: foreground.withOpacity(0.12)),
           ),
-          Positioned(
-            right: 70,
-            bottom: 16,
-            child: Icon(
-              Icons.auto_awesome,
-              color: _kWhite.withValues(alpha: 0.12),
-              size: 40,
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                '¿Listo para mejorar?',
-                style: TextStyle(
-                  color: _kWhite,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Únete a cientos de instituciones que ya están\ntransformando la educación con CARE.',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  height: 1.55,
-                ),
-              ),
-              const SizedBox(height: 24),
-              OutlinedButton(
-                onPressed: onEmpiezaYa,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: _kText,
-                  backgroundColor: _kWhite,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 28,
-                    vertical: 14,
+              Icon(icon, color: foreground, size: 22),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  text,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: foreground,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
                   ),
-                  side: BorderSide.none,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-                child: const Text(
-                  'Empieza ya',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                 ),
               ),
             ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Footer extends StatelessWidget {
+  const _Footer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 72,
+      width: double.infinity,
+      color: const Color(0xFF0F2B18),
+      child: const Center(
+        child: Text(
+          '© 2023 CARE - Centro de Apoyo y Refuerzo Escolar. Todos los derechos reservados.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Color(0xFFB9C7BC),
+            fontWeight: FontWeight.w500,
+            fontSize: 13,
+          ),
+        ),
       ),
     );
   }
@@ -990,7 +1996,7 @@ class _PlaceholderSection extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: _kGreenPale,
               shape: BoxShape.circle,
             ),
@@ -1017,7 +2023,7 @@ class _PlaceholderSection extends StatelessWidget {
 }
 
 // ══════════════════════════════════════════════════════
-//  DIALOG — Inicio de Sesión (ventana emergente)
+//  DIALOG — Inicio de Sesión
 // ══════════════════════════════════════════════════════
 class _LoginDialog extends StatefulWidget {
   const _LoginDialog();
@@ -1028,8 +2034,10 @@ class _LoginDialog extends StatefulWidget {
 
 class _LoginDialogState extends State<_LoginDialog> {
   int _selectedRole = 0;
+
   final _userCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+
   bool _obscure = true;
   bool _isLoading = false;
 
@@ -1041,7 +2049,9 @@ class _LoginDialogState extends State<_LoginDialog> {
     return 'Usuario';
   }
 
-  String get _passLabel => _selectedRole == 2 ? 'Contraseña' : 'PIN de acceso';
+  String get _passLabel {
+    return _selectedRole == 2 ? 'Contraseña' : 'PIN de acceso';
+  }
 
   @override
   void dispose() {
@@ -1061,45 +2071,50 @@ class _LoginDialogState extends State<_LoginDialog> {
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
       if (_selectedRole == 0) {
-        // Padre
         final api = ApiService();
         final padres = await api.getPadres();
+
         final parent = padres.firstWhere(
           (p) =>
               (p['email'] == identifier || p['contacto'] == identifier) &&
               p['pin_acceso'] == password,
           orElse: () => <String, dynamic>{},
         );
+
         if (parent.isNotEmpty) {
           Navigator.of(context).pop({'role': 0, 'user': parent});
           return;
         }
       } else if (_selectedRole == 1) {
-        // Maestro
         final api = MaestrosApiService();
         final maestros = await api.getMaestros();
+
         final maestro = maestros.firstWhere(
           (m) =>
               m['correo_electronico'] == identifier &&
               m['pin_acceso'] == password,
           orElse: () => <String, dynamic>{},
         );
+
         if (maestro.isNotEmpty) {
           Navigator.of(context).pop({'role': 1, 'user': maestro});
           return;
         }
       } else if (_selectedRole == 2) {
-        // Admin
         final api = AdministradoresApiService();
         final admins = await api.getAdministradores();
+
         final admin = admins.firstWhere(
           (a) => a['usuario'] == identifier && a['password'] == password,
           orElse: () => <String, dynamic>{},
         );
+
         if (admin.isNotEmpty) {
           Navigator.of(context).pop({'role': 2, 'user': admin});
           return;
@@ -1123,7 +2138,9 @@ class _LoginDialogState extends State<_LoginDialog> {
       }
     } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -1150,7 +2167,6 @@ class _LoginDialogState extends State<_LoginDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header verde
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -1195,14 +2211,11 @@ class _LoginDialogState extends State<_LoginDialog> {
                   ],
                 ),
               ),
-
-              // Formulario
               Padding(
                 padding: const EdgeInsets.all(28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Selector de rol
                     Container(
                       decoration: BoxDecoration(
                         color: const Color(0xFFF5F5F5),
@@ -1212,12 +2225,15 @@ class _LoginDialogState extends State<_LoginDialog> {
                       child: Row(
                         children: List.generate(_roles.length, (i) {
                           final bool sel = _selectedRole == i;
+
                           return Expanded(
                             child: GestureDetector(
-                              onTap: () => setState(() {
-                                _selectedRole = i;
-                                _userCtrl.clear();
-                              }),
+                              onTap: () {
+                                setState(() {
+                                  _selectedRole = i;
+                                  _userCtrl.clear();
+                                });
+                              },
                               child: AnimatedContainer(
                                 duration: const Duration(milliseconds: 200),
                                 padding: const EdgeInsets.symmetric(
@@ -1245,14 +2261,12 @@ class _LoginDialogState extends State<_LoginDialog> {
                       ),
                     ),
                     const SizedBox(height: 20),
-
                     _buildField(
                       controller: _userCtrl,
                       label: _fieldLabel,
                       icon: Icons.person_outline,
                     ),
                     const SizedBox(height: 14),
-
                     _buildField(
                       controller: _passCtrl,
                       label: _passLabel,
@@ -1266,11 +2280,14 @@ class _LoginDialogState extends State<_LoginDialog> {
                           size: 20,
                           color: _kTextMuted,
                         ),
-                        onPressed: () => setState(() => _obscure = !_obscure),
+                        onPressed: () {
+                          setState(() {
+                            _obscure = !_obscure;
+                          });
+                        },
                       ),
                     ),
                     const SizedBox(height: 28),
-
                     SizedBox(
                       height: 50,
                       child: ElevatedButton(
@@ -1301,7 +2318,6 @@ class _LoginDialogState extends State<_LoginDialog> {
                               ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
                     Center(
                       child: TextButton(
