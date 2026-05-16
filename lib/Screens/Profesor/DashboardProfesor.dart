@@ -2,10 +2,49 @@ import 'package:flutter/material.dart';
 import 'ProfesorScaffold.dart';
 import 'GruposProfesor.dart';
 import 'EvidenciasProfesor.dart';
+import '../../BD/Dashboard.dart';
+import 'package:intl/intl.dart';
 
-class DashboardProfesor extends StatelessWidget {
+class DashboardProfesor extends StatefulWidget {
   final Map<String, dynamic>? user;
   const DashboardProfesor({super.key, this.user});
+
+  @override
+  State<DashboardProfesor> createState() => _DashboardProfesorState();
+}
+
+class _DashboardProfesorState extends State<DashboardProfesor> {
+  final DashboardApiService _apiService = DashboardApiService();
+  Map<String, dynamic>? _resumen;
+  List<dynamic> _bitacora = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    final int idMaestro = widget.user?['id_maestro'] ?? 0;
+    if (idMaestro == 0) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final res = await _apiService.getResumenMaestro(idMaestro);
+      final bit = await _apiService.getBitacoraMaestroEvidencias(idMaestro);
+
+      if (mounted) {
+        setState(() {
+          _resumen = res;
+          _bitacora = bit;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   bool _isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 700;
@@ -15,23 +54,33 @@ class DashboardProfesor extends StatelessWidget {
     final mobile = _isMobile(context);
 
     return ProfesorScaffold(
-      user: user,
+      user: widget.user,
       selectedIndex: 0,
       destinations: {
-        1: (_) => GruposProfesor(user: user),
-        2: (_) => EvidenciasProfesor(user: user),
+        1: (_) => GruposProfesor(user: widget.user),
+        2: (_) => EvidenciasProfesor(user: widget.user),
       },
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildWelcomeBanner(mobile),
-          const SizedBox(height: 24),
-          _buildStatCards(mobile),
-          const SizedBox(height: 24),
-          _buildMiddleSection(mobile),
-          const SizedBox(height: 24),
-          _buildCalendarSection(mobile),
-        ],
+      body: RefreshIndicator(
+        onRefresh: _fetchData,
+        color: const Color(0xFF4CAF50),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildWelcomeBanner(mobile),
+              const SizedBox(height: 24),
+              _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(color: Color(0xFF4CAF50)))
+                  : _buildStatCards(mobile),
+              const SizedBox(height: 24),
+              _buildMiddleSection(mobile),
+              const SizedBox(height: 24),
+              _buildCalendarSection(mobile),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -51,7 +100,7 @@ class DashboardProfesor extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '¡Buen día, ${user?['nombre_completo'] ?? 'Profesor'}!',
+            '¡Buen día, ${widget.user?['nombre_completo'] ?? 'Profesor'}!',
             style: TextStyle(
               color: Colors.white,
               fontSize: isMobile ? 18 : 24,
@@ -80,30 +129,23 @@ class DashboardProfesor extends StatelessWidget {
       _StatData(
         Icons.group_outlined,
         'Mis Grupos',
-        '4',
+        '${_resumen?['mis_grupos'] ?? 0}',
         'Activos',
         const Color(0xFF4CAF50),
       ),
       _StatData(
         Icons.people_outline,
         'Total Alumnos',
-        '87',
-        '+5 nuevos',
+        '${_resumen?['total_alumnos'] ?? 0}',
+        'Inscritos',
         const Color(0xFF26A69A),
       ),
       _StatData(
         Icons.folder_shared_outlined,
         'Evidencias Subidas',
-        '34',
-        'Este mes',
+        '${_resumen?['evidencias_subidas'] ?? 0}',
+        'Total',
         const Color(0xFF7E57C2),
-      ),
-      _StatData(
-        Icons.pending_actions_outlined,
-        'Pendientes',
-        '12',
-        'Por subir',
-        const Color(0xFFFFA726),
       ),
     ];
 
@@ -118,13 +160,7 @@ class DashboardProfesor extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(child: _buildStatCard(stats[2])),
-              const SizedBox(width: 12),
-              Expanded(child: _buildStatCard(stats[3])),
-            ],
-          ),
+          _buildStatCard(stats[2]),
         ],
       );
     }
@@ -256,38 +292,33 @@ class DashboardProfesor extends StatelessWidget {
             ],
           ),
           const Text(
-            'Últimas actividades en tus grupos',
+            'Últimas actividades de evidencias',
             style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
           ),
           const SizedBox(height: 16),
-          _activityTile(
-            Icons.add_photo_alternate,
-            const Color(0xFF4CAF50),
-            'Evidencia subida',
-            'Subiste evidencia de Carlos Méndez - Grupo 3A',
-            'Hace 30 min',
-          ),
-          _activityTile(
-            Icons.person_add_outlined,
-            const Color(0xFF7E57C2),
-            'Nuevo alumno asignado',
-            'Ana Sofía Rivera fue asignada al Grupo 3A',
-            'Hace 2 horas',
-          ),
-          _activityTile(
-            Icons.folder_outlined,
-            const Color(0xFF42A5F5),
-            'Evidencia pendiente',
-            'Grupo 3B tiene 5 alumnos sin evidencias esta semana',
-            'Hace 4 horas',
-          ),
-          _activityTile(
-            Icons.check_circle_outline,
-            const Color(0xFF26A69A),
-            'Evidencias completas',
-            'Grupo 2A tiene todas las evidencias al día',
-            'Ayer, 16:00',
-          ),
+          if (_isLoading)
+            const Center(child: LinearProgressIndicator(color: Color(0xFF4CAF50)))
+          else if (_bitacora.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(20),
+              child: Center(child: Text('Sin actividad reciente', style: TextStyle(color: Colors.grey))),
+            )
+          else
+            ..._bitacora.map((item) {
+              String dateStr = 'Reciente';
+              try {
+                DateTime dt = DateTime.parse(item['fecha']);
+                dateStr = DateFormat('dd/MM HH:mm').format(dt);
+              } catch (_) {}
+
+              return _activityTile(
+                Icons.history_edu_outlined,
+                const Color(0xFF4CAF50),
+                item['accion'] ?? 'Acción',
+                item['detalle'] ?? '',
+                dateStr,
+              );
+            }).toList(),
         ],
       ),
     );
@@ -338,24 +369,6 @@ class DashboardProfesor extends StatelessWidget {
             'Administrar todas las evidencias',
             const Color(0xFF7E57C2),
           ),
-          const SizedBox(height: 20),
-          // Progress bar
-          const Text(
-            'Progreso de Evidencias',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF555555),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _progressBar('Grupo 3A', 0.85, '85%', const Color(0xFF4CAF50)),
-          const SizedBox(height: 10),
-          _progressBar('Grupo 3B', 0.60, '60%', const Color(0xFFFFA726)),
-          const SizedBox(height: 10),
-          _progressBar('Grupo 2A', 1.0, '100%', const Color(0xFF4CAF50)),
-          const SizedBox(height: 10),
-          _progressBar('Grupo 1A', 0.45, '45%', const Color(0xFFEF5350)),
         ],
       ),
     );
@@ -415,43 +428,6 @@ class DashboardProfesor extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _progressBar(String label, double value, String percent, Color color) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Flexible(
-              child: Text(
-                label,
-                style: const TextStyle(fontSize: 12, color: Color(0xFF666666)),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Text(
-              percent,
-              style: TextStyle(
-                fontSize: 12,
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: value,
-            minHeight: 8,
-            backgroundColor: const Color(0xFFE8E8E8),
-            valueColor: AlwaysStoppedAnimation(color),
-          ),
-        ),
-      ],
     );
   }
 
