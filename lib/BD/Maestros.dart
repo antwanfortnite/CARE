@@ -22,8 +22,11 @@ class MaestrosApiService {
   }
 
   // Agregar un maestro
-  Future<bool> agregarMaestro(Map<String, dynamic> data) async {
+  Future<bool> agregarMaestro(Map<String, dynamic> data, {int? idUsuarioActual}) async {
     try {
+      if (idUsuarioActual != null) {
+        data['id_usuario_actual'] = idUsuarioActual;
+      }
       final response = await http.post(
         Uri.parse('$baseUrl/maestros'),
         headers: {"Content-Type": "application/json"},
@@ -46,9 +49,13 @@ class MaestrosApiService {
   // Actualizar un maestro
   Future<bool> actualizarMaestro(
     int idMaestro,
-    Map<String, dynamic> data,
-  ) async {
+    Map<String, dynamic> data, {
+    int? idUsuarioActual,
+  }) async {
     try {
+      if (idUsuarioActual != null) {
+        data['id_usuario_actual'] = idUsuarioActual;
+      }
       final response = await http.put(
         Uri.parse('$baseUrl/maestros/$idMaestro'),
         headers: {"Content-Type": "application/json"},
@@ -69,8 +76,11 @@ class MaestrosApiService {
   }
 
   // Eliminar un maestro (Eliminado Lógico)
-  Future<bool> eliminarMaestro(int idMaestro, Map<String, dynamic> data) async {
+  Future<bool> eliminarMaestro(int idMaestro, Map<String, dynamic> data, {int? idUsuarioActual}) async {
     try {
+      if (idUsuarioActual != null) {
+        data['id_usuario_actual'] = idUsuarioActual;
+      }
       final response = await http.put(
         Uri.parse('$baseUrl/maestros/$idMaestro'),
         headers: {"Content-Type": "application/json"},

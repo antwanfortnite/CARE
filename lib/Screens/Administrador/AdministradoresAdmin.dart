@@ -10,7 +10,8 @@ import '../../BD/Administradores.dart';
 import 'package:intl/intl.dart';
 
 class AdministradoresAdmin extends StatefulWidget {
-  const AdministradoresAdmin({super.key});
+  final Map<String, dynamic>? user;
+  const AdministradoresAdmin({super.key, this.user});
   @override
   State<AdministradoresAdmin> createState() => _AdministradoresAdminState();
 }
@@ -34,7 +35,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
     setState(() {
       _isLoading = true;
     });
-    
+
     List<dynamic> data = await _apiService.getAdministradores();
     setState(() {
       _admins = data.map((item) => _AdminData.fromJson(item)).toList();
@@ -57,12 +58,13 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
 
     return AdminScaffold(
       selectedIndex: 5,
+      user: widget.user,
       destinations: {
-        0: (_) => const DashboardAdmin(),
-        1: (_) => const MaestrosAdmin(),
-        2: (_) => const AlumnosAdmin(),
-        3: (_) => const GruposAdmin(),
-        4: (_) => const EvidenciasAdmin(),
+        0: (_) => DashboardAdmin(user: widget.user),
+        1: (_) => MaestrosAdmin(user: widget.user),
+        2: (_) => AlumnosAdmin(user: widget.user),
+        3: (_) => GruposAdmin(user: widget.user),
+        4: (_) => EvidenciasAdmin(user: widget.user),
       },
       bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
       body: _buildContent(mobile),
@@ -79,7 +81,9 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
         _buildFilterBar(),
         const SizedBox(height: 24),
         if (_isLoading)
-          const Center(child: CircularProgressIndicator(color: Color(0xFF4CAF50)))
+          const Center(
+            child: CircularProgressIndicator(color: Color(0xFF4CAF50)),
+          )
         else
           isMobile ? _buildAdminCards() : _buildAdminTable(),
       ],
@@ -651,7 +655,9 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
       readOnly: readOnly,
       enabled: !readOnly,
       maxLength: isCurp ? 18 : null,
-      textCapitalization: isCurp ? TextCapitalization.characters : TextCapitalization.none,
+      textCapitalization: isCurp
+          ? TextCapitalization.characters
+          : TextCapitalization.none,
       inputFormatters: isCurp
           ? [
               FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
@@ -1031,7 +1037,6 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                 ),
               ),
             ),
-
           ] else ...[
             Row(
               children: [
@@ -1112,7 +1117,6 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                 ),
               ],
             ),
-
           ],
           // ── Credenciales ──
           if (userCtrl != null && passCtrl != null) ...[
@@ -1378,7 +1382,6 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
         d = TextEditingController(),
         bd = TextEditingController(),
         age = TextEditingController(),
-
         usr = TextEditingController(),
         pwd = TextEditingController();
     bool hideUser = true, hidePass = true;
@@ -1448,7 +1451,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                         const SizedBox(width: 12),
                         ElevatedButton.icon(
                           onPressed: () async {
-                            final data = {
+                            final Map<String, dynamic> data = {
                               "nombre": n.text.trim(),
                               "correo": e.text.trim(),
                               "telefono": p.text.trim(),
@@ -1459,17 +1462,32 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                               "password": pwd.text.trim(),
                             };
 
-                            bool success = await _apiService.agregarAdministrador(data);
+                            bool success = await _apiService
+                                .agregarAdministrador(
+                                  data,
+                                  idUsuarioActual:
+                                      widget.user?['id_usuario'] ?? 0,
+                                );
 
                             if (success) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Administrador agregado exitosamente'), backgroundColor: Colors.green),
+                                const SnackBar(
+                                  content: Text(
+                                    'Administrador agregado exitosamente',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
                               );
                               _cargarAdministradores();
                               Navigator.pop(ctx);
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Error al agregar el administrador'), backgroundColor: Colors.red),
+                                const SnackBar(
+                                  content: Text(
+                                    'Error al agregar el administrador',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
                               );
                             }
                           },
@@ -1512,7 +1530,6 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
         d = TextEditingController(text: a.fechaContratacion),
         bd = TextEditingController(text: a.fechaNacimiento),
         age = TextEditingController(text: a.edad.toString()),
-
         usr = TextEditingController(text: a.usuario),
         pwd = TextEditingController(text: a.contrasena);
     bool hideUser = true, hidePass = true;
@@ -1606,7 +1623,6 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
         d = TextEditingController(text: a.fechaContratacion),
         bd = TextEditingController(text: a.fechaNacimiento),
         age = TextEditingController(text: a.edad.toString()),
-
         usr = TextEditingController(text: a.usuario),
         pwd = TextEditingController(text: a.contrasena);
     bool hideUser = true, hidePass = true;
@@ -1676,7 +1692,7 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                         const SizedBox(width: 12),
                         ElevatedButton.icon(
                           onPressed: () async {
-                            final data = {
+                            final Map<String, dynamic> data = {
                               "nombre": n.text.trim(),
                               "correo": e.text.trim(),
                               "telefono": p.text.trim(),
@@ -1687,17 +1703,33 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
                               "password": pwd.text.trim(),
                             };
 
-                            bool success = await _apiService.actualizarAdministrador(a.idAdmin, data);
+                            bool success = await _apiService
+                                .actualizarAdministrador(
+                                  a.idAdmin,
+                                  data,
+                                  idUsuarioActual:
+                                      widget.user?['id_usuario'] ?? 0,
+                                );
 
                             if (success) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Administrador actualizado exitosamente'), backgroundColor: Colors.green),
+                                const SnackBar(
+                                  content: Text(
+                                    'Administrador actualizado exitosamente',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
                               );
                               _cargarAdministradores();
                               Navigator.pop(ctx);
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Error al actualizar el administrador'), backgroundColor: Colors.red),
+                                const SnackBar(
+                                  content: Text(
+                                    'Error al actualizar el administrador',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
                               );
                             }
                           },
@@ -1751,16 +1783,25 @@ class _AdministradoresAdminState extends State<AdministradoresAdmin> {
           ),
           ElevatedButton(
             onPressed: () async {
-              bool success = await _apiService.eliminarAdministrador(a.idAdmin);
+              bool success = await _apiService.eliminarAdministrador(
+                a.idAdmin,
+                idUsuarioActual: widget.user?['id_usuario'] ?? 0,
+              );
               if (success) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Administrador eliminado exitosamente'), backgroundColor: Colors.green),
+                  const SnackBar(
+                    content: Text('Administrador eliminado exitosamente'),
+                    backgroundColor: Colors.green,
+                  ),
                 );
                 _cargarAdministradores();
                 Navigator.pop(ctx);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Error al eliminar el administrador'), backgroundColor: Colors.red),
+                  const SnackBar(
+                    content: Text('Error al eliminar el administrador'),
+                    backgroundColor: Colors.red,
+                  ),
                 );
               }
             },

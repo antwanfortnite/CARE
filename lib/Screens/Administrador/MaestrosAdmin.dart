@@ -9,7 +9,8 @@ import 'EvidenciasAdmin.dart';
 import 'AdministradoresAdmin.dart';
 
 class MaestrosAdmin extends StatefulWidget {
-  const MaestrosAdmin({super.key});
+  final Map<String, dynamic>? user;
+  const MaestrosAdmin({super.key, this.user});
   @override
   State<MaestrosAdmin> createState() => _MaestrosAdminState();
 }
@@ -63,7 +64,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
       'pin_acceso': '1234',
       'estado': 1,
     };
-    bool success = await _apiService.agregarMaestro(data);
+    bool success = await _apiService.agregarMaestro(data, idUsuarioActual: widget.user?['id_usuario'] ?? 0);
     if (success) {
       _loadMaestros();
     } else {
@@ -86,12 +87,13 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
 
     return AdminScaffold(
       selectedIndex: 1,
+      user: widget.user,
       destinations: {
-        0: (_) => const DashboardAdmin(),
-        2: (_) => const AlumnosAdmin(),
-        3: (_) => const GruposAdmin(),
-        4: (_) => const EvidenciasAdmin(),
-        5: (_) => const AdministradoresAdmin(),
+        0: (_) => DashboardAdmin(user: widget.user),
+        2: (_) => AlumnosAdmin(user: widget.user),
+        3: (_) => GruposAdmin(user: widget.user),
+        4: (_) => EvidenciasAdmin(user: widget.user),
+        5: (_) => AdministradoresAdmin(user: widget.user),
       },
       bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
       body: _buildContent(mobile),
@@ -1561,13 +1563,13 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                               'curp': c.text,
                               'fecha_contratacion': d.text,
                               'fecha_nacimiento': bd.text,
-
                               'edad': int.tryParse(age.text) ?? 0,
                               'pin_acceso': pwd.text,
                               'estado': true,
                             };
                             bool success = await _apiService.agregarMaestro(
                               data,
+                              idUsuarioActual: widget.user?['id_usuario'] ?? 0,
                             );
                             if (success) {
                               _loadMaestros();
@@ -1691,7 +1693,6 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                               'curp': c.text,
                               'fecha_contratacion': d.text,
                               'fecha_nacimiento': bd.text,
-
                               'edad': int.tryParse(age.text) ?? 0,
                               'pin_acceso': pwd.text,
                               'estado': 1,
@@ -1699,6 +1700,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
                             bool success = await _apiService.actualizarMaestro(
                               t.idMaestro,
                               data,
+                              idUsuarioActual: widget.user?['id_usuario'] ?? 0,
                             );
                             if (success) {
                               _loadMaestros();
@@ -1905,6 +1907,7 @@ class _MaestrosAdminState extends State<MaestrosAdmin> {
               bool success = await _apiService.eliminarMaestro(
                 t.idMaestro,
                 data,
+                idUsuarioActual: widget.user?['id_usuario'] ?? 0,
               );
               if (success) {
                 _loadMaestros();

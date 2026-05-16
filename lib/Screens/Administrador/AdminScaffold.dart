@@ -34,11 +34,15 @@ class AdminScaffold extends StatefulWidget {
   /// via pushReplacement. The current screen's index should NOT be in this map.
   final Map<int, WidgetBuilder> destinations;
 
+  /// The authenticated user object.
+  final Map<String, dynamic>? user;
+
   const AdminScaffold({
     super.key,
     required this.body,
     required this.selectedIndex,
     required this.destinations,
+    this.user,
     this.bodyPadding,
     this.topBarTitle,
   });
@@ -311,20 +315,22 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                 color: const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Admin Principal',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    widget.user?['nombre'] ?? 'Admin Principal',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                   ),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Text(
-                    'SUPERUSUARIO',
-                    style: TextStyle(fontSize: 9, color: Color(0xFF999999)),
+                    widget.user?['usuario'] != null 
+                        ? '@${widget.user!['usuario']}'
+                        : 'SUPERUSUARIO',
+                    style: const TextStyle(fontSize: 9, color: Color(0xFF999999)),
                   ),
-                  SizedBox(width: 8),
-                  CircleAvatar(
+                  const SizedBox(width: 8),
+                  const CircleAvatar(
                     radius: 16,
                     backgroundColor: Color(0xFF4CAF50),
                     child: Icon(Icons.person, size: 18, color: Colors.white),
@@ -362,15 +368,15 @@ class _AdminScaffoldState extends State<AdminScaffold> {
   void _showProfileDialog() {
     final mobile = _isMobile(context);
     // Datos falsos del admin actual
-    final nameCtrl = TextEditingController(text: 'Carlos Rodríguez López');
-    final emailCtrl = TextEditingController(text: 'carlos.rodriguez@care.edu');
-    final phoneCtrl = TextEditingController(text: '+52 614 123 4567');
-    final curpCtrl = TextEditingController(text: 'ROLC850312HDFDRR08');
-    final fechaNacCtrl = TextEditingController(text: '1985-03-12');
-    final edadCtrl = TextEditingController(text: '41');
-    final fechaContrCtrl = TextEditingController(text: '2018-08-15');
-    final userCtrl = TextEditingController(text: 'carlos.rodriguez');
-    final passCtrl = TextEditingController(text: 'admin1234');
+    final nameCtrl = TextEditingController(text: widget.user?['nombre'] ?? 'Carlos Rodríguez López');
+    final emailCtrl = TextEditingController(text: widget.user?['email'] ?? 'carlos.rodriguez@care.edu');
+    final phoneCtrl = TextEditingController(text: widget.user?['contacto'] ?? '+52 614 123 4567');
+    final curpCtrl = TextEditingController(text: widget.user?['curp'] ?? 'ROLC850312HDFDRR08');
+    final fechaNacCtrl = TextEditingController(text: widget.user?['fecha_nacimiento'] ?? '1985-03-12');
+    final edadCtrl = TextEditingController(text: '41'); // Se podría calcular
+    final fechaContrCtrl = TextEditingController(text: widget.user?['fecha_contratacion'] ?? '2018-08-15');
+    final userCtrl = TextEditingController(text: widget.user?['usuario'] ?? 'carlos.rodriguez');
+    final passCtrl = TextEditingController(text: widget.user?['password'] ?? 'admin1234');
     bool hideUser = true, hidePass = true;
 
     showDialog(

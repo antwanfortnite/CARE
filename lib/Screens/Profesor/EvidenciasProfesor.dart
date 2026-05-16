@@ -1249,7 +1249,10 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
             onPressed: () async {
               final idEvid = e['id_evidencia'];
               if (idEvid != null) {
-                final success = await EvidenciasApiService().eliminarEvidencia(idEvid);
+                final success = await EvidenciasApiService().eliminarEvidencia(
+                  idEvid,
+                  widget.user?['id_usuario'] ?? 0,
+                );
                 if (success) {
                   _loadData();
                   if (mounted) {
@@ -1643,7 +1646,10 @@ class _EvidenciasProfesorState extends State<EvidenciasProfesor> {
                                   'descripcion': descCtrl.text.trim(),
                                 };
 
-                                final success = await EvidenciasApiService().agregarEvidencia(data);
+                                final success = await EvidenciasApiService().agregarEvidencia(
+                                  data,
+                                  widget.user?['id_usuario'] ?? 0,
+                                );
                                 if (success) {
                                   _loadData();
                                   if (mounted) {

@@ -22,8 +22,11 @@ class GruposApiService {
   }
 
   // Agregar un grupo
-  Future<int?> agregarGrupo(Map<String, dynamic> data) async {
+  Future<int?> agregarGrupo(Map<String, dynamic> data, {int? idUsuarioActual}) async {
     try {
+      if (idUsuarioActual != null) {
+        data['id_usuario_actual'] = idUsuarioActual;
+      }
       final response = await http.post(
         Uri.parse('$baseUrl/grupos'),
         headers: {"Content-Type": "application/json"},
@@ -50,8 +53,11 @@ class GruposApiService {
   }
 
   // Actualizar un grupo
-  Future<bool> actualizarGrupo(int idGrupo, Map<String, dynamic> data) async {
+  Future<bool> actualizarGrupo(int idGrupo, Map<String, dynamic> data, {int? idUsuarioActual}) async {
     try {
+      if (idUsuarioActual != null) {
+        data['id_usuario_actual'] = idUsuarioActual;
+      }
       final response = await http.put(
         Uri.parse('$baseUrl/grupos/$idGrupo'),
         headers: {"Content-Type": "application/json"},

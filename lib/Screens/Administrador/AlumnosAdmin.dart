@@ -8,7 +8,8 @@ import 'EvidenciasAdmin.dart';
 import 'AdministradoresAdmin.dart';
 import '../../BD/Alumnos.dart';
 class AlumnosAdmin extends StatefulWidget {
-  const AlumnosAdmin({super.key});
+  final Map<String, dynamic>? user;
+  const AlumnosAdmin({super.key, this.user});
   @override
   State<AlumnosAdmin> createState() => _AlumnosAdminState();
 }
@@ -130,12 +131,13 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
 
     return AdminScaffold(
       selectedIndex: 2,
+      user: widget.user,
       destinations: {
-        0: (_) => const DashboardAdmin(),
-        1: (_) => const MaestrosAdmin(),
-        3: (_) => const GruposAdmin(),
-        4: (_) => const EvidenciasAdmin(),
-        5: (_) => const AdministradoresAdmin(),
+        0: (_) => DashboardAdmin(user: widget.user),
+        1: (_) => MaestrosAdmin(user: widget.user),
+        3: (_) => GruposAdmin(user: widget.user),
+        4: (_) => EvidenciasAdmin(user: widget.user),
+        5: (_) => AdministradoresAdmin(user: widget.user),
       },
       bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
       body: _buildContent(mobile),
@@ -1542,6 +1544,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                               pe.text,
                               pp.text,
                               pwd.text,
+                              widget.user?['id_usuario'] ?? 0,
                             );
 
                             print('Resultado de agregarPadre: idPadre = $idPadre');
@@ -1555,6 +1558,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                                 c.text,
                                 pwd.text,
                                 fechaNacimientoStr,
+                                widget.user?['id_usuario'] ?? 0,
                               );
                               
                               print('Resultado de agregarAlumno: $success');
@@ -1731,6 +1735,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                                 pe.text,
                                 pp.text,
                                 pwd.text,
+                                widget.user?['id_usuario'] ?? 0,
                               );
                             }
 
@@ -1741,6 +1746,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                               s.estado,
                               fechaNacimientoStr,
                               s.idGrupo,
+                              widget.user?['id_usuario'] ?? 0,
                               idPadre: s.idPadre,
                             );
 
@@ -1947,6 +1953,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                 0, // 0 = Inactivo/Dar de baja
                 s.fechaNacimiento,
                 s.idGrupo,
+                widget.user?['id_usuario'] ?? 0,
               );
               if (success) {
                 _cargarAlumnos();
@@ -2035,6 +2042,7 @@ class _AlumnosAdminState extends State<AlumnosAdmin>
                 1, // 1 = Activo/Cursando
                 s.fechaNacimiento,
                 s.idGrupo,
+                widget.user?['id_usuario'] ?? 0,
               );
               if (success) {
                 _cargarAlumnos();

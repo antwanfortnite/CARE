@@ -48,6 +48,7 @@ class ApiService {
     String correo,
     String telefono,
     String pin,
+    int idUsuarioActual,
   ) async {
     try {
       final response = await http.post(
@@ -58,6 +59,7 @@ class ApiService {
           "email": correo,
           "contacto": telefono,
           "pin_acceso": pin,
+          "id_usuario_actual": idUsuarioActual,
         }),
       );
 
@@ -94,7 +96,8 @@ class ApiService {
     String nombre,
     String curp,
     String pin,
-    String fechaNacimiento, {
+    String fechaNacimiento,
+    int idUsuarioActual, {
     int estado = 1,
   }) async {
     try {
@@ -108,6 +111,7 @@ class ApiService {
           "pin_acceso": pin,
           "fecha_nacimiento": fechaNacimiento,
           "estado": estado,
+          "id_usuario_actual": idUsuarioActual,
         }),
       );
 
@@ -133,7 +137,8 @@ class ApiService {
     String curp,
     int estado,
     String fechaNacimiento,
-    int? idGrupo, {
+    int? idGrupo,
+    int idUsuarioActual, {
     int? idPadre,
   }) async {
     try {
@@ -143,6 +148,7 @@ class ApiService {
         "estado": estado,
         "fecha_nacimiento": fechaNacimiento,
         "id_grupo": idGrupo,
+        "id_usuario_actual": idUsuarioActual,
       };
       if (idPadre != null) {
         bodyData["id_padre"] = idPadre;
@@ -173,6 +179,7 @@ class ApiService {
     String correo,
     String telefono,
     String pin,
+    int idUsuarioActual,
   ) async {
     try {
       final response = await http.put(
@@ -183,6 +190,7 @@ class ApiService {
           "email": correo,
           "contacto": telefono,
           "pin_acceso": pin,
+          "id_usuario_actual": idUsuarioActual,
         }),
       );
 

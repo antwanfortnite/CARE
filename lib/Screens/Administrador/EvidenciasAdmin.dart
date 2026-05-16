@@ -7,7 +7,8 @@ import 'GruposAdmin.dart';
 import 'AdministradoresAdmin.dart';
 
 class EvidenciasAdmin extends StatefulWidget {
-  const EvidenciasAdmin({super.key});
+  final Map<String, dynamic>? user;
+  const EvidenciasAdmin({super.key, this.user});
   @override
   State<EvidenciasAdmin> createState() => _EvidenciasAdminState();
 }
@@ -278,12 +279,13 @@ class _EvidenciasAdminState extends State<EvidenciasAdmin> {
 
     return AdminScaffold(
       selectedIndex: 4,
+      user: widget.user,
       destinations: {
-        0: (_) => const DashboardAdmin(),
-        1: (_) => const MaestrosAdmin(),
-        2: (_) => const AlumnosAdmin(),
-        3: (_) => const GruposAdmin(),
-        5: (_) => const AdministradoresAdmin(),
+        0: (_) => DashboardAdmin(user: widget.user),
+        1: (_) => MaestrosAdmin(user: widget.user),
+        2: (_) => AlumnosAdmin(user: widget.user),
+        3: (_) => GruposAdmin(user: widget.user),
+        5: (_) => AdministradoresAdmin(user: widget.user),
       },
       bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
       body: _buildBody(mobile),

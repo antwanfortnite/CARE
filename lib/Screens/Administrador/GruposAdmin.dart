@@ -10,7 +10,8 @@ import '../../BD/Maestros.dart';
 import '../../BD/Alumnos.dart';
 
 class GruposAdmin extends StatefulWidget {
-  const GruposAdmin({super.key});
+  final Map<String, dynamic>? user;
+  const GruposAdmin({super.key, this.user});
   @override
   State<GruposAdmin> createState() => _GruposAdminState();
 }
@@ -35,7 +36,7 @@ class _GruposAdminState extends State<GruposAdmin> {
       final gruposData = await GruposApiService().getGrupos();
       final maestrosData = await MaestrosApiService().getMaestros();
       final alumnosData = await ApiService().getAlumnos();
-      
+
       final colors = [
         const Color(0xFF7E57C2),
         const Color(0xFF4CAF50),
@@ -44,17 +45,21 @@ class _GruposAdminState extends State<GruposAdmin> {
         const Color(0xFF42A5F5),
         const Color(0xFFFFA726),
       ];
-      
+
       final mappedGroups = gruposData.map((g) {
         final idMaestro = g['id_maestro'];
         final teacherObj = maestrosData.firstWhere(
-          (m) => m['id_maestro'] == idMaestro, 
-          orElse: () => null
+          (m) => m['id_maestro'] == idMaestro,
+          orElse: () => null,
         );
-        final String teacherName = teacherObj != null ? (teacherObj['nombre_completo'] ?? 'Sin maestro') : 'Sin maestro';
-        
-        final assignedStudents = alumnosData.where((a) => a['id_grupo'] == g['id_grupo']).toList();
-        
+        final String teacherName = teacherObj != null
+            ? (teacherObj['nombre_completo'] ?? 'Sin maestro')
+            : 'Sin maestro';
+
+        final assignedStudents = alumnosData
+            .where((a) => a['id_grupo'] == g['id_grupo'])
+            .toList();
+
         return _GroupData(
           idGrupo: g['id_grupo'] ?? 0,
           name: g['nombre_grupo'] ?? 'Sin nombre',
@@ -81,6 +86,7 @@ class _GruposAdminState extends State<GruposAdmin> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
   bool _isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 1050;
 
@@ -96,12 +102,13 @@ class _GruposAdminState extends State<GruposAdmin> {
 
     return AdminScaffold(
       selectedIndex: 3,
+      user: widget.user,
       destinations: {
-        0: (_) => const DashboardAdmin(),
-        1: (_) => const MaestrosAdmin(),
-        2: (_) => const AlumnosAdmin(),
-        4: (_) => const EvidenciasAdmin(),
-        5: (_) => const AdministradoresAdmin(),
+        0: (_) => DashboardAdmin(user: widget.user),
+        1: (_) => MaestrosAdmin(user: widget.user),
+        2: (_) => AlumnosAdmin(user: widget.user),
+        4: (_) => EvidenciasAdmin(user: widget.user),
+        5: (_) => AdministradoresAdmin(user: widget.user),
       },
       bodyPadding: EdgeInsets.all(mobile ? 16 : 28),
       body: _buildContent(mobile),
@@ -453,7 +460,9 @@ class _GruposAdminState extends State<GruposAdmin> {
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
-                                g.teacherName.isEmpty ? 'Sin maestro' : g.teacherName,
+                                g.teacherName.isEmpty
+                                    ? 'Sin maestro'
+                                    : g.teacherName,
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
@@ -511,7 +520,10 @@ class _GruposAdminState extends State<GruposAdmin> {
                                     ),
                                     child: Center(
                                       child: Text(
-                                        _getInitials(g.students[i]['nombre_completo'] ?? ''),
+                                        _getInitials(
+                                          g.students[i]['nombre_completo'] ??
+                                              '',
+                                        ),
                                         style: TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.bold,
@@ -777,7 +789,9 @@ class _GruposAdminState extends State<GruposAdmin> {
                   children: [
                     CircleAvatar(
                       radius: 12,
-                      backgroundColor: const Color(0xFF26A69A).withOpacity(0.15),
+                      backgroundColor: const Color(
+                        0xFF26A69A,
+                      ).withOpacity(0.15),
                       child: Text(
                         _getInitials(t['nombre_completo'] ?? ''),
                         style: const TextStyle(
@@ -788,7 +802,10 @@ class _GruposAdminState extends State<GruposAdmin> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(t['nombre_completo'] ?? 'Sin Nombre', style: const TextStyle(fontSize: 13)),
+                    Text(
+                      t['nombre_completo'] ?? 'Sin Nombre',
+                      style: const TextStyle(fontSize: 13),
+                    ),
                   ],
                 ),
               ),
@@ -871,7 +888,9 @@ class _GruposAdminState extends State<GruposAdmin> {
                         InkWell(
                           onTap: () {
                             setDlg(() {
-                              selectedStudents.removeWhere((item) => item['id_alumno'] == s['id_alumno']);
+                              selectedStudents.removeWhere(
+                                (item) => item['id_alumno'] == s['id_alumno'],
+                              );
                             });
                           },
                           borderRadius: BorderRadius.circular(10),
@@ -952,7 +971,9 @@ class _GruposAdminState extends State<GruposAdmin> {
                       query.isEmpty ||
                       name.contains(query) ||
                       curp.contains(query);
-                  final notSelected = !selectedStudents.any((selected) => selected['id_alumno'] == s['id_alumno']);
+                  final notSelected = !selectedStudents.any(
+                    (selected) => selected['id_alumno'] == s['id_alumno'],
+                  );
                   return matchesSearch && notSelected;
                 }).toList();
 
@@ -1191,47 +1212,87 @@ class _GruposAdminState extends State<GruposAdmin> {
                         ),
                         const SizedBox(width: 12),
                         ElevatedButton.icon(
-                          onPressed: isSaving ? null : () async {
-                            if (nameCtrl.text.trim().isNotEmpty) {
-                              setDlg(() => isSaving = true);
-                              final nuevoGrupoId = await GruposApiService().agregarGrupo({
-                                "nombre_grupo": nameCtrl.text.trim(),
-                                "turno": turnoCtrl.text.trim().isEmpty ? 'N/A' : turnoCtrl.text.trim(),
-                                "aula": aulaCtrl.text.trim().isEmpty ? 'N/A' : aulaCtrl.text.trim(),
-                                "capacidad_maxima": int.tryParse(capCtrl.text.trim()) ?? 30,
-                                "id_maestro": selectedTeacherId,
-                              });
+                          onPressed: isSaving
+                              ? null
+                              : () async {
+                                  if (nameCtrl.text.trim().isNotEmpty) {
+                                    setDlg(() => isSaving = true);
+                                    final nuevoGrupoId =
+                                        await GruposApiService().agregarGrupo({
+                                          "nombre_grupo": nameCtrl.text.trim(),
+                                          "turno": turnoCtrl.text.trim().isEmpty
+                                              ? 'N/A'
+                                              : turnoCtrl.text.trim(),
+                                          "aula": aulaCtrl.text.trim().isEmpty
+                                              ? 'N/A'
+                                              : aulaCtrl.text.trim(),
+                                          "capacidad_maxima":
+                                              int.tryParse(
+                                                capCtrl.text.trim(),
+                                              ) ??
+                                              30,
+                                          "id_maestro": selectedTeacherId,
+                                          "id_usuario_actual":
+                                              widget.user?['id_usuario'] ?? 0,
+                                        });
 
-                              if (nuevoGrupoId != null && selectedStudents.isNotEmpty) {
-                                await Future.wait(selectedStudents.map((s) {
-                                  final fechaNac = s['fecha_nacimiento'] != null 
-                                      ? s['fecha_nacimiento'].toString().split('T').first 
-                                      : '2000-01-01';
-                                  return ApiService().actualizarAlumno(
-                                    s['id_alumno'],
-                                    s['nombre_completo'] ?? 'Sin Nombre',
-                                    s['curp'] ?? '',
-                                    s['estado'] ?? 1,
-                                    fechaNac,
-                                    nuevoGrupoId,
-                                    idPadre: s['id_padre'],
-                                  );
-                                }));
-                              }
-                              
-                              if (mounted) {
-                                Navigator.pop(ctx);
-                                _cargarDatos(); 
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Grupo creado correctamente.')),
-                                );
-                              }
-                            }
-                          },
-                          icon: isSaving 
-                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                              : const Icon(Icons.check_circle_outline, size: 18),
-                          label: Text(isSaving ? 'Guardando...' : 'Guardar Grupo'),
+                                    if (nuevoGrupoId != null &&
+                                        selectedStudents.isNotEmpty) {
+                                      await Future.wait(
+                                        selectedStudents.map((s) {
+                                          final fechaNac =
+                                              s['fecha_nacimiento'] != null
+                                              ? s['fecha_nacimiento']
+                                                    .toString()
+                                                    .split('T')
+                                                    .first
+                                              : '2000-01-01';
+                                          return ApiService().actualizarAlumno(
+                                            s['id_alumno'],
+                                            s['nombre_completo'] ??
+                                                'Sin Nombre',
+                                            s['curp'] ?? '',
+                                            s['estado'] ?? 1,
+                                            fechaNac,
+                                            nuevoGrupoId,
+                                            widget.user?['id_usuario'] ?? 0,
+                                            idPadre: s['id_padre'],
+                                          );
+                                        }),
+                                      );
+                                    }
+
+                                    if (mounted) {
+                                      Navigator.pop(ctx);
+                                      _cargarDatos();
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Grupo creado correctamente.',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                          icon: isSaving
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.check_circle_outline,
+                                  size: 18,
+                                ),
+                          label: Text(
+                            isSaving ? 'Guardando...' : 'Guardar Grupo',
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF4CAF50),
                             foregroundColor: Colors.white,
@@ -1389,83 +1450,149 @@ class _GruposAdminState extends State<GruposAdmin> {
                         ),
                         const SizedBox(width: 12),
                         ElevatedButton.icon(
-                          onPressed: isSaving ? null : () async {
-                            if (nameCtrl.text.trim().isNotEmpty) {
-                              setDlg(() => isSaving = true);
-                              
-                              final updated = await GruposApiService().actualizarGrupo(
-                                g.idGrupo,
-                                {
-                                  "id_grupo": g.idGrupo,
-                                  "nombre_grupo": nameCtrl.text.trim(),
-                                  "turno": turnoCtrl.text.trim().isEmpty ? 'N/A' : turnoCtrl.text.trim(),
-                                  "aula": aulaCtrl.text.trim().isEmpty ? 'N/A' : aulaCtrl.text.trim(),
-                                  "capacidad_maxima": int.tryParse(capCtrl.text.trim()) ?? 30,
-                                  "id_maestro": selectedTeacherId,
-                                }
-                              );
+                          onPressed: isSaving
+                              ? null
+                              : () async {
+                                  if (nameCtrl.text.trim().isNotEmpty) {
+                                    setDlg(() => isSaving = true);
 
-                              if (updated) {
-                                // Find removed students
-                                final removedStudents = g.students.where((oldS) => !selectedStudents.any((newS) => newS['id_alumno'] == oldS['id_alumno'])).toList();
-                                // Find added students
-                                final addedStudents = selectedStudents.where((newS) => !g.students.any((oldS) => oldS['id_alumno'] == newS['id_alumno'])).toList();
+                                    final updated = await GruposApiService()
+                                        .actualizarGrupo(g.idGrupo, {
+                                          "id_grupo": g.idGrupo,
+                                          "nombre_grupo": nameCtrl.text.trim(),
+                                          "turno": turnoCtrl.text.trim().isEmpty
+                                              ? 'N/A'
+                                              : turnoCtrl.text.trim(),
+                                          "aula": aulaCtrl.text.trim().isEmpty
+                                              ? 'N/A'
+                                              : aulaCtrl.text.trim(),
+                                          "capacidad_maxima":
+                                              int.tryParse(
+                                                capCtrl.text.trim(),
+                                              ) ??
+                                              30,
+                                          "id_maestro": selectedTeacherId,
+                                          "id_usuario_actual":
+                                              widget.user?['id_usuario'] ?? 0,
+                                        });
 
-                                final futures = <Future>[];
-                                
-                                for (var s in removedStudents) {
-                                  final fechaNac = s['fecha_nacimiento'] != null 
-                                      ? s['fecha_nacimiento'].toString().split('T').first 
-                                      : '2000-01-01';
-                                  futures.add(ApiService().actualizarAlumno(
-                                    s['id_alumno'],
-                                    s['nombre_completo'] ?? 'Sin Nombre',
-                                    s['curp'] ?? '',
-                                    s['estado'] ?? 1,
-                                    fechaNac,
-                                    null, // set group to null
-                                    idPadre: s['id_padre'],
-                                  ));
-                                }
+                                    if (updated) {
+                                      // Find removed students
+                                      final removedStudents = g.students
+                                          .where(
+                                            (oldS) => !selectedStudents.any(
+                                              (newS) =>
+                                                  newS['id_alumno'] ==
+                                                  oldS['id_alumno'],
+                                            ),
+                                          )
+                                          .toList();
+                                      // Find added students
+                                      final addedStudents = selectedStudents
+                                          .where(
+                                            (newS) => !g.students.any(
+                                              (oldS) =>
+                                                  oldS['id_alumno'] ==
+                                                  newS['id_alumno'],
+                                            ),
+                                          )
+                                          .toList();
 
-                                for (var s in addedStudents) {
-                                  final fechaNac = s['fecha_nacimiento'] != null 
-                                      ? s['fecha_nacimiento'].toString().split('T').first 
-                                      : '2000-01-01';
-                                  futures.add(ApiService().actualizarAlumno(
-                                    s['id_alumno'],
-                                    s['nombre_completo'] ?? 'Sin Nombre',
-                                    s['curp'] ?? '',
-                                    s['estado'] ?? 1,
-                                    fechaNac,
-                                    g.idGrupo, // assign to group
-                                    idPadre: s['id_padre'],
-                                  ));
-                                }
+                                      final futures = <Future>[];
 
-                                await Future.wait(futures);
+                                      for (var s in removedStudents) {
+                                        final fechaNac =
+                                            s['fecha_nacimiento'] != null
+                                            ? s['fecha_nacimiento']
+                                                  .toString()
+                                                  .split('T')
+                                                  .first
+                                            : '2000-01-01';
+                                        futures.add(
+                                          ApiService().actualizarAlumno(
+                                            s['id_alumno'],
+                                            s['nombre_completo'] ??
+                                                'Sin Nombre',
+                                            s['curp'] ?? '',
+                                            s['estado'] ?? 1,
+                                            fechaNac,
+                                            null, // set group to null
+                                            widget.user?['id_usuario'] ?? 0,
+                                            idPadre: s['id_padre'],
+                                          ),
+                                        );
+                                      }
 
-                                if (mounted) {
-                                  Navigator.pop(ctx);
-                                  _cargarDatos();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Grupo actualizado correctamente.')),
-                                  );
-                                }
-                              } else {
-                                setDlg(() => isSaving = false);
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Error al actualizar el grupo.')),
-                                  );
-                                }
-                              }
-                            }
-                          },
-                          icon: isSaving 
-                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                              : const Icon(Icons.check_circle_outline, size: 18),
-                          label: Text(isSaving ? 'Guardando...' : 'Guardar Cambios'),
+                                      for (var s in addedStudents) {
+                                        final fechaNac =
+                                            s['fecha_nacimiento'] != null
+                                            ? s['fecha_nacimiento']
+                                                  .toString()
+                                                  .split('T')
+                                                  .first
+                                            : '2000-01-01';
+                                        futures.add(
+                                          ApiService().actualizarAlumno(
+                                            s['id_alumno'],
+                                            s['nombre_completo'] ??
+                                                'Sin Nombre',
+                                            s['curp'] ?? '',
+                                            s['estado'] ?? 1,
+                                            fechaNac,
+                                            g.idGrupo, // assign to group
+                                            widget.user?['id_usuario'] ?? 0,
+                                            idPadre: s['id_padre'],
+                                          ),
+                                        );
+                                      }
+
+                                      await Future.wait(futures);
+
+                                      if (mounted) {
+                                        Navigator.pop(ctx);
+                                        _cargarDatos();
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Grupo actualizado correctamente.',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    } else {
+                                      setDlg(() => isSaving = false);
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Error al actualizar el grupo.',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  }
+                                },
+                          icon: isSaving
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.check_circle_outline,
+                                  size: 18,
+                                ),
+                          label: Text(
+                            isSaving ? 'Guardando...' : 'Guardar Cambios',
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF4CAF50),
                             foregroundColor: Colors.white,

@@ -74,7 +74,7 @@ class _PaginaWebState extends State<PaginaWeb> {
     if (_loggedInRole == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const DashboardAdmin()),
+        MaterialPageRoute(builder: (_) => DashboardAdmin(user: _loggedInUser)),
       );
     } else if (_loggedInRole == 1) {
       Navigator.push(

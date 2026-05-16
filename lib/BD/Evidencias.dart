@@ -22,10 +22,12 @@ class EvidenciasApiService {
   }
 
   // Eliminar una evidencia
-  Future<bool> eliminarEvidencia(int idEvidencia) async {
+  Future<bool> eliminarEvidencia(int idEvidencia, int idUsuarioActual) async {
     try {
       final response = await http.delete(
         Uri.parse('$baseUrl/evidencias/$idEvidencia'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"id_usuario_actual": idUsuarioActual}),
       );
 
       if (response.statusCode == 200) {
@@ -42,8 +44,9 @@ class EvidenciasApiService {
   }
 
   // Agregar una evidencia
-  Future<bool> agregarEvidencia(Map<String, dynamic> data) async {
+  Future<bool> agregarEvidencia(Map<String, dynamic> data, int idUsuarioActual) async {
     try {
+      data['id_usuario_actual'] = idUsuarioActual;
       final response = await http.post(
         Uri.parse('$baseUrl/evidencias'),
         headers: {'Content-Type': 'application/json'},

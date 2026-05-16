@@ -22,8 +22,11 @@ class AdministradoresApiService {
   }
 
   // Agregar un administrador
-  Future<bool> agregarAdministrador(Map<String, dynamic> data) async {
+  Future<bool> agregarAdministrador(Map<String, dynamic> data, {int? idUsuarioActual}) async {
     try {
+      if (idUsuarioActual != null) {
+        data['id_usuario_actual'] = idUsuarioActual;
+      }
       final response = await http.post(
         Uri.parse('$baseUrl/usuarios'),
         headers: {"Content-Type": "application/json"},
@@ -44,8 +47,11 @@ class AdministradoresApiService {
   }
 
   // Actualizar un administrador
-  Future<bool> actualizarAdministrador(int idUsuario, Map<String, dynamic> data) async {
+  Future<bool> actualizarAdministrador(int idUsuario, Map<String, dynamic> data, {int? idUsuarioActual}) async {
     try {
+      if (idUsuarioActual != null) {
+        data['id_usuario_actual'] = idUsuarioActual;
+      }
       final response = await http.put(
         Uri.parse('$baseUrl/usuarios/$idUsuario'),
         headers: {"Content-Type": "application/json"},
@@ -66,10 +72,12 @@ class AdministradoresApiService {
   }
 
   // Eliminar un administrador
-  Future<bool> eliminarAdministrador(int idUsuario) async {
+  Future<bool> eliminarAdministrador(int idUsuario, {int? idUsuarioActual}) async {
     try {
       final response = await http.delete(
         Uri.parse('$baseUrl/usuarios/$idUsuario'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"id_usuario_actual": idUsuarioActual ?? 0}),
       );
 
       if (response.statusCode == 200 || response.statusCode == 204) {

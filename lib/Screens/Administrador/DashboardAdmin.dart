@@ -5,9 +5,42 @@ import 'AlumnosAdmin.dart';
 import 'GruposAdmin.dart';
 import 'EvidenciasAdmin.dart';
 import 'AdministradoresAdmin.dart';
+import '../../BD/Dashboard.dart';
 
-class DashboardAdmin extends StatelessWidget {
-  const DashboardAdmin({super.key});
+class DashboardAdmin extends StatefulWidget {
+  final Map<String, dynamic>? user;
+  const DashboardAdmin({super.key, this.user});
+
+  @override
+  State<DashboardAdmin> createState() => _DashboardAdminState();
+}
+
+class _DashboardAdminState extends State<DashboardAdmin> {
+  final DashboardApiService _apiService = DashboardApiService();
+  
+  Map<String, dynamic>? _resumen;
+  List<dynamic> _bitacora = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    setState(() => _isLoading = true);
+    final resumen = await _apiService.getResumen();
+    final bitacora = await _apiService.getBitacoraReciente();
+    
+    if (mounted) {
+      setState(() {
+        _resumen = resumen;
+        _bitacora = bitacora;
+        _isLoading = false;
+      });
+    }
+  }
 
   bool _isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < 700;
@@ -18,27 +51,39 @@ class DashboardAdmin extends StatelessWidget {
 
     return AdminScaffold(
       selectedIndex: 0,
+      user: widget.user,
       destinations: {
-        1: (_) => const MaestrosAdmin(),
-        2: (_) => const AlumnosAdmin(),
-        3: (_) => const GruposAdmin(),
-        4: (_) => const EvidenciasAdmin(),
-        5: (_) => const AdministradoresAdmin(),
+        1: (_) => MaestrosAdmin(user: widget.user),
+        2: (_) => AlumnosAdmin(user: widget.user),
+        3: (_) => GruposAdmin(user: widget.user),
+        4: (_) => EvidenciasAdmin(user: widget.user),
+        5: (_) => AdministradoresAdmin(user: widget.user),
       },
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildWelcomeBanner(mobile),
-          const SizedBox(height: 24),
-          _buildStatCards(mobile),
-          const SizedBox(height: 24),
-          _buildMiddleSection(mobile),
-          const SizedBox(height: 24),
-          _buildCalendarSection(mobile),
-        ],
+      body: RefreshIndicator(
+        onRefresh: _fetchData,
+        color: const Color(0xFF4CAF50),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildWelcomeBanner(mobile),
+              const SizedBox(height: 24),
+              _buildStatCards(mobile),
+              const SizedBox(height: 24),
+              _buildMiddleSection(mobile),
+              const SizedBox(height: 24),
+              _buildCalendarSection(mobile),
+            ],
+          ),
+        ),
       ),
     );
   }
+
+  // Las funciones auxiliares ahora son métodos de la clase _DashboardAdminState
+  // pero el resto del archivo sigue igual, solo cambiaré las que necesitan datos reales.
+
 
   // ──────── BANNER DE BIENVENIDA ────────
   Widget _buildWelcomeBanner(bool isMobile) {
@@ -84,21 +129,21 @@ class DashboardAdmin extends StatelessWidget {
       _StatData(
         Icons.people_outline,
         'Total Alumnos',
-        '1,284',
-        '+12%',
+        _isLoading ? '...' : (_resumen?['total_alumnos']?.toString() ?? '0'),
+        '+12%', // Podría venir de la API si se calcula
         const Color(0xFF4CAF50),
       ),
       _StatData(
         Icons.person_outline,
         'Total Maestros',
-        '86',
+        _isLoading ? '...' : (_resumen?['total_maestros']?.toString() ?? '0'),
         'Estable',
         const Color(0xFF26A69A),
       ),
       _StatData(
         Icons.grid_view,
         'Grupos Activos',
-        '42',
+        _isLoading ? '...' : (_resumen?['grupos_activos']?.toString() ?? '0'),
         'Activos',
         const Color(0xFF4CAF50),
       ),
@@ -251,9 +296,9 @@ class DashboardAdmin extends StatelessWidget {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: _fetchData,
                 child: const Text(
-                  'Ver todo',
+                  'Actualizar',
                   style: TextStyle(color: Color(0xFF4CAF50), fontSize: 13),
                 ),
               ),
@@ -264,37 +309,52 @@ class DashboardAdmin extends StatelessWidget {
             style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
           ),
           const SizedBox(height: 16),
-          _activityTile(
-            Icons.person_add_outlined,
-            const Color(0xFF7E57C2),
-            'Nuevo alumno inscrito',
-            'Carlos Méndez se unió al grupo 3A de Ciencias',
-            'Hace 15 min',
-          ),
-          _activityTile(
-            Icons.description_outlined,
-            const Color(0xFF42A5F5),
-            'Reporte de calificaciones',
-            'La Profesora Elena subió notas parciales - Matemáticas I',
-            'Hace 2 horas',
-          ),
-          _activityTile(
-            Icons.swap_horiz,
-            const Color(0xFFFFA726),
-            'Cambio de horario',
-            'Aula 402 reasignada para el taller de Arte Digital',
-            'Hace 5 horas',
-          ),
-          _activityTile(
-            Icons.lock_outline,
-            const Color(0xFFEF5350),
-            'Seguridad',
-            'Restablecimiento de contraseña solicitado por Admin #3',
-            'Ayer, 18:30',
-          ),
+          if (_isLoading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: CircularProgressIndicator(color: Color(0xFF4CAF50)),
+              ),
+            )
+          else if (_bitacora.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Text('No hay actividad reciente'),
+              ),
+            )
+          else
+            ..._bitacora.take(5).map((log) {
+              return _activityTile(
+                _getIconForAccion(log['accion']),
+                _getColorForAccion(log['accion']),
+                log['accion'] ?? 'Acción',
+                '${log['detalle']} - por ${log['autor']}',
+                log['fecha'] ?? 'Hace poco',
+              );
+            }).toList(),
         ],
       ),
     );
+  }
+
+  IconData _getIconForAccion(String? accion) {
+    if (accion == null) return Icons.info_outline;
+    final a = accion.toLowerCase();
+    if (a.contains('agreg') || a.contains('crear')) return Icons.add_circle_outline;
+    if (a.contains('actualiz') || a.contains('edit')) return Icons.edit_outlined;
+    if (a.contains('elimin')) return Icons.delete_outline;
+    if (a.contains('login') || a.contains('sesion')) return Icons.login;
+    return Icons.history;
+  }
+
+  Color _getColorForAccion(String? accion) {
+    if (accion == null) return const Color(0xFF999999);
+    final a = accion.toLowerCase();
+    if (a.contains('agreg') || a.contains('crear')) return const Color(0xFF4CAF50);
+    if (a.contains('actualiz') || a.contains('edit')) return const Color(0xFF2196F3);
+    if (a.contains('elimin')) return const Color(0xFFF44336);
+    return const Color(0xFF7E57C2);
   }
 
   Widget _buildSystemStatusSection() {
