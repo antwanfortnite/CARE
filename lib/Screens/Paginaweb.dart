@@ -11,9 +11,6 @@ import 'Administrador/DashboardAdmin.dart';
 import 'Profesor/DashboardProfesor.dart';
 import 'Alumno/DashboardAlumno.dart';
 
-// ══════════════════════════════════════════════════════
-//  Paleta de colores CARE
-// ══════════════════════════════════════════════════════
 const _kGreen = Color(0xFF2E7D32);
 const _kGreenLight = Color(0xFF4CAF50);
 const _kGreenPale = Color(0xFFE8F5E9);
@@ -22,14 +19,8 @@ const _kText = Color(0xFF1B1B1B);
 const _kTextMuted = Color(0xFF5C5C5C);
 const _kWhite = Colors.white;
 
-// ══════════════════════════════════════════════════════
-//  Secciones de la página
-// ══════════════════════════════════════════════════════
 enum _Section { inicio, conocenos, planes, padre }
 
-// ══════════════════════════════════════════════════════
-//  PaginaWeb — root widget
-// ══════════════════════════════════════════════════════
 class PaginaWeb extends StatefulWidget {
   const PaginaWeb({super.key});
 
@@ -204,6 +195,14 @@ class _PaginaWebState extends State<PaginaWeb> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _kBg,
+      drawer: _MobileDrawer(
+        current: _current,
+        loggedInRole: _loggedInRole,
+        onNavigate: _navigate,
+        onLogin: _showLogin,
+        onLogout: _logout,
+        onGoToDashboard: _goToDashboard,
+      ),
       body: Column(
         children: [
           _NavBar(
@@ -224,6 +223,7 @@ class _PaginaWebState extends State<PaginaWeb> {
     switch (_current) {
       case _Section.inicio:
         return _InicioRedisenadoSection(
+          isAdmin: _loggedInRole == 2,
           direccionLinea1: _direccionLinea1,
           direccionLinea2: _direccionLinea2,
           correo: _correoCentro,
@@ -260,9 +260,6 @@ class _PaginaWebState extends State<PaginaWeb> {
   }
 }
 
-// ══════════════════════════════════════════════════════
-//  Modelo para carrusel
-// ══════════════════════════════════════════════════════
 class _CarouselItem {
   dynamic imagen;
   String texto;
@@ -270,9 +267,6 @@ class _CarouselItem {
   _CarouselItem({required this.imagen, required this.texto});
 }
 
-// ══════════════════════════════════════════════════════
-//  NavBar
-// ══════════════════════════════════════════════════════
 class _NavBar extends StatelessWidget {
   const _NavBar({
     required this.current,
@@ -290,14 +284,130 @@ class _NavBar extends StatelessWidget {
   final VoidCallback? onLogout;
   final VoidCallback? onGoToDashboard;
 
+  String _titleBySection() {
+    switch (current) {
+      case _Section.inicio:
+        return 'Inicio';
+      case _Section.conocenos:
+        return 'Conócenos';
+      case _Section.planes:
+        return 'Planes';
+      case _Section.padre:
+        return 'Portal padre';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isDesktop = MediaQuery.of(context).size.width >= 820;
 
+    if (!isDesktop) {
+      return Container(
+        height: 64,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x12000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Builder(
+              builder: (drawerContext) {
+                return IconButton(
+                  onPressed: () {
+                    Scaffold.of(drawerContext).openDrawer();
+                  },
+                  icon: const Icon(
+                    Icons.menu_rounded,
+                    color: Color(0xFF4A4E5A),
+                    size: 28,
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 4),
+            Text(
+              _titleBySection(),
+              style: const TextStyle(
+                color: Color(0xFF1B1B1B),
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const Spacer(),
+            if (loggedInRole == null)
+              ElevatedButton(
+                onPressed: onLogin,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _kGreenLight,
+                  foregroundColor: _kWhite,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 11,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  elevation: 2,
+                ),
+                child: const Text(
+                  'Entrar',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                ),
+              )
+            else ...[
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFE2E6E2)),
+                ),
+                child: IconButton(
+                  onPressed: () {},
+                  icon: const Icon(
+                    Icons.notifications_none_rounded,
+                    color: Color(0xFF4A4E5A),
+                    size: 21,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 42,
+                height: 42,
+                decoration: const BoxDecoration(
+                  color: _kGreenLight,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  onPressed: loggedInRole == 0 ? onLogout : onGoToDashboard,
+                  icon: Icon(
+                    loggedInRole == 0
+                        ? Icons.logout_rounded
+                        : Icons.admin_panel_settings_rounded,
+                    color: Colors.white,
+                    size: 21,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
+    }
+
     return Container(
       height: 78,
       color: _kWhite,
-      padding: EdgeInsets.symmetric(horizontal: isDesktop ? 30 : 18),
+      padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Row(
         children: [
           Row(
@@ -338,19 +448,13 @@ class _NavBar extends StatelessWidget {
               ),
             ],
           ),
-
           const Spacer(),
-
-          if (isDesktop) ...[
-            _NavTab('Inicio', _Section.inicio, current, onNavigate),
-            _NavTab('Conócenos', _Section.conocenos, current, onNavigate),
-            _NavTab('Planes', _Section.planes, current, onNavigate),
-            if (loggedInRole == 0)
-              _NavTab('Padre', _Section.padre, current, onNavigate),
-          ],
-
+          _NavTab('Inicio', _Section.inicio, current, onNavigate),
+          _NavTab('Conócenos', _Section.conocenos, current, onNavigate),
+          _NavTab('Planes', _Section.planes, current, onNavigate),
+          if (loggedInRole == 0)
+            _NavTab('Padre', _Section.padre, current, onNavigate),
           const Spacer(),
-
           if (loggedInRole == null)
             ElevatedButton(
               onPressed: onLogin,
@@ -403,6 +507,229 @@ class _NavBar extends StatelessWidget {
   }
 }
 
+class _MobileDrawer extends StatelessWidget {
+  const _MobileDrawer({
+    required this.current,
+    required this.loggedInRole,
+    required this.onNavigate,
+    required this.onLogin,
+    this.onLogout,
+    this.onGoToDashboard,
+  });
+
+  final _Section current;
+  final int? loggedInRole;
+  final void Function(_Section) onNavigate;
+  final VoidCallback onLogin;
+  final VoidCallback? onLogout;
+  final VoidCallback? onGoToDashboard;
+
+  void _goTo(BuildContext context, _Section section) {
+    Navigator.pop(context);
+    onNavigate(section);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      backgroundColor: const Color(0xFFF9FBF9),
+      elevation: 0,
+      child: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 18),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ClipOval(
+                  child: Image.asset(
+                    'assets/images/logoCARE.png',
+                    width: 52,
+                    height: 52,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'CARE',
+                      style: TextStyle(
+                        color: _kText,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 20,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Portal Educativo',
+                      style: TextStyle(
+                        color: Color(0xFF8D96A3),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            _DrawerOption(
+              icon: Icons.dashboard_outlined,
+              text: 'Inicio',
+              active: current == _Section.inicio,
+              onTap: () => _goTo(context, _Section.inicio),
+            ),
+            _DrawerOption(
+              icon: Icons.people_alt_outlined,
+              text: 'Conócenos',
+              active: current == _Section.conocenos,
+              onTap: () => _goTo(context, _Section.conocenos),
+            ),
+            _DrawerOption(
+              icon: Icons.workspace_premium_outlined,
+              text: 'Planes',
+              active: current == _Section.planes,
+              onTap: () => _goTo(context, _Section.planes),
+            ),
+            if (loggedInRole == 0)
+              _DrawerOption(
+                icon: Icons.school_outlined,
+                text: 'Portal padre',
+                active: current == _Section.padre,
+                onTap: () => _goTo(context, _Section.padre),
+              ),
+            const Spacer(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+              child: Column(
+                children: [
+                  if (loggedInRole == null)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          onLogin();
+                        },
+                        icon: const Icon(Icons.login_rounded),
+                        label: const Text('Iniciar sesión'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _kGreenLight,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                        ),
+                      ),
+                    )
+                  else if (loggedInRole == 0)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          onLogout?.call();
+                        },
+                        icon: const Icon(Icons.logout_rounded),
+                        label: const Text('Cerrar sesión'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.shade400,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          onGoToDashboard?.call();
+                        },
+                        icon: const Icon(Icons.admin_panel_settings_rounded),
+                        label: const Text('Ir al dashboard'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _kGreenLight,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DrawerOption extends StatelessWidget {
+  const _DrawerOption({
+    required this.icon,
+    required this.text,
+    required this.active,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String text;
+  final bool active;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          height: 52,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: BoxDecoration(
+            color: active ? _kGreenLight : Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: active ? Colors.white : const Color(0xFF4A4E5A),
+                size: 23,
+              ),
+              const SizedBox(width: 14),
+              Text(
+                text,
+                style: TextStyle(
+                  color: active ? Colors.white : const Color(0xFF4A4E5A),
+                  fontWeight: active ? FontWeight.w800 : FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _NavTab extends StatelessWidget {
   const _NavTab(this.label, this.section, this.current, this.onTap);
 
@@ -442,10 +769,9 @@ class _NavTab extends StatelessWidget {
   }
 }
 
-// ══════════════════════════════════════════════════════
-//  NUEVO INICIO REDISEÑADO
-// ══════════════════════════════════════════════════════
 class _InicioRedisenadoSection extends StatelessWidget {
+  final bool isAdmin;
+
   final String direccionLinea1;
   final String direccionLinea2;
   final String correo;
@@ -470,6 +796,7 @@ class _InicioRedisenadoSection extends StatelessWidget {
   onEditDatosGenerales;
 
   const _InicioRedisenadoSection({
+    required this.isAdmin,
     required this.direccionLinea1,
     required this.direccionLinea2,
     required this.correo,
@@ -534,11 +861,11 @@ class _InicioRedisenadoSection extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: isDesktop ? 26 : 18),
                 child: Column(
                   children: [
-                    const Text(
+                    Text(
                       'CARE- Centro de Apoyo y Refuerzo Escolar',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 38,
+                        fontSize: isDesktop ? 38 : 28,
                         fontWeight: FontWeight.w900,
                         color: _kGreen,
                         letterSpacing: 1.4,
@@ -563,6 +890,7 @@ class _InicioRedisenadoSection extends StatelessWidget {
                                 Expanded(
                                   flex: 38,
                                   child: _DatosGeneralesCard(
+                                    canEdit: isAdmin,
                                     direccionLinea1: direccionLinea1,
                                     direccionLinea2: direccionLinea2,
                                     correo: correo,
@@ -575,6 +903,7 @@ class _InicioRedisenadoSection extends StatelessWidget {
                                 Expanded(
                                   flex: 62,
                                   child: _CarouselSection(
+                                    canManage: isAdmin,
                                     imagenes: carouselItems,
                                     currentIndex: currentIndex,
                                     onPageChanged: onCarouselPageChanged,
@@ -588,6 +917,7 @@ class _InicioRedisenadoSection extends StatelessWidget {
                           : Column(
                               children: [
                                 _DatosGeneralesCard(
+                                  canEdit: isAdmin,
                                   direccionLinea1: direccionLinea1,
                                   direccionLinea2: direccionLinea2,
                                   correo: correo,
@@ -597,6 +927,7 @@ class _InicioRedisenadoSection extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 28),
                                 _CarouselSection(
+                                  canManage: isAdmin,
                                   imagenes: carouselItems,
                                   currentIndex: currentIndex,
                                   onPageChanged: onCarouselPageChanged,
@@ -620,10 +951,9 @@ class _InicioRedisenadoSection extends StatelessWidget {
   }
 }
 
-// ══════════════════════════════════════════════════════
-//  Tarjeta de datos generales editable
-// ══════════════════════════════════════════════════════
 class _DatosGeneralesCard extends StatelessWidget {
+  final bool canEdit;
+
   final String direccionLinea1;
   final String direccionLinea2;
   final String correo;
@@ -640,6 +970,7 @@ class _DatosGeneralesCard extends StatelessWidget {
   onEdit;
 
   const _DatosGeneralesCard({
+    required this.canEdit,
     required this.direccionLinea1,
     required this.direccionLinea2,
     required this.correo,
@@ -810,24 +1141,25 @@ class _DatosGeneralesCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    InkWell(
-                      onTap: () => _abrirMenuEditarDatos(context),
-                      borderRadius: BorderRadius.circular(50),
-                      child: Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: _kGreenPale,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFD9ECD9)),
-                        ),
-                        child: const Icon(
-                          Icons.edit_rounded,
-                          color: _kGreenLight,
-                          size: 21,
+                    if (canEdit)
+                      InkWell(
+                        onTap: () => _abrirMenuEditarDatos(context),
+                        borderRadius: BorderRadius.circular(50),
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: _kGreenPale,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFD9ECD9)),
+                          ),
+                          child: const Icon(
+                            Icons.edit_rounded,
+                            color: _kGreenLight,
+                            size: 21,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 22),
@@ -1241,10 +1573,9 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-// ══════════════════════════════════════════════════════
-//  Carrusel editable
-// ══════════════════════════════════════════════════════
 class _CarouselSection extends StatelessWidget {
+  final bool canManage;
+
   final List<_CarouselItem> imagenes;
   final int currentIndex;
   final ValueChanged<int> onPageChanged;
@@ -1253,6 +1584,7 @@ class _CarouselSection extends StatelessWidget {
   final void Function(int index, String newText) onEditText;
 
   const _CarouselSection({
+    required this.canManage,
     required this.imagenes,
     required this.currentIndex,
     required this.onPageChanged,
@@ -1840,40 +2172,41 @@ class _CarouselSection extends StatelessWidget {
                 );
               }).toList(),
             ),
-            Positioned(
-              top: 18,
-              right: 18,
-              child: InkWell(
-                onTap: () => _abrirMenuGestion(context),
-                borderRadius: BorderRadius.circular(50),
-                child: Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.94),
-                    shape: BoxShape.circle,
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x25000000),
-                        blurRadius: 10,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text(
-                      '＋',
-                      style: TextStyle(
-                        color: _kGreenLight,
-                        fontSize: 36,
-                        fontWeight: FontWeight.w800,
-                        height: 1,
+            if (canManage)
+              Positioned(
+                top: 18,
+                right: 18,
+                child: InkWell(
+                  onTap: () => _abrirMenuGestion(context),
+                  borderRadius: BorderRadius.circular(50),
+                  child: Container(
+                    width: 54,
+                    height: 54,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.94),
+                      shape: BoxShape.circle,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x25000000),
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text(
+                        '＋',
+                        style: TextStyle(
+                          color: _kGreenLight,
+                          fontSize: 36,
+                          fontWeight: FontWeight.w800,
+                          height: 1,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
         const SizedBox(height: 24),
@@ -1979,9 +2312,6 @@ class _Footer extends StatelessWidget {
   }
 }
 
-// ══════════════════════════════════════════════════════
-//  Placeholder para secciones futuras
-// ══════════════════════════════════════════════════════
 class _PlaceholderSection extends StatelessWidget {
   const _PlaceholderSection({required this.titulo, required this.icon});
 
@@ -2022,9 +2352,6 @@ class _PlaceholderSection extends StatelessWidget {
   }
 }
 
-// ══════════════════════════════════════════════════════
-//  DIALOG — Inicio de Sesión
-// ══════════════════════════════════════════════════════
 class _LoginDialog extends StatefulWidget {
   const _LoginDialog();
 
