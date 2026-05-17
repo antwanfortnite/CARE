@@ -18,7 +18,7 @@ class DatosGeneralesApiService {
     }
   }
 
-  Future<Map<String, dynamic>?> crearDatos(String direccion, String correo, String telefono, {int? idUsuarioActual}) async {
+  Future<Map<String, dynamic>?> crearDatos(String direccion, String correo, String telefono, String facebook, {int? idUsuarioActual}) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/datos'),
@@ -27,6 +27,7 @@ class DatosGeneralesApiService {
           'direccion': direccion,
           'correo': correo,
           'telefono': telefono,
+          'url_facebook': facebook,
           'id_usuario_actual': idUsuarioActual
         }),
       );
@@ -43,7 +44,7 @@ class DatosGeneralesApiService {
     }
   }
 
-  Future<bool> actualizarDatos(int id, String direccion, String correo, String telefono, {int? idUsuarioActual}) async {
+  Future<bool> actualizarDatos(int id, String direccion, String correo, String telefono, String facebook, {int? idUsuarioActual}) async {
     try {
       final response = await http.put(
         Uri.parse('$baseUrl/datos/$id'),
@@ -52,6 +53,7 @@ class DatosGeneralesApiService {
           'direccion': direccion,
           'correo': correo,
           'telefono': telefono,
+          'url_facebook': facebook,
           'id_usuario_actual': idUsuarioActual
         }),
       );
